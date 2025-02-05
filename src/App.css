@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+*{
+  font-family: "Noto Sans Lao","Roboto", serif !important;
+}
+
+body{
+  background: #E5E7EB;
+  height: 100vh;
+  width: 100%;
+}
+
