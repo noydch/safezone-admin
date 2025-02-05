@@ -21,6 +21,12 @@ import { IoIosArrowDown } from "react-icons/io";
 
 const Sidebar = ({ children }) => {
     const [avatar, setAvatar] = useState(avatar1);
+    const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false)
+
+    const handleChangeAvatar = (newAvatar) => {
+        setAvatar(newAvatar);
+        setIsAvatarMenuOpen(false)
+    }
 
     const path = [
         {
@@ -39,14 +45,14 @@ const Sidebar = ({ children }) => {
             icon: <BiSolidFoodMenu />
         },
         {
-            path: '/table',
-            name: 'ຈັດການໂຕະ',
-            icon: <MdTableRestaurant />
-        },
-        {
             path: '/sale',
             name: 'ຈັດການການຂາຍ',
             icon: <MdOutlineProductionQuantityLimits />
+        },
+        {
+            path: '/table',
+            name: 'ຈັດການໂຕະ',
+            icon: <MdTableRestaurant />
         },
         {
             path: '/import-buy',
@@ -151,12 +157,31 @@ const Sidebar = ({ children }) => {
             <section className=' w-full h-screen flex-1 flex flex-col'>
                 <nav className=' bg-white w-full h-[70px] flex items-center justify-end px-4 drop-shadow-sm'>
                     <div className=' flex items-center justify-between p-1 px-2 rounded gap-2 w-[220px] bg-white drop-shadow'>
-                        <div className=' flex items-center gap-x-2'>
-                            <div className=' cursor-pointer w-[40px] h-[40px] rounded-full border border-gray-700'>
-                                <img src={avatar1} alt=""
+                        <div className=' relative flex items-center gap-x-2'>
+                            <div className=' cursor-pointer w-[40px] h-[40px] rounded-full border border-gray-700'
+                                onClick={() => setIsAvatarMenuOpen(!isAvatarMenuOpen)}
+                            >
+                                <img src={avatar} alt=""
                                     className=' w-full rounded-full'
                                 />
                             </div>
+                            {
+                                isAvatarMenuOpen && (
+                                    <div className=' flex absolute duration-300 top-12 bg-white p-2 rounded -right-10'>
+                                        {
+                                            avatarData.map((avatarItem) => (
+                                                <div className=' cursor-pointer w-[40px] h-[40px] rounded-full'
+                                                    onClick={() => handleChangeAvatar(avatarItem.picture)}
+                                                >
+                                                    <img src={avatarItem.picture} alt="Avatar"
+                                                        className=' h-8 w-8 rounded-full'
+                                                    />
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
+                                )
+                            }
                             <p className=' font-medium'>
                                 Saysamone Dch
                             </p>

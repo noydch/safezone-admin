@@ -16,6 +16,11 @@ const router = createBrowserRouter([
     {
         path: '/category/:id',
         element: <FrmEditCategory />
+    },
+
+    // product
+    {
+
     }
 ])
 
