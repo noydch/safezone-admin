@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { message, Popconfirm, Modal } from 'antd';
 import { useWatch } from 'antd/es/form/Form';
 
+import { categoryData } from '../../../dataStore';
 
 
 const Category = ({ form }) => {
@@ -28,6 +29,8 @@ const Category = ({ form }) => {
         console.log(e);
         message.success('ລົບສຳເລັດ!!!');
     };
+
+
 
     const columns = [
         {
@@ -134,30 +137,14 @@ const Category = ({ form }) => {
                         {/* <li className=' w-[140px] rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-red-700 text-red-700 font-medium'>
                             ເຄື່ອງດື່ມທຳມະດາ
                         </li> */}
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ເຄື່ອງດື່ມທຳມະດາ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ເຄື່ອງດື່ມແອລກໍຮໍ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ທອດ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ຂອງຫວານ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ຜັດ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ຕຳ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ຍຳ
-                        </li>
-                        <li className=' w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                            ແກງ
-                        </li>
+                        {
+                            categoryData.map((categoryItem, index) => (
+                                <li key={index} className=' cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 hover:shadow-[2px_2px_5px_0px_#f56565] w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
+                                    {categoryItem.categoryName}
+                                </li>
+                            ))
+                        }
+
                     </ul>
                 </div>
             </div>

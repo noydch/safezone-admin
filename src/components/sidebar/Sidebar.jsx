@@ -20,12 +20,24 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
 
 const Sidebar = ({ children }) => {
-    const [avatar, setAvatar] = useState(avatar1);
-    const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false)
+    // const [avatar, setAvatar] = useState(avatar1);
+    // const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false)
+
+    // const handleChangeAvatar = (newAvatar) => {
+    //     setAvatar(newAvatar);
+    //     setIsAvatarMenuOpen(false)
+    // }
+
+    const [avatar, setAvatar] = useState(() => {
+        // Load avatar from localStorage or use default
+        return localStorage.getItem('avatar') || avatar1;
+    });
+    const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
 
     const handleChangeAvatar = (newAvatar) => {
         setAvatar(newAvatar);
-        setIsAvatarMenuOpen(false)
+        localStorage.setItem('avatar', newAvatar); // Save avatar to localStorage
+        setIsAvatarMenuOpen(false);
     }
 
     const path = [
@@ -157,7 +169,8 @@ const Sidebar = ({ children }) => {
             <section className=' w-full h-screen flex-1 flex flex-col'>
                 <nav className=' bg-white w-full h-[70px] flex items-center justify-end px-4 drop-shadow-sm'>
                     <div className=' flex items-center justify-between p-1 px-2 rounded gap-2 w-[220px] bg-white drop-shadow'>
-                        <div className=' relative flex items-center gap-x-2'>
+                        <div
+                            className=' relative flex items-center gap-x-2'>
                             <div className=' cursor-pointer w-[40px] h-[40px] rounded-full border border-gray-700'
                                 onClick={() => setIsAvatarMenuOpen(!isAvatarMenuOpen)}
                             >
@@ -167,14 +180,15 @@ const Sidebar = ({ children }) => {
                             </div>
                             {
                                 isAvatarMenuOpen && (
-                                    <div className=' flex absolute duration-300 top-12 bg-white p-2 rounded -right-10'>
+                                    <div
+                                        className=' flex absolute top-12 bg-white p-2 rounded -right-10'>
                                         {
                                             avatarData.map((avatarItem) => (
-                                                <div className=' cursor-pointer w-[40px] h-[40px] rounded-full'
+                                                <div className=' cursor-pointer hover:border-2 hover:border-gray-700 duration-300 border-2 border-transparent w-[40px] h-[40px] rounded-full'
                                                     onClick={() => handleChangeAvatar(avatarItem.picture)}
                                                 >
                                                     <img src={avatarItem.picture} alt="Avatar"
-                                                        className=' h-8 w-8 rounded-full'
+                                                        className=' h-full w-full rounded-full'
                                                     />
                                                 </div>
                                             ))
