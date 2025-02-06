@@ -132,7 +132,7 @@ const Sidebar = ({ children }) => {
 
     return (
         <div className=' flex h-screen'>
-            <section className=' sticky w-[220px] bg-white p-2 flex flex-col'>
+            <section className=' sticky w-[220px] bg-white p-2 flex flex-col z-50'>
                 <div className=' flex justify-center my-5'>
                     <img src={logo} alt=""
                         className=' w-[120px]'
@@ -167,8 +167,8 @@ const Sidebar = ({ children }) => {
                 </footer>
             </section>
             <section className=' w-full h-screen flex-1 flex flex-col'>
-                <nav className=' bg-white w-full h-[70px] flex items-center justify-end px-4 drop-shadow-sm'>
-                    <div className=' flex items-center justify-between p-1 px-2 rounded gap-2 w-[220px] bg-white drop-shadow'>
+                <nav className=' bg-white w-full h-[70px] flex items-center justify-end px-4 drop-shadow-lg sticky z-40'>
+                    <div className=' flex items-center justify-between p-1 px-2 rounded gap-2 w-[220px] bg-white'>
                         <div
                             className=' relative flex items-center gap-x-2'>
                             <div className=' cursor-pointer w-[40px] h-[40px] rounded-full border border-gray-700'
