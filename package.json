@@ -15,6 +15,7 @@
     "@tailwindcss/vite": "^4.0.3",
     "antd": "^5.23.3",
     "apexcharts": "^4.4.0",
+    "axios": "^1.7.9",
     "chart.js": "^4.4.7",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",

@@ -6,11 +6,25 @@ import FrmEditCategory from "../components/category/FrmEditCategory";
 import ProductMain from "../pages/product/ProductMain";
 import SaleMain from "../pages/manageSale/SaleMain";
 import TableMain from "../pages/manageTable/TableMain";
+import Register from "../pages/auth/Register";
+import Login from "../pages/auth/login";
+import ProtectedRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter([
+    // auth
+    {
+        path: '/register',
+        element: <Register />
+    },
+    {
+        path: '/login',
+        element: <Login />
+    },
+
+    // dashboard
     {
         path: '/',
-        element: <Dashboard />
+        element: <ProtectedRoute><Dashboard /></ProtectedRoute>
     },
 
     // category
