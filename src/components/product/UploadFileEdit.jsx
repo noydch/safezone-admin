@@ -53,6 +53,13 @@ const UploadFileEdit = ({ imageEdit, setImageEdit }) => {
                         </div>
                     )
                 }
+                {
+                    imageEdit && (
+                        <div className='mt-2'>
+                            <img src={imageEdit} alt="Uploaded" className='h-32 object-cover rounded-md' />
+                        </div>
+                    )
+                }
             </div>
         </div>
     )

@@ -5,11 +5,15 @@ import bg from '../../assets/bg.jpg'
 import { LoginApi } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
+import { LiaSpinnerSolid } from "react-icons/lia";
+import useSafezoneStore from '../../store/safezoneStore';
 
 const Login = () => {
     const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(true)
     const [rememberMe, setRememberMe] = useState(false)
+    const actionLogin = useSafezoneStore((state) => state.actionLogin)
     const [form, setForm] = useState({
         email: '',
         password: ''
@@ -34,15 +38,27 @@ const Login = () => {
 
     const onFinish = async (e) => {
         e.preventDefault();
+        setLoading(true)
         try {
-            const response = await LoginApi(form.email, form.password)
+            const response = await actionLogin({
+                email: form.email,
+                password: form.password
+            })
             if (response) {
-                localStorage.setItem("token", response?.data?.token)
-                navigate('/')
-                message.success("Login Success!!!")
+                setTimeout(() => {
+                    localStorage.setItem("token", response?.data?.token)
+                    // localStorage.setItem("user", response?.data?.payload)
+                    setLoading(false)
+                    navigate('/')
+                    message.success("Login Success!!!")
+                }, 3000)
+            } else {
+                message.warning("ອີເມລ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ!!!")
+                setLoading(false)
             }
         } catch (error) {
             console.log(error);
+            setLoading(false)
         }
         if (rememberMe) {
             localStorage.setItem('rememberedEmail', form.email);
@@ -115,8 +131,15 @@ const Login = () => {
                     </div>
                     <div className=' flex justify-center mt-10'>
                         <button type='submit' onClick={onFinish}
-                            className=' text-[16px] cursor-pointer hover:bg-red-400 duration-300 font-medium bg-red-500 text-white w-[120px] h-[35px] rounded'>
-                            ເຂົ້າສູ່ລະບົບ
+                            className=' text-[14px] cursor-pointer hover:bg-red-400 duration-300 font-medium bg-red-500 text-white w-[140px] h-[40px] rounded'>
+                            {
+                                loading ?
+                                    <p className=' flex items-center justify-center gap-1'>
+                                        ກຳລັງເຂົ້າສູ່ລະບົບ <LiaSpinnerSolid className=' animate-spin text-[16px]' />
+                                    </p>
+                                    :
+                                    'ເຂົ້າສູ່ລະບົບ'
+                            }
                         </button>
                     </div>
                 </form>

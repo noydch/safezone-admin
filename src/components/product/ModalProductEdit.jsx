@@ -1,19 +1,38 @@
 import { Modal, Select } from 'antd';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import UploadFileAdd from './UploadFileAdd';
 import { useNavigate } from 'react-router-dom';
 import UploadFileEdit from './UploadFileEdit';
+import { MdOutlineCloudUpload } from 'react-icons/md';
+import { FaTrash, FaTrashAlt } from 'react-icons/fa';
+// import { toast } from 'react-hot-toast';
+import { updateFoodApi, updateDrinkApi } from '../../api/product'; // นำเข้าฟังก์ชัน API
+import useSafezoneStore from '../../store/safezoneStore';
 
-const ModalProductEdit = () => {
+const ModalProductEdit = ({ product, isDrink }) => {
     const [isSelected, setIsSelected] = useState('ທັງໝົດ')
     const navigate = useNavigate()
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [imageEdit, setImageEdit] = useState();
+    const [images, setImages] = useState([]);
     const [pName, setPName] = useState('');
     const [categoryId, setCategoryId] = useState('ເລືອກປະເພດ');
     const [quantity, setQuantity] = useState(0);
     const [price, setPrice] = useState(0);
+    const [productId, setProductId] = useState(null);
+    const categories = useSafezoneStore((state) => state.categories)
+    // const listCategory = useSafezoneStore((state))
 
+    // ใช้ useEffect เพื่อกำหนดค่าเริ่มต้นเมื่อ product เปลี่ยน
+    useEffect(() => {
+        if (product) {
+            setProductId(product.id); // กำหนด productId
+            setPName(product.name);
+            setCategoryId(product.categoryId);
+            setQuantity(product.qty);
+            setPrice(product.price);
+            setImages(product.image); // กำหนดภาพถ้าจำเป็น
+        }
+    }, [product]);
 
     const handleChange = (e) => {
         console.log(e.target.name + " : " + e.target.value);
@@ -32,9 +51,29 @@ const ModalProductEdit = () => {
         }
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log({ pName, categoryId, quantity, price }); // รวมค่าที่แยกกัน
+        const token = localStorage.getItem('token'); // ดึง token จาก localStorage
+        const data = {
+            name: pName,
+            categoryId: categoryId,
+            qty: quantity,
+            price: price,
+            image: images // ส่งข้อมูลภาพไปด้วย
+        };
+
+        let response;
+        if (isDrink) {
+            response = await updateDrinkApi(token, productId, data); // เรียกใช้ updateDrinkApi
+        } else {
+            response = await updateFoodApi(token, productId, data); // เรียกใช้ updateFoodApi
+        }
+
+        if (response) {
+            console.log("Update successful");
+        } else {
+            console.error("Update failed");
+        }
     }
 
     const showModal = () => {
@@ -46,6 +85,29 @@ const ModalProductEdit = () => {
     const handleCancel = () => {
         setIsModalOpen(false);
     };
+    console.log(images);
+
+    const handleOnChange = (e) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const file = files[0]; // Allow only the first file
+            if (!file.type.startsWith('image/')) {
+                toast.error(`File ${file.name} บ่แม่นรูป`);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const newImage = {
+                    public_id: Date.now().toString(),
+                    url: reader.result
+                };
+                setImages([newImage]); // Set the state to only the new image
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
     return (
         <div>
             <button onClick={showModal}
@@ -60,7 +122,37 @@ const ModalProductEdit = () => {
                     className='flex gap-2 w-full h-[240px]'
                 >
                     <div className=' flex-1 h-full flex justify-center items-center'>
-                        <UploadFileEdit imageEdit={imageEdit} setImageEdit={setImageEdit} />
+                        {
+                            images.length > 0 ? (
+                                <div className='w-full h-full flex flex-wrap gap-2'>
+                                    {images.map((item, index) => (
+                                        <div key={index} className='relative h-full border-2 rounded-md border-gray-300 border-dashed p-0.5'>
+                                            <img
+                                                src={item.url}
+                                                className='h-full object-cover rounded-md'
+                                                alt=""
+                                            />
+                                            <div
+                                                onClick={() => setImages([])} // Clear the images array
+                                                className='cursor-pointer bg-black/30 w-[30px] h-[30px] flex justify-center items-center rounded absolute top-2 right-2'>
+                                                <FaTrashAlt className='text-white text-[18px]' />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className=' w-full h-full rounded-md border-2 border-gray-300 border-dashed '>
+                                    <input id='uploadImage'
+                                        name='uploadImage'
+                                        onChange={handleOnChange}
+                                        type="file" multiple hidden />
+                                    <label htmlFor='uploadImage' className='bg-white hover:bg-gray-100 duration-300 cursor-pointer w-full h-full flex flex-col justify-center items-center'>
+                                        <MdOutlineCloudUpload className=' text-[28px] text-gray-500' />
+                                        <p className=' text-[16px] font-medium text-gray-500'>ອັບໂຫຼດຮູບພາບ</p>
+                                    </label>
+                                </div>
+                            )
+                        }
                     </div>
                     <div className=' flex-1 w-full flex flex-col gap-2'>
                         <div>

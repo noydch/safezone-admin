@@ -145,4 +145,46 @@ export const productData = [
         picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
         price: 30000
     },
+    {
+        pName: 'ຍຳທະເລລວມ',
+        categoryName: 'ຍຳ',
+        createdAt: '02/02/2025',
+        picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
+        price: 30000
+    },
+    {
+        pName: 'ຍຳທະເລລວມ',
+        categoryName: 'ຍຳ',
+        createdAt: '02/02/2025',
+        picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
+        price: 30000
+    },
+    {
+        pName: 'ຍຳທະເລລວມ',
+        categoryName: 'ຍຳ',
+        createdAt: '02/02/2025',
+        picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
+        price: 30000
+    },
+    {
+        pName: 'ຍຳທະເລລວມ',
+        categoryName: 'ຍຳ',
+        createdAt: '02/02/2025',
+        picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
+        price: 30000
+    },
+    {
+        pName: 'ຍຳທະເລລວມ',
+        categoryName: 'ຍຳ',
+        createdAt: '02/02/2025',
+        picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
+        price: 30000
+    },
+    {
+        pName: 'ຍຳທະເລລວມ',
+        categoryName: 'ຍຳ',
+        createdAt: '02/02/2025',
+        picture: 'https://img.wongnai.com/p/1920x0/2021/10/03/b354a0339e3047da9d05560f3b768435.jpg',
+        price: 30000
+    },
 ]

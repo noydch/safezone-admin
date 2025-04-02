@@ -14,7 +14,7 @@ import avatar9 from '../../assets/avatar/avatar-09.webp'
 import { FaHome } from "react-icons/fa";
 import { IoFastFoodSharp, IoPersonCircle } from "react-icons/io5";
 import { BiSolidFoodMenu, BiSolidReport } from "react-icons/bi";
-import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutlineImportantDevices } from "react-icons/md";
+import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutlineImportantDevices, MdNoteAlt } from "react-icons/md";
 import { BsFillPersonVcardFill } from "react-icons/bs";
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
@@ -43,6 +43,16 @@ const Sidebar = ({ children }) => {
     const path = [
         {
             path: '/',
+            name: 'ໜ້າການຂາຍ',
+            icon: <MdOutlineProductionQuantityLimits />
+        },
+        {
+            path: '/orders',
+            name: 'ລາຍການອໍເດີ',
+            icon: <MdNoteAlt />
+        },
+        {
+            path: '/dashboard',
             name: 'ໜ້າຫຼັກ',
             icon: <FaHome />
         },
@@ -57,9 +67,9 @@ const Sidebar = ({ children }) => {
             icon: <BiSolidFoodMenu />
         },
         {
-            path: '/sale',
-            name: 'ຈັດການການຂາຍ',
-            icon: <MdOutlineProductionQuantityLimits />
+            path: '/booking',
+            name: 'ຈັດການການຈອງ',
+            icon: <MdTableRestaurant />
         },
         {
             path: '/table',
@@ -82,8 +92,8 @@ const Sidebar = ({ children }) => {
             icon: <BsFillPersonVcardFill />
         },
         {
-            path: '/report',
-            name: 'ການລາຍງານ',
+            path: '/reports',
+            name: 'ລາຍງານ',
             icon: <BiSolidReport />
         },
     ]

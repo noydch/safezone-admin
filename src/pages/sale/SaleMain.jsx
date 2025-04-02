@@ -1,11 +1,11 @@
 import React from 'react'
-import SaleManagement from '../../components/sale/SaleManagement'
+import Sale from '../../components/sale/Sale'
 import Sidebar from '../../components/sidebar/Sidebar'
 
 const SaleMain = () => {
     return (
         <Sidebar>
-            <SaleManagement />
+            <Sale />
         </Sidebar>
     )
 }

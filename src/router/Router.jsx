@@ -4,11 +4,17 @@ import Dashboard from "../pages/dashborad/Dashboard";
 import CategoryMain from "../pages/category/CategoryMain";
 import FrmEditCategory from "../components/category/FrmEditCategory";
 import ProductMain from "../pages/product/ProductMain";
-import SaleMain from "../pages/manageSale/SaleMain";
+import SaleMain from "../pages/sale/SaleMain";
 import TableMain from "../pages/manageTable/TableMain";
 import Register from "../pages/auth/Register";
-import Login from "../pages/auth/login";
+
 import ProtectedRoute from "./ProtectedRoute";
+import Login from "../pages/auth/Login";
+import BookingMain from "../pages/booking/BookingMain";
+import ImportAndBuyMain from "../pages/import/ImportAndBuyMain";
+import UserMain from "../pages/user/UserMain";
+import ReportMain from "../pages/reports/ReportMain";
+import CustomerMain from "../pages/customer/CustomerMain";
 
 const router = createBrowserRouter([
     // auth
@@ -20,17 +26,22 @@ const router = createBrowserRouter([
         path: '/login',
         element: <Login />
     },
+    // sale
+    {
+        path: '/',
+        element: <ProtectedRoute><SaleMain /></ProtectedRoute>
+    },
 
     // dashboard
     {
-        path: '/',
+        path: '/dashboard',
         element: <ProtectedRoute><Dashboard /></ProtectedRoute>
     },
 
     // category
     {
         path: '/category',
-        element: <CategoryMain />,
+        element: <ProtectedRoute><CategoryMain /></ProtectedRoute>,
     },
     {
         path: '/category/:id',
@@ -40,19 +51,41 @@ const router = createBrowserRouter([
     // product
     {
         path: '/product',
-        element: <ProductMain />
+        element: <ProtectedRoute><ProductMain /></ProtectedRoute>
     },
-
-    // sale
     {
-        path: '/sale',
-        element: <SaleMain />
+        path: '/booking',
+        element: <ProtectedRoute> <BookingMain /> </ProtectedRoute>
     },
 
     // Table
     {
         path: "/table",
-        element: <TableMain />
+        element: <ProtectedRoute><TableMain /></ProtectedRoute>
+    },
+
+    // import buy
+    {
+        path: "/import-buy",
+        element: <ProtectedRoute> <ImportAndBuyMain /> </ProtectedRoute>
+    },
+
+    // user list
+    {
+        path: "/employee",
+        element: <ProtectedRoute><UserMain /></ProtectedRoute>
+    },
+
+    // customer
+    {
+        path: '/customer',
+        element: <ProtectedRoute> <CustomerMain /> </ProtectedRoute>
+    },
+
+    // report
+    {
+        path: '/reports',
+        element: <ProtectedRoute> <ReportMain /> </ProtectedRoute>
     }
 ])
 

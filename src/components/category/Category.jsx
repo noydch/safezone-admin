@@ -8,147 +8,112 @@ import { message, Popconfirm, Modal } from 'antd';
 import { useWatch } from 'antd/es/form/Form';
 
 import { categoryData } from '../../../dataStore';
-
+import useSafezoneStore from '../../store/safezoneStore';
+import { delCategoryApi } from '../../api/category';
+import ModalAdd from './ModalAdd';
 
 const Category = ({ form }) => {
     const navigate = useNavigate()
+    const token = localStorage.getItem('token')
+    const categories = useSafezoneStore((state) => state.categories)
+    const listCategory = useSafezoneStore((state) => state.listCategory)
+    console.log(categories);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    useEffect(() => {
+        listCategory()
+    }, [])
 
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-    const handleOk = () => {
+
+
+    const handleOk = async (id) => {
+        try {
+            const response = await delCategoryApi(token, id);
+            if (response) {
+                message.success('ລົບສຳເລັດ!!!');
+                listCategory(); // Refresh the category list after successful deletion
+            }
+        } catch (error) {
+            message.error('ເກີດຂໍ້ຜິດພາດ!!!');
+            console.error('Delete error:', error);
+        }
         setIsModalOpen(false);
     };
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
 
-    const confirm = (e) => {
-        console.log(e);
-        message.success('ລົບສຳເລັດ!!!');
-    };
 
+
+    const confirm = (id) => {
+        handleOk(id);
+    };
 
 
     const columns = [
         {
-            title: <p className=' text-center'>ໄອດີ</p>,
+            title: <p className='text-center'>ລຳດັບ</p>,
             dataIndex: 'cid',
             key: 'cid',
-            width: 50, // เพิ่มความกว้างให้กับ cid
+            width: 50,
         },
         {
             title: 'ຊື່ປະເພດ',
             dataIndex: 'name',
             key: 'name',
-            width: 300, // เพิ่มความกว้างให้กับ name
+            width: 300,
         },
         {
-            title: <p className=' text-center'>ຈັດການ</p>,
+            title: <p className='text-center'>ຈັດການ</p>,
             key: 'action',
             render: (_, record) => (
-                <div className=' flex items-center justify-center gap-x-2'>
-                    <BiSolidEdit onClick={() => navigate(`/category/${1}`)}
-                        className=' cursor-pointer text-[24px] text-blue-500' />
+                <div className='flex items-center justify-center gap-x-2'>
+                    <BiSolidEdit
+                        onClick={() => navigate(`/category/${record.id}`)}
+                        className='cursor-pointer text-[24px] text-blue-500'
+                    />
                     <Popconfirm
                         title="ຄຳຢືນຢັນ"
                         description="ທ່ານຕ້ອງການລົບແມ່ນບໍ່ ?"
-                        onConfirm={confirm}
-                        // onCancel={cancel}
+                        onConfirm={() => confirm(record.id)}
                         okText="Yes"
                         cancelText="No"
                     >
-                        <FaTrashAlt className=' cursor-pointer text-[20px] text-red-500' />
+                        <FaTrashAlt className='cursor-pointer text-[20px] text-red-500' />
                     </Popconfirm>
                 </div>
             ),
-            width: 100, // เพิ่มความกว้างให้กับ action
+            width: 100,
         },
     ];
-    const data = [
-        {
-            cid: <p className=' text-center'>1</p>,
-            name: <p className=' text-[16px]'>ທອດ</p>
-        },
-        {
-            cid: <p className=' text-center'>2</p>,
-            name: <p className=' text-[16px]'>ແກງ</p>
-        },
-        {
-            cid: <p className=' text-center'>3</p>,
-            name: <p className=' text-[16px]'>ຜັດ</p>
-        },
-        {
-            cid: <p className=' text-center'>4</p>,
-            name: <p className=' text-[16px]'>ເຄື່ອງດື່ມທຳມະດາ</p>
-        },
-        {
-            cid: <p className=' text-center'>5</p>,
-            name: <p className=' text-[16px]'>ເຄື່ອງດື່ມແອລກໍຮໍ</p>
-        },
-    ];
+
+    const data = categories.map(category => ({
+        id: category.id,
+        cid: <p className='text-center'>{category.id}</p>,
+        name: <p className='text-[16px]'>{category.name}</p>
+    }));
+
     return (
         <div className=''>
-            <div className='mb-2 flex items-center justify-between'>
-                <h1 className=' text-[18px] font-medium'>ປະເພດອາຫານ ແລະ ເຄື່ອງດື່ມ</h1>
-                <button onClick={showModal}
-                    className='h-[35px] w-[120px] rounded bg-red-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
-                    ເພີ່ມປະເພດ
-                </button>
-                <Modal footer={null} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                    <h1 className=' text-center text-[18px] font-medium mb-5'>
-                        ເພີ່ມປະເພດອາຫານ - ເຄື່ອງດື່ມ
-                    </h1>
-                    <Form name="validateOnly" layout="vertical" autoComplete="off">
-                        <Form.Item
-                            name="name"
-                            label="ຊື່ປະເພດ"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
-                        >
-                            <Input />
-                        </Form.Item>
-                    </Form>
-                    <div className=' flex justify-center items-center gap-x-4 mt-5'>
-                        <button onClick={handleCancel}
-                            className=' bg-red-500 text-white w-[70px] py-1 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
-                            ຍົກເລີກ
-                        </button>
-                        <button onClick={handleCancel}
-                            className=' bg-blue-500 text-white w-[70px] py-1 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'>
-                            ບັນທຶກ
-                        </button>
-                    </div>
-                </Modal>
-            </div>
-            <div className=' flex gap-x-5 bg-white w-full  p-4 h-screen'>
-                <div className=' bg-white rounded-md'>
-                    <div className=' rounded-md drop-shadow w-[500px]'>
+            <ModalAdd token={token} />
+            <div className='flex gap-x-5 bg-white w-full p-4 h-screen'>
+                <div className='bg-white rounded-md'>
+                    <div className='rounded-md drop-shadow w-[500px]'>
                         <Table pagination={false} columns={columns} dataSource={data} className='' />
                     </div>
                 </div>
-                <div className=' flex-1'>
-                    <ul className=' grid grid-cols-12 gap-4 flex-wrap'>
-                        {/* <li className=' w-[140px] rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-red-700 text-red-700 font-medium'>
-                            ເຄື່ອງດື່ມທຳມະດາ
-                        </li> */}
-                        {
-                            categoryData.map((categoryItem, index) => (
-                                <li key={index} className=' cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 hover:shadow-[2px_2px_5px_0px_#f56565] w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'>
-                                    {categoryItem.categoryName}
-                                </li>
-                            ))
-                        }
-
+                <div className='flex-1'>
+                    <ul className='grid grid-cols-12 gap-4 flex-wrap'>
+                        {categories.map((categoryItem, index) => (
+                            <li
+                                key={index}
+                                className='cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 hover:shadow-[2px_2px_5px_0px_#f56565] w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'
+                            >
+                                {categoryItem.name}
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </div>
-        </div >
+        </div>
     )
 }
 
