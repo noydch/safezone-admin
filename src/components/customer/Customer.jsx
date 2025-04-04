@@ -1,22 +1,36 @@
-import React from 'react'
-import { Table, Button, Space } from 'antd'
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Button, Space, Spin, Alert, message } from 'antd';
+import axios from 'axios';
+import ApiPath from '../../api/apiPath';
+import EditCustomer from './EditCustomer';
+import DeleteCustomer from './DeleteCustomer';
 
 const Customer = () => {
-    // Sample data - you can replace this with your actual data
-    const dataSource = [
-        {
-            key: '1',
-            name: 'ທ. ສົມສະໄໝ',
-            phone: '020 XXXX XXXX',
-        },
-        {
-            key: '2',
-            name: 'ນ. ສົມໃຈ',
-            phone: '030 XXXX XXXX',
-        },
-    ];
+    const [customers, setCustomers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [editingCustomerId, setEditingCustomerId] = useState(null);
 
-    // Define columns for the table
+    const fetchCustomers = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await axios.get(ApiPath.getCustomers);
+            const dataWithKeys = response.data.map(customer => ({ ...customer, key: customer.id }));
+            setCustomers(dataWithKeys);
+        } catch (err) {
+            console.error("Error fetching customers:", err);
+            setError('Failed to load customers. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
+
     const columns = [
         {
             title: 'ລຳດັບ',
@@ -29,6 +43,7 @@ const Customer = () => {
             dataIndex: 'name',
             key: 'name',
             width: '35%',
+            render: (_, record) => `${record.fname} ${record.lname}`,
         },
         {
             title: 'ເບີໂທ',
@@ -42,36 +57,63 @@ const Customer = () => {
             width: '20%',
             render: (_, record) => (
                 <Space size="middle">
-                    <Button type="primary" onClick={() => handleEdit(record)}>
+                    <Button type="primary" onClick={() => handleEdit(record.id)}>
                         ແກ້ໄຂ
                     </Button>
-                    <Button type="primary" danger onClick={() => handleDelete(record)}>
-                        ລຶບ
-                    </Button>
+                    <DeleteCustomer 
+                        customerId={record.id} 
+                        customerName={`${record.fname} ${record.lname}`}
+                        onCustomerDeleted={fetchCustomers}
+                    />
                 </Space>
             ),
         },
     ];
 
-    // Add handler functions
-    const handleEdit = (record) => {
-        console.log('Edit:', record);
-        // Add your edit logic here
+    const handleEdit = (customerId) => {
+        setEditingCustomerId(customerId);
+        setIsEditModalVisible(true);
     };
 
-    const handleDelete = (record) => {
-        console.log('Delete:', record);
-        // Add your delete logic here
+    const handleCloseEditModal = () => {
+        setIsEditModalVisible(false);
+        setEditingCustomerId(null);
     };
+
+    const handleCustomerUpdated = () => {
+        fetchCustomers();
+    };
+
+    if (loading && !isEditModalVisible) {
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}><Spin size="large" /></div>;
+    }
+
+    if (error) {
+        return <Alert message="Error" description={error} type="error" showIcon />;
+    }
 
     return (
         <div>
             <h1 className='text-[20px] font-semibold mb-2'>ຂໍ້ມູນລູກຄ້າ</h1>
             <div className=' bg-white p-4 rounded-md '>
+                <div className="mb-4 text-right">
+                    
+                </div>
                 <div className="max-w-[1000px]">
-                    <Table dataSource={dataSource} columns={columns} />
+                    <Table 
+                        dataSource={customers} 
+                        columns={columns} 
+                        loading={loading && !isEditModalVisible}
+                    />
                 </div>
             </div>
+
+            <EditCustomer 
+                visible={isEditModalVisible}
+                customerId={editingCustomerId}
+                onClose={handleCloseEditModal}
+                onCustomerUpdated={handleCustomerUpdated}
+            />
         </div>
     )
 }

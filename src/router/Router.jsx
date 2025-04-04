@@ -15,6 +15,9 @@ import ImportAndBuyMain from "../pages/import/ImportAndBuyMain";
 import UserMain from "../pages/user/UserMain";
 import ReportMain from "../pages/reports/ReportMain";
 import CustomerMain from "../pages/customer/CustomerMain";
+import OrderMain from "../pages/order/orderMain";
+import SupplierMain from "../pages/supplier/SupplierMain";
+import BuyDetail from "../components/import/BuyDetail";
 
 const router = createBrowserRouter([
     // auth
@@ -30,6 +33,11 @@ const router = createBrowserRouter([
     {
         path: '/',
         element: <ProtectedRoute><SaleMain /></ProtectedRoute>
+    },
+    // order
+    {
+        path: '/orders',
+        element: <ProtectedRoute><OrderMain /></ProtectedRoute>
     },
 
     // dashboard
@@ -70,6 +78,12 @@ const router = createBrowserRouter([
         element: <ProtectedRoute> <ImportAndBuyMain /> </ProtectedRoute>
     },
 
+    // buy detail
+    {
+        path: "/buy-detail/:id",
+        element: <ProtectedRoute> <BuyDetail /> </ProtectedRoute>
+    },
+
     // user list
     {
         path: "/employee",
@@ -80,6 +94,12 @@ const router = createBrowserRouter([
     {
         path: '/customer',
         element: <ProtectedRoute> <CustomerMain /> </ProtectedRoute>
+    },
+
+    // supplier
+    {
+        path: '/supplier',
+        element: <ProtectedRoute> <SupplierMain /> </ProtectedRoute>
     },
 
     // report

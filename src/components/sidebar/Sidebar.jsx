@@ -18,6 +18,7 @@ import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutli
 import { BsFillPersonVcardFill } from "react-icons/bs";
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
+import { FaTruck } from "react-icons/fa";
 
 const Sidebar = ({ children }) => {
     // const [avatar, setAvatar] = useState(avatar1);
@@ -90,6 +91,11 @@ const Sidebar = ({ children }) => {
             path: '/customer',
             name: 'ຂໍ້ມູນລູກຄ້າ',
             icon: <BsFillPersonVcardFill />
+        },
+        {
+            path: '/supplier',
+            name: 'ຂໍ້ມູນຜູ້ສະໝອງ',
+            icon: <FaTruck />
         },
         {
             path: '/reports',

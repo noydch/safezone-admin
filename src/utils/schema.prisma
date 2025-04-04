@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  fname     String
+  lname     String
+  gender    Gender
+  phone     String
+  dob       DateTime
+  role      String   @default("waiter")
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  foods     Food[]
+  drinks    Drink[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Food {
+  id           Int           @id @default(autoincrement())
+  name         String
+  category     Category      @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  price        Float
+  imageUrl     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orderDetails OrderDetail[]
+  cartDetails  CartDetail[]
+}
+
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  name           String
+  address        String
+  phone          String
+  email          String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Drink {
+  id              Int                   @id @default(autoincrement())
+  name            String
+  qty             Int?
+  price           Decimal
+  imageUrl        String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  purchaseDetails PurchaseOrderDetail[]
+  importDetails   ImportDetail[]
+  Category        Category?             @relation(fields: [categoryId], references: [id])
+  categoryId      Int?
+  OrderDetail     OrderDetail[]
+  CartDetail      CartDetail[]
+}
+
+model PurchaseOrder {
+  id         Int                   @id @default(autoincrement())
+  supplierId Int
+  orderDate  DateTime              @default(now())
+  totalPrice Float
+  status     String                @default("pending") // pending, approved, cancelled
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  details    PurchaseOrderDetail[]
+}
+
+model PurchaseOrderDetail {
+  id            Int           @id @default(autoincrement())
+  purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  poId          Int
+  drink         Drink         @relation(fields: [drinkId], references: [id])
+  drinkId       Int
+  quantity      Int
+  price         Float
+  createdAt     DateTime      @default(now())
+}
+
+model ImportReceipt {
+  id         Int            @id @default(autoincrement())
+  supplierId Int
+  importDate DateTime       @default(now())
+  totalPrice Float
+  status     String         @default("pending") // pending, completed, cancelled
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  details    ImportDetail[]
+}
+
+model ImportDetail {
+  id            Int           @id @default(autoincrement())
+  importReceipt ImportReceipt @relation(fields: [importId], references: [id], onDelete: Cascade)
+  importId      Int
+  drink         Drink         @relation(fields: [drinkId], references: [id])
+  drinkId       Int
+  quantity      Int
+  price         Float
+  createdAt     DateTime      @default(now())
+}
+
+model Order {
+  id           Int           @id @default(autoincrement())
+  employee     Employee      @relation(fields: [empId], references: [id])
+  empId        Int
+  orderDate    DateTime      @default(now())
+  total_price  Float
+  createdAt    DateTime      @default(now())
+  orderDetails OrderDetail[]
+}
+
+model OrderDetail {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [ord_id], references: [id])
+  ord_id    Int
+  food      Food?    @relation(fields: [foodId], references: [id])
+  foodId    Int?
+  drink     Drink?   @relation(fields: [drinkId], references: [id])
+  drinkId   Int?
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+}
+
+model Table {
+  id           Int           @id @default(autoincrement())
+  table_number Int
+  status       String        @default("ວ່າງ")
+  seat         Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  Reservation  Reservation[]
+}
+
+model Customer {
+  id          Int           @id @default(autoincrement())
+  fname       String
+  lname       String
+  phone       String        @unique // Add @unique here
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Reservation Reservation[]
+}
+
+model Cart {
+  id          Int          @id @default(autoincrement())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  cartDetails CartDetail[]
+}
+
+model CartDetail {
+  id       Int    @id @default(autoincrement())
+  cart     Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId   Int
+  itemId   Int // ID ของทั้ง Food และ Drink
+  itemType String // "food" หรือ "drink"
+  qty      Int    @default(1)
+  price    Float
+  Food     Food?  @relation(fields: [foodId], references: [id])
+  foodId   Int?
+  Drink    Drink? @relation(fields: [drinkId], references: [id])
+  drinkId  Int?
+}
+
+model Reservation {
+  id              Int      @id @default(autoincrement())
+  customer        Customer @relation(fields: [customerId], references: [id])
+  customerId      Int
+  table           Table    @relation(fields: [tableId], references: [id])
+  tableId         Int
+  reservationTime DateTime
+  status          String   @default("pending") // เช่น pending, confirmed, cancelled
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
