@@ -15,7 +15,7 @@ import ImportAndBuyMain from "../pages/import/ImportAndBuyMain";
 import UserMain from "../pages/user/UserMain";
 import ReportMain from "../pages/reports/ReportMain";
 import CustomerMain from "../pages/customer/CustomerMain";
-import OrderMain from "../pages/order/orderMain";
+import OrderMain from '../pages/order/OrderMain'
 import SupplierMain from "../pages/supplier/SupplierMain";
 import BuyDetail from "../components/import/BuyDetail";
 

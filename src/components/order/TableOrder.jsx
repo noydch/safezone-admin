@@ -31,7 +31,7 @@ const columns = [
         key: 'status',
         dataIndex: 'status',
         render: (status) => (
-            <Tag color={status === 'Completed' ? 'success' : 'warning'}> 
+            <Tag color={status === 'Completed' ? 'success' : 'warning'}>
                 {status}
             </Tag>
         ),
