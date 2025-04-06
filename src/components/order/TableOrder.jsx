@@ -61,7 +61,7 @@ const columns = [
 // Remove static data
 // const data = [...];
 
-export const TableOrder = () => {
+const TableOrder = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -109,3 +109,5 @@ export const TableOrder = () => {
         </div>
     );
 }
+
+export default TableOrder
