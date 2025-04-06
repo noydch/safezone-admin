@@ -1,6 +1,6 @@
 // src/components/dashboard/DashboardMain.jsx
-import React from 'react'
-import { Select } from 'antd';
+import React, { useState, useEffect } from 'react'
+import { Select, Skeleton } from 'antd';
 import { AiOutlineDollar } from 'react-icons/ai'
 import { BsFillCartCheckFill } from 'react-icons/bs';
 import { GiNotebook } from "react-icons/gi";
@@ -10,11 +10,49 @@ import TableDashboard from './TableDashboard';
 import OrderBarChart from './OrderBarChart';
 
 const DashboardMain = () => {
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 2000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     const handleChange = (value) => {
         console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
     };
+
+    if (isLoading) {
+        return (
+            <div className='p-4'>
+                <ul className=' flex items-center gap-x-10 mb-7'>
+                    {[...Array(5)].map((_, index) => (
+                        <li key={index} className=' w-[220px] h-[120px] bg-white rounded-md p-3.5 drop-shadow'>
+                            <Skeleton active paragraph={{ rows: 2 }} />
+                        </li>
+                    ))}
+                </ul>
+
+                <div className='flex gap-x-5 mb-5'>
+                    <div className=' w-[620px] bg-white p-4 rounded-md drop-shadow'>
+                        <Skeleton active />
+                    </div>
+                    <div className=' w-[620px] bg-white p-4 rounded-md drop-shadow'>
+                        <Skeleton active />
+                    </div>
+                </div>
+
+                <div className='bg-white p-4 rounded-md drop-shadow'>
+                    <Skeleton active title={false} paragraph={{ rows: 4 }} />
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div>
+        <div className='p-4'>
             <ul className=' flex items-center gap-x-10'>
                 <li className=' w-[220px] h-[120px] bg-white rounded-md px-3.5 flex items-center justify-between drop-shadow'>
                     <div className=' space-y-9'>

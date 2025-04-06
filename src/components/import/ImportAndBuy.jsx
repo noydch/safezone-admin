@@ -22,7 +22,7 @@ const ImportAndBuy = () => {
         },
     ];
     return (
-        <div>
+        <div className=' w-full'>
             <div className=' mb-2'>
                 <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
             </div>

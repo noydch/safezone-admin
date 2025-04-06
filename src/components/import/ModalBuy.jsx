@@ -151,14 +151,14 @@ const ModalCreatePurchaseOrder = ({ visible, onClose, onPurchaseOrderCreated }) 
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'quantity']}
-                                            rules={[{ required: true, message: 'ໃສ່ຈຳນວນ' }, { type: 'number', min: 1, message: 'ຕ້ອງຫຼາຍກວ່າ 0'}]}
+                                            rules={[{ required: true, message: 'ໃສ່ຈຳນວນ' }, { type: 'number', min: 1, message: 'ຕ້ອງຫຼາຍກວ່າ 0' }]}
                                         >
                                             <InputNumber placeholder="ຈຳນວນ" style={{ width: '100px' }} />
                                         </Form.Item>
                                         <Form.Item
                                             {...restField}
                                             name={[name, 'price']}
-                                            rules={[{ required: true, message: 'ໃສ່ລາຄາ' }, { type: 'number', min: 0, message: 'ຕ້ອງບໍ່ຕິດລົບ'}]}
+                                            rules={[{ required: true, message: 'ໃສ່ລາຄາ' }, { type: 'number', min: 0, message: 'ຕ້ອງບໍ່ຕິດລົບ' }]}
                                         >
                                             <InputNumber placeholder="ລາຄາຕໍ່ໜ່ວຍ" style={{ width: '150px' }} min={0} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\,/g, '')} />
                                         </Form.Item>

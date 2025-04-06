@@ -18,3 +18,12 @@ body{
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.ant-select-item-option-content {
+  text-align: center;
+}
+
+.ant-select-selection-item {
+  text-align: center;
+  flex-grow: 1;
+}

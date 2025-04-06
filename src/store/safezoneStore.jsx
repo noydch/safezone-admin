@@ -5,7 +5,7 @@ import { create } from "zustand"
 import { getCategoryApi } from "../api/category"
 import { getDrinkApi, getFoodApi } from "../api/product"
 import { getTableApi } from "../api/table"
-import { addCartApi } from "../api/cart"
+// import { addCartApi, getCartApi } from "../api/cart"
 import axios from "axios"
 import ApiPath from "../api/apiPath"
 
@@ -18,68 +18,54 @@ const safezoneStore = (set, get) => ({
     carts: [],
     tables: [],
 
-    // เพิ่มสินค้าในตะกร้า
-    actionAddToCart: async (token, cart) => {
-        try {
-            const response = await addCartApi(token, cart);
-            if (response?.data) {
-                message.success("Add to cart successfully");
+    // เพิ่มสินค้าในตะกร้า (แบบ Local)
+    actionAddToCart: async (item) => {
+        const currentCarts = get().carts;
+        const existingItem = currentCarts.find(cartItem =>
+            cartItem.id === item.id &&
+            cartItem.type === item.type &&
+            cartItem.name === item.name
+        );
 
-                // ดึงข้อมูลตะกร้าล่าสุด
-                const cartResponse = await axios.get(ApiPath.getCart, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (cartResponse?.data) {
-                    set({ carts: cartResponse.data.cart }); // อัปเดตตะกร้าให้ตรงกับเซิร์ฟเวอร์
-                }
-            }
-        } catch (error) {
-            console.log("Error adding to cart:", error);
+        if (existingItem) {
+            // ถ้ามีสินค้าอยู่แล้ว เพิ่มจำนวน
+            const updatedCarts = currentCarts.map(cartItem =>
+                cartItem.id === item.id &&
+                    cartItem.type === item.type &&
+                    cartItem.name === item.name
+                    ? { ...cartItem, qty: cartItem.qty + 1 }
+                    : cartItem
+            );
+            set({ carts: updatedCarts });
+        } else {
+            // ถ้ายังไม่มีสินค้า เพิ่มใหม่
+            set({ carts: [...currentCarts, { ...item, qty: 1 }] });
         }
-    },
-    listCart: async (token) => {
-        try {
-            const response = await axios.get(ApiPath.getCart, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response?.data) {
-                set({ carts: response.data.cart });
-            }
-        } catch (error) {
-            console.log("Error fetching cart:", error);
-        }
+        message.success("Add to cart successfully");
     },
 
-    actionUpdateCart: async (token, { cartItemId, qty }) => {
-        try {
-            await axios.put(ApiPath.updateCart, { cartItemId, qty }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            // โหลดข้อมูลตะกร้าล่าสุด
-            await get().listCart(token);
-            console.log("Cart updated successfully");
-        } catch (error) {
-            console.error("Error updating cart:", error);
-        }
-    },
-    actionRemoveFromCart: async (token, cartItemId) => {
-        try {
-            await axios.delete(`${ApiPath.removeCart}/${cartItemId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            // โหลดข้อมูลตะกร้าล่าสุด
-            await get().listCart(token);
-            message.success("Item removed from cart");
-        } catch (error) {
-            message.error("Failed to remove item");
-        }
+    // อัพเดทจำนวนสินค้าในตะกร้า
+    actionUpdateCart: (itemId, type, name, qty) => {
+        const currentCarts = get().carts;
+        const updatedCarts = currentCarts.map(item =>
+            item.id === itemId &&
+                item.type === type &&
+                item.name === name
+                ? { ...item, qty }
+                : item
+        );
+        set({ carts: updatedCarts });
     },
 
-
-
+    // ลบสินค้าออกจากตะกร้า
+    actionRemoveFromCart: (itemId, type, name) => {
+        const currentCarts = get().carts;
+        const updatedCarts = currentCarts.filter(item =>
+            !(item.id === itemId && item.type === type && item.name === name)
+        );
+        set({ carts: updatedCarts });
+        message.success("Item removed from cart");
+    },
 
     // เข้าสู่ระบบ
     actionLogin: async (formData) => {

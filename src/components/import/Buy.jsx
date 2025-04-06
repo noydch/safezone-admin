@@ -123,9 +123,9 @@ const Buy = () => {
                 );
             },
             filters: [
-                 { text: 'Pending', value: 'pending' },
-                 { text: 'Approved', value: 'approved' },
-                 { text: 'Cancelled', value: 'cancelled' },
+                { text: 'Pending', value: 'pending' },
+                { text: 'Approved', value: 'approved' },
+                { text: 'Cancelled', value: 'cancelled' },
             ],
             onFilter: (value, record) => record.status.indexOf(value) === 0,
         },
@@ -138,9 +138,9 @@ const Buy = () => {
                 <Space size="small">
                     <Button type="primary" disabled={record.status !== 'pending'} onClick={() => console.log('Approve PO:', record.id)}>ອະນຸມັດ</Button>
                     <Button danger disabled={record.status !== 'pending'} onClick={() => console.log('Cancel PO:', record.id)}>ຍົກເລີກ</Button>
-                    <Button 
-                        type="link" 
-                        className="text-amber-500 flex items-center" 
+                    <Button
+                        type="link"
+                        className="text-amber-500 flex items-center"
                         onClick={() => navigate(`/buy-detail/${record.id}`)}
                     >
                         ລາຍລະອຽດ <RightOutlined />
@@ -173,14 +173,14 @@ const Buy = () => {
                     onPurchaseOrderCreated={handlePurchaseOrderCreated}
                 />
             </div>
-            {error && <Alert message="Error" description={error} type="error" showIcon style={{ marginBottom: 16 }}/>}
+            {error && <Alert message="Error" description={error} type="error" showIcon style={{ marginBottom: 16 }} />}
             <Table
                 dataSource={purchaseOrders}
                 columns={columns}
                 pagination={{ pageSize: 10 }}
                 loading={loading}
                 bordered
-                scroll={{ x: 1300 }}
+            // scroll={{ x: 1300 }}
             />
         </div>
     );
