@@ -1,7 +1,7 @@
 import React from 'react'
 import { TableOrder } from './TableOrder'
 
-export const Order = () => {
+const Order = () => {
   return (
     <div className=' mt-5'>
       <h1 className=' text-[18px] font-medium mb-1'>
@@ -11,3 +11,4 @@ export const Order = () => {
     </div>
   )
 }
+export default Order
