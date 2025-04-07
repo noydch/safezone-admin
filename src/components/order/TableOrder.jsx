@@ -58,8 +58,6 @@ const columns = [
     },
 ];
 
-// Remove static data
-// const data = [...];
 
 const TableOrder = () => {
     const [orders, setOrders] = useState([]);
