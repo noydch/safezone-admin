@@ -67,6 +67,12 @@ const safezoneStore = (set, get) => ({
         message.success("Item removed from cart");
     },
 
+    // ล้างตะกร้าสินค้า
+    actionClearCart: () => {
+        set({ carts: [] });
+        message.info("Cart cleared");
+    },
+
     // เข้าสู่ระบบ
     actionLogin: async (formData) => {
         try {

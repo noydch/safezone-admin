@@ -70,7 +70,7 @@ const Sale = () => {
             name: item?.name,
             price: parseInt(item?.price),
             imageUrl: item?.imageUrl,
-            type: item?.categoryId === 1 ? "drink" : "food"
+            type: item?.categoryId === 3 ? "drink" : "food"
         });
     };
 

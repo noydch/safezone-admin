@@ -81,4 +81,5 @@ export default class ApiPath {
     static getOrders = `${baseUrl}/getOrders`
     static getOrderById = `${baseUrl}/getOrder`
     static deleteOrder = `${baseUrl}/deleteOrder`
+    static updateOrder = `${baseUrl}/updateOrder`
 }
