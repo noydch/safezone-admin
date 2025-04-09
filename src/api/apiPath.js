@@ -70,6 +70,11 @@ export default class ApiPath {
     static updatePurchaseOrderDetail = `${baseUrl}/updatePurchaseOrderDetail` // Note: detail ID needs to be appended dynamically
     static deletePurchaseOrderDetail = `${baseUrl}/deletePurchaseOrderDetail` // Note: detail ID needs to be appended dynamically
 
+    // import 
+    static confirmPurchaseOrder = `${baseUrl}/confirmImport`
+    static getImportDetail = `${baseUrl}/importDetail`
+    static getImport = `${baseUrl}/getImport`
+
     // cart
     static addCart = `${baseUrl}/addCart`
     static getCart = `${baseUrl}/getCart`

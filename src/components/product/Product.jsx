@@ -176,7 +176,8 @@ const Product = () => {
                 ) : (
                     <ul className=' grid grid-cols-5 place-items-center gap-4'>
                         {
-                            food.map(f => ({ ...f, type: 'food' })).concat(drink.map(d => ({ ...d, type: 'drink' })))
+                            (food || []).map(f => ({ ...f, type: 'food' }))
+                                .concat((drink || []).map(d => ({ ...d, type: 'drink' })))
                                 .filter(productItem => isSelected === 'ທັງໝົດ' || productItem.categoryId === isSelected)
                                 .map((productItem, index) => (
                                     <li key={index} className={` flex flex-col items-center w-[230px] h-[260px] p-2 border border-gray-200 drop-shadow-md rounded-md bg-white`}>
@@ -234,7 +235,7 @@ const Product = () => {
                                     </li>
                                 ))
                         }
-                        {!isLoading && food.length === 0 && drink.length === 0 && (
+                        {!isLoading && (!food?.length && !drink?.length) && (
                             <div className="col-span-5 w-full py-8">
                                 <Empty description="ບໍ່ມີຂໍ້ມູນ" />
                             </div>

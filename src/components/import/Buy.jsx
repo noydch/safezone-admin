@@ -136,7 +136,22 @@ const Buy = () => {
             width: 200,
             render: (_, record) => (
                 <Space size="small">
-                    <Button type="primary" disabled={record.status !== 'pending'} onClick={() => console.log('Approve PO:', record.id)}>ອະນຸມັດ</Button>
+                    <Button
+                        type="primary"
+                        disabled={record.status !== 'pending'}
+                        onClick={async () => {
+                            try {
+                                await axios.post(`${ApiPath.confirmPurchaseOrder}/${record.id}`);
+                                message.success('ອະນຸມັດສຳເລັດ');
+                                fetchPurchaseOrders(); // รีเฟรชตาราง
+                            } catch (err) {
+                                message.error('ລົ້ມເຫຼວໃນການອະນຸມັດ');
+                                console.error(err);
+                            }
+                        }}
+                    >
+                        ອະນຸມັດ
+                    </Button>
                     <Button danger disabled={record.status !== 'pending'} onClick={() => console.log('Cancel PO:', record.id)}>ຍົກເລີກ</Button>
                     <Button
                         type="link"

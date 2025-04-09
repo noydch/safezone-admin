@@ -1,8 +1,45 @@
 import { Tabs, Table, Button, Tag, Space } from 'antd';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { RightOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import ApiPath from '../../api/apiPath';
+import axios from 'axios';
 
 const Import = () => {
+    const navigate = useNavigate();
+    const [importData, setImportData] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Fetch import data
+    const fetchImportData = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(ApiPath.getImport);
+            const formattedData = response.data.map((item, index) => ({
+                key: item.id,
+                order: index + 1,
+                date: new Date(item.importDate).toLocaleDateString(),
+                time: new Date(item.importDate).toLocaleTimeString(),
+                supplier: item.purchaseOrder?.supplier?.name || '-',
+                phoneNumber: item.purchaseOrder?.supplier?.phone || '-',
+                importQuantity: item.purchaseOrder?.details?.reduce((sum, detail) => sum + detail.quantity, 0) || 0,
+                total: `${item.totalPrice.toLocaleString()} ກີບ`,
+                status: item.status === 'pending' ? 'ລໍຖ້າຢືນຢັນ' :
+                    item.status === 'approved' ? 'ອະນຸມັດແລ້ວ' :
+                        item.status === 'rejected' ? 'ຖືກປະຕິເສດ' : item.status
+            }));
+            setImportData(formattedData);
+        } catch (error) {
+            console.error('Error fetching import data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchImportData();
+    }, []);
+
     const onChange = (key) => {
         console.log(key);
     };
@@ -20,22 +57,6 @@ const Import = () => {
         },
     ];
 
-    // Sample data for the table
-    const dataSource = [
-        {
-            key: '1',
-            order: 1,
-            date: '20/12/2025',
-            time: '14:32',
-            supplier: 'ສຸດທິຊາ ພໍລາວັງ',
-            phoneNumber: '971823472',
-            importQuantity: 8,
-            receivedQuantity: 8,
-            total: '8,000,000 ກີບ',
-            status: 'ຢືນຢັນການນຳເຂົ້າ',
-        },
-    ];
-
     // Table columns definition
     const columns = [
         {
@@ -45,7 +66,7 @@ const Import = () => {
             width: 80,
         },
         {
-            title: 'ເວລາ',
+            title: 'ວັນທີ/ເວລານຳເຂົ້າ',
             dataIndex: 'date',
             key: 'date',
             render: (text, record) => (
@@ -79,15 +100,6 @@ const Import = () => {
             ),
         },
         {
-            title: 'ຈຳນວນຮັບເຂົ້າ',
-            dataIndex: 'receivedQuantity',
-            key: 'receivedQuantity',
-            width: 140,
-            render: (text) => (
-                <div className="bg-yellow-100 text-center py-2 px-4 rounded">{text}</div>
-            ),
-        },
-        {
             title: 'ລາຄາລວມ',
             dataIndex: 'total',
             key: 'total',
@@ -98,18 +110,29 @@ const Import = () => {
             dataIndex: 'status',
             key: 'status',
             width: 120,
-            render: (text) => (
-                <Tag color="blue" className="px-4 py-1">
-                    {text}
-                </Tag>
-            ),
+            render: (status) => {
+                let color = 'blue';
+                if (status === 'ລໍຖ້າຢືນຢັນ') color = 'gold';
+                else if (status === 'ອະນຸມັດແລ້ວ') color = 'green';
+                else if (status === 'ຖືກປະຕິເສດ') color = 'red';
+
+                return (
+                    <Tag color={color} className="px-4 py-1">
+                        {status}
+                    </Tag>
+                );
+            },
         },
         {
             title: 'ຈັດການ',
             key: 'action',
             render: (_, record) => (
                 <Space size="small">
-                    <Button type="link" className="text-amber-500 flex items-center">
+                    <Button
+                        type="link"
+                        className="text-amber-500 flex items-center"
+                        onClick={() => navigate(`/importDetail/${record.key}`)}
+                    >
                         ລາຍລະອຽດ <RightOutlined />
                     </Button>
                 </Space>
@@ -121,10 +144,10 @@ const Import = () => {
     return (
         <div>
             <Table
-                dataSource={dataSource}
+                dataSource={importData}
                 columns={columns}
                 pagination={{ pageSize: 10 }}
-                // scroll={{ x: 1300 }}
+                loading={loading}
                 bordered
             />
         </div>

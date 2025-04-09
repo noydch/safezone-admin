@@ -20,6 +20,7 @@ import SupplierMain from "../pages/supplier/SupplierMain";
 import BuyDetail from "../components/import/BuyDetail";
 import OrderDetail from "../components/order/OrderDetail";
 import OrderMain from "../pages/order/orderMain";
+import ImportDetail from "../components/import/ImportDetail";
 
 const router = createBrowserRouter([
     // auth
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
     {
         path: "/import-buy",
         element: <ProtectedRoute> <ImportAndBuyMain /> </ProtectedRoute>
+    },
+    {
+        path: "/importDetail/:id",
+        element: <ProtectedRoute> <ImportDetail /> </ProtectedRoute>
     },
 
     // buy detail
