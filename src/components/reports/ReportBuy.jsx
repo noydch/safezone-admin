@@ -86,7 +86,7 @@ const PurchaseOrderPDF = ({ purchaseOrders }) => (
                 </View>
 
                 {/* ข้อมูลในตาราง */}
-                {purchaseOrders.map((order) => (
+                {purchaseOrders && purchaseOrders.length > 0 ? purchaseOrders.map((order) => (
                     <View style={styles.tableRow} key={order.id}>
                         <View style={styles.tableCol}>
                             <Text style={styles.tableCell}>{order.id}</Text>
@@ -95,7 +95,7 @@ const PurchaseOrderPDF = ({ purchaseOrders }) => (
                             <Text style={styles.tableCell}>{order.supplier?.name || 'N/A'}</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{order.details?.length || 0} ລາຍການ</Text>
+                            <Text style={styles.tableCell}>{(order.details?.length || 0)} ລາຍການ</Text>
                         </View>
                         <View style={styles.tableCol}>
                             <Text style={styles.tableCell}>{(order.totalPrice || 0).toLocaleString()} ກີບ</Text>
@@ -107,17 +107,26 @@ const PurchaseOrderPDF = ({ purchaseOrders }) => (
                             <Text style={styles.tableCell}>{order.status?.toUpperCase() || 'UNKNOWN'}</Text>
                         </View>
                     </View>
-                ))}
+                )) : (
+                    <View style={styles.tableRow}>
+                        <View style={{ ...styles.tableCol, width: '100%' }}>
+                            <Text style={styles.tableCell}>ບໍ່ມີຂໍ້ມູນໃນຊ່ວງວັນທີທີ່ເລືອກ.</Text>
+                        </View>
+                    </View>
+                )}
             </View>
         </Page>
     </Document>
 );
+
+const { RangePicker } = DatePicker;
 
 const ReportBuy = () => {
     const reportRef = useRef(null);
     const [purchaseOrders, setPurchaseOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 
     const fetchPurchaseOrders = useCallback(async () => {
         console.log("Fetching purchase orders for report...");
@@ -178,7 +187,7 @@ const ReportBuy = () => {
             key: 'orderDate',
             render: (text) => moment(text).format('DD/MM/YYYY HH:mm'),
             width: 160,
-            sorter: (a, b) => moment(a.orderDate) - moment(b.orderDate),
+            sorter: (a, b) => moment(a.orderDate).unix() - moment(b.orderDate).unix(),
         },
         {
             title: 'ສະຖານະ',
@@ -208,9 +217,17 @@ const ReportBuy = () => {
         },
     ];
 
-    const onChange = (date, dateString) => {
-        console.log(date, dateString);
+    const onChange = (dates, dateStrings) => {
+        console.log('Selected Date Range:', dateStrings);
+        setSelectedDateRange(dateStrings || [null, null]);
     };
+
+    const filteredPurchaseOrders = selectedDateRange[0] && selectedDateRange[1]
+        ? purchaseOrders.filter(order => {
+            const orderDateFormatted = moment(order.orderDate).format('YYYY-MM-DD');
+            return orderDateFormatted >= selectedDateRange[0] && orderDateFormatted <= selectedDateRange[1];
+        })
+        : purchaseOrders;
 
     if (loading && purchaseOrders.length === 0) {
         return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}><Spin size="large" /></div>;
@@ -220,17 +237,18 @@ const ReportBuy = () => {
         <div className=' bg-white rounded-md p-4'>
             <div className='flex items-center justify-between mb-4'>
                 <div className='flex items-center gap-x-2'>
-                    <p>ເລືອກວັນທີ : </p>
+                    <p>ເລືອກຊ່ວງວັນທີ : </p>
                     <Space direction="vertical">
-                        <DatePicker
+                        <RangePicker
                             format="YYYY-MM-DD"
                             onChange={onChange}
+                            allowClear={true}
                         />
                     </Space>
                 </div>
                 <PDFDownloadLink
-                    document={<PurchaseOrderPDF purchaseOrders={purchaseOrders} />}
-                    fileName="ລາຍງານການສັ່ງຊື້.pdf"
+                    document={<PurchaseOrderPDF purchaseOrders={filteredPurchaseOrders} />}
+                    fileName={`ລາຍງານການສັ່ງຊື້${selectedDateRange[0] && selectedDateRange[1] ? `_${selectedDateRange[0]}_to_${selectedDateRange[1]}` : ''}.pdf`}
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                 >
                     {({ loading: pdfLoading }) =>
@@ -243,7 +261,7 @@ const ReportBuy = () => {
 
             <Table
                 columns={columns}
-                dataSource={purchaseOrders}
+                dataSource={filteredPurchaseOrders}
                 rowKey="id"
                 loading={loading}
                 bordered

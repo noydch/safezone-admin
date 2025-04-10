@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     tableColHeader: {
-        width: '12.5%',
+        width: '14%',
         borderStyle: 'solid',
         borderWidth: 1,
         borderColor: '#bfbfbf',
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     tableCol: {
-        width: '12.5%',
+        width: '14%',
         borderStyle: 'solid',
         borderWidth: 1,
         borderColor: '#bfbfbf',
@@ -59,25 +59,22 @@ const ImportReportPDF = ({ importData }) => (
             <View style={styles.table}>
                 <View style={styles.tableRow}>
                     <View style={styles.tableColHeader}>
-                        <Text style={styles.tableCell}>ເລກທີນຳເຂົ້າ</Text>
+                        <Text style={styles.tableCell}>ລຳດັບ</Text>
                     </View>
                     <View style={styles.tableColHeader}>
-                        <Text style={styles.tableCell}>ຊື່ສິນຄ້າ</Text>
+                        <Text style={styles.tableCell}>ວັນທີ/ເວລາ</Text>
                     </View>
                     <View style={styles.tableColHeader}>
-                        <Text style={styles.tableCell}>ປະເພດສິນຄ້າ</Text>
+                        <Text style={styles.tableCell}>ຊື່ຜູ້ສະໜອງ</Text>
                     </View>
                     <View style={styles.tableColHeader}>
-                        <Text style={styles.tableCell}>ຈຳນວນ</Text>
+                        <Text style={styles.tableCell}>ເບີໂທຜູ້ສະໜອງ</Text>
                     </View>
                     <View style={styles.tableColHeader}>
-                        <Text style={styles.tableCell}>ລາຄານຳເຂົ້າ</Text>
+                        <Text style={styles.tableCell}>ຈຳນວນລວມ</Text>
                     </View>
                     <View style={styles.tableColHeader}>
                         <Text style={styles.tableCell}>ລາຄາລວມ</Text>
-                    </View>
-                    <View style={styles.tableColHeader}>
-                        <Text style={styles.tableCell}>ວັນທີນຳເຂົ້າ</Text>
                     </View>
                     <View style={styles.tableColHeader}>
                         <Text style={styles.tableCell}>ສະຖານະ</Text>
@@ -85,27 +82,24 @@ const ImportReportPDF = ({ importData }) => (
                 </View>
 
                 {importData.map((item) => (
-                    <View style={styles.tableRow} key={item.id}>
+                    <View style={styles.tableRow} key={item.key}>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.importNumber}</Text>
+                            <Text style={styles.tableCell}>{item.order}</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.productName}</Text>
+                            <Text style={styles.tableCell}>{item.date} {item.time}</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.category}</Text>
+                            <Text style={styles.tableCell}>{item.supplier}</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.quantity}</Text>
+                            <Text style={styles.tableCell}>{item.phoneNumber}</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.importPrice}</Text>
+                            <Text style={styles.tableCell}>{item.importQuantity}</Text>
                         </View>
                         <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.totalAmount}</Text>
-                        </View>
-                        <View style={styles.tableCol}>
-                            <Text style={styles.tableCell}>{item.importDate}</Text>
+                            <Text style={styles.tableCell}>{item.total}</Text>
                         </View>
                         <View style={styles.tableCol}>
                             <Text style={styles.tableCell}>{item.status}</Text>

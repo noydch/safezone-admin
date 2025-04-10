@@ -41,7 +41,7 @@ const safezoneStore = (set, get) => ({
             // ถ้ายังไม่มีสินค้า เพิ่มใหม่
             set({ carts: [...currentCarts, { ...item, qty: 1 }] });
         }
-        message.success("Add to cart successfully");
+        message.success("ເພີ່ມສິນຄ້າລົງກະຕ່າສຳເລັດ!!!");
     },
 
     // อัพเดทจำนวนสินค้าในตะกร้า

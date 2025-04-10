@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useSafezoneStore from "../../store/safezoneStore";
-import { MdOutlineKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight, MdOutlineShoppingCart } from "react-icons/md";
+import { MdOutlineShoppingCart } from "react-icons/md";
 import { message, Skeleton } from "antd";
 import Cart from "./Cart";
 
@@ -13,11 +13,8 @@ const Sale = () => {
     const listFood = useSafezoneStore((state) => state.listFood);
     const listDrink = useSafezoneStore((state) => state.listDrink);
     const actionAddToCart = useSafezoneStore((state) => state.actionAddToCart);
-    const actionUpdateCart = useSafezoneStore((state) => state.actionUpdateCart); // Add update action
+    const actionUpdateCart = useSafezoneStore((state) => state.actionUpdateCart);
     const token = useSafezoneStore((state) => state.token);
-
-    const scrollRef = useRef(null);
-    const [showArrows, setShowArrows] = useState(false);
 
     // Load food and drink data
     useEffect(() => {
@@ -34,27 +31,6 @@ const Sale = () => {
         };
         fetchData();
     }, [listDrink, listFood]);
-
-    // Check if category menu can scroll
-    useEffect(() => {
-        const checkScroll = () => {
-            if (scrollRef.current) {
-                const { scrollWidth, clientWidth } = scrollRef.current;
-                setShowArrows(scrollWidth > clientWidth);
-            }
-        };
-        checkScroll();
-        window.addEventListener("resize", checkScroll);
-        return () => window.removeEventListener("resize", checkScroll);
-    }, [categories]);
-
-    // Scroll category menu
-    const scroll = (direction) => {
-        if (scrollRef.current) {
-            const scrollAmount = 300;
-            scrollRef.current.scrollLeft += direction === "left" ? -scrollAmount : scrollAmount;
-        }
-    };
 
     // Handle category click
     const handleCategoryClick = (categoryId) => {
@@ -112,12 +88,11 @@ const Sale = () => {
             <h1 className="text-[20px] font-semibold">ໜ້າການຂາຍ</h1>
             <div className="flex gap-x-5 mt-2 h-[calc(100%-40px)]">
                 <div className="bg-white flex-3 p-5 rounded h-full overflow-y-auto">
-                    <div className="w-full relative">
-                        {/* Category menu */}
-                        <ul ref={scrollRef} className="flex gap-x-4 h-[55px] overflow-x-auto w-full max-w-[920px] scroll-smooth scrollbar-hide">
+                    <div className="w-full">
+                        <ul className="grid grid-cols-5 gap-4 mb-4">
                             <li
                                 onClick={() => handleCategoryClick(null)}
-                                className={`cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 w-[200px] rounded-md bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium
+                                className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border border-gray-700 text-gray-700 font-medium p-2
                                 ${activeCategory === null ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
                             >
                                 <p>ທັງໝົດ</p>
@@ -126,31 +101,13 @@ const Sale = () => {
                                 <li
                                     key={item?.id}
                                     onClick={() => handleCategoryClick(item.id)}
-                                    className={`cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 w-[200px] rounded-md bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium
+                                    className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border border-gray-700 text-gray-700 font-medium p-2
                                     ${activeCategory === item?.id ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
                                 >
                                     <p>{item?.name}</p>
                                 </li>
                             ))}
                         </ul>
-
-                        {/* Scroll buttons */}
-                        {showArrows && (
-                            <>
-                                <button
-                                    onClick={() => scroll("left")}
-                                    className="absolute left-[-30px] top-1/2 -translate-y-1/2 bg-red-500 text-white p-1 rounded-full shadow border-2 hover:bg-white hover:text-red-500 hover:border-red-500 cursor-pointer"
-                                >
-                                    <MdOutlineKeyboardDoubleArrowLeft size={20} />
-                                </button>
-                                <button
-                                    onClick={() => scroll("right")}
-                                    className="absolute right-[-30px] top-1/2 -translate-y-1/2 bg-red-500 text-white p-1 rounded-full shadow border-2 hover:bg-white hover:text-red-500 hover:border-red-500 cursor-pointer"
-                                >
-                                    <MdKeyboardDoubleArrowRight size={20} />
-                                </button>
-                            </>
-                        )}
                     </div>
 
                     {/* Products list */}
