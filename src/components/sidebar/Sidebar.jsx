@@ -19,15 +19,10 @@ import { BsFillPersonVcardFill } from "react-icons/bs";
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
 import { FaTruck } from "react-icons/fa";
+import useSafezoneStore from '../../store/safezoneStore';
 
 const Sidebar = ({ children }) => {
-    // const [avatar, setAvatar] = useState(avatar1);
-    // const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false)
-
-    // const handleChangeAvatar = (newAvatar) => {
-    //     setAvatar(newAvatar);
-    //     setIsAvatarMenuOpen(false)
-    // }
+    const user = useSafezoneStore((state) => state.user);
 
     const [avatar, setAvatar] = useState(() => {
         // Load avatar from localStorage or use default
@@ -145,7 +140,6 @@ const Sidebar = ({ children }) => {
     const pathname = "/" + useLocation().pathname.split("/")[1];
     const isActivePath = (path) => { return pathname === path };
 
-
     return (
         <div className=' flex h-screen'>
             <section className=' sticky w-[220px] bg-white p-2 flex flex-col z-50'>
@@ -213,7 +207,7 @@ const Sidebar = ({ children }) => {
                                 )
                             }
                             <p className=' font-medium'>
-                                Saysamone Dch
+                                {user ? `${user.fname} ${user.lname}` : 'Loading User...'}
                             </p>
                         </div>
                         <IoIosArrowDown />
