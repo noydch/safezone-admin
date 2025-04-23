@@ -235,13 +235,16 @@ const ReportSale = () => {
             title: 'ການຊຳລະ',
             dataIndex: 'paymentMethod',
             key: 'paymentMethod',
-            width: 100
-        },
-        {
-            title: 'ສະຖານະ',
-            dataIndex: 'status',
-            key: 'status',
-            width: 100
+            width: 100,
+            render: (method) => {
+                console.log('Payment Method:', method);
+                return (
+                    <div className={`text-center py-1 px-2 rounded ${method === 'CASH' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                        }`}>
+                        {method || 'N/A'}
+                    </div>
+                );
+            }
         }
     ];
 
