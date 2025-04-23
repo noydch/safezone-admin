@@ -5,9 +5,7 @@ import DashboardMain from '../../components/dashboard/DashboardMain'
 const Dashboard = () => {
     return (
         <Sidebar>
-            <div className=''>
-                <DashboardMain />
-            </div>
+            <DashboardMain />
         </Sidebar>
     )
 }

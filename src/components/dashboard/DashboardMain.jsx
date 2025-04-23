@@ -26,25 +26,25 @@ const DashboardMain = () => {
 
     if (isLoading) {
         return (
-            <div className='p-4'>
-                <ul className=' flex items-center gap-x-10 mb-7'>
+            <div className='overflow-x-auto'>
+                <ul className='flex items-center gap-x-10 mb-7 min-w-[1200px]'>
                     {[...Array(5)].map((_, index) => (
-                        <li key={index} className=' w-[220px] h-[120px] bg-white rounded-md p-3.5 drop-shadow'>
+                        <li key={index} className='w-[220px] h-[120px] bg-white rounded-md p-3.5 drop-shadow'>
                             <Skeleton active paragraph={{ rows: 2 }} />
                         </li>
                     ))}
                 </ul>
 
-                <div className='flex gap-x-5 mb-5'>
-                    <div className=' w-[620px] bg-white p-4 rounded-md drop-shadow'>
+                <div className='flex gap-x-5 mb-5 min-w-[1200px]'>
+                    <div className='flex-1 bg-white p-4 rounded-md drop-shadow'>
                         <Skeleton active />
                     </div>
-                    <div className=' w-[620px] bg-white p-4 rounded-md drop-shadow'>
+                    <div className='flex-1 bg-white p-4 rounded-md drop-shadow'>
                         <Skeleton active />
                     </div>
                 </div>
 
-                <div className='bg-white p-4 rounded-md drop-shadow'>
+                <div className='bg-white p-4 rounded-md drop-shadow min-w-[1200px]'>
                     <Skeleton active title={false} paragraph={{ rows: 4 }} />
                 </div>
             </div>
@@ -52,8 +52,8 @@ const DashboardMain = () => {
     }
 
     return (
-        <div className='p-4'>
-            <ul className=' flex items-center gap-x-10'>
+        <div className='overflow-x-auto'>
+            <ul className='flex items-center gap-x-10 min-w-[1200px]'>
                 <li className=' w-[220px] h-[120px] bg-white rounded-md px-3.5 flex items-center justify-between drop-shadow'>
                     <div className=' space-y-9'>
                         <h4 className=' text-[18px] font-semibold'>
@@ -122,8 +122,8 @@ const DashboardMain = () => {
             </ul>
 
             {/* Chart */}
-            <div className=' mt-7 flex gap-x-5'>
-                <div className=' w-[620px] bg-white p-4 rounded-md'>
+            <div className='mt-7 flex gap-x-5 min-w-[1200px]'>
+                <div className='flex-1 bg-white p-4 rounded-md'>
                     <div className=' flex items-center justify-between'>
                         <div>
                             <p className=' text-[12px] text-gray-500'>ການເຄື່ອນໄຫວ</p>
@@ -159,7 +159,7 @@ const DashboardMain = () => {
                     </div>
                     <SaleBarChart />
                 </div>
-                <div className=' w-[620px] bg-white p-4 rounded-md'>
+                <div className='flex-1 bg-white p-4 rounded-md'>
                     <div className=' flex items-center justify-between'>
                         <div>
                             <p className=' text-[12px] text-gray-500'>ການເຄື່ອນໄຫວ</p>
@@ -195,11 +195,10 @@ const DashboardMain = () => {
                     </div>
                     <OrderBarChart />
                 </div>
-
             </div>
 
             {/* Order */}
-            <div className=' mt-5'>
+            <div className='mt-5 min-w-[1200px]'>
                 <h1 className=' text-[18px] font-medium mb-1'>
                     ລາຍການອໍເດີ້ລ່າສຸດ
                 </h1>
