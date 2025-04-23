@@ -19,7 +19,7 @@ import CustomerMain from "../pages/customer/CustomerMain";
 import SupplierMain from "../pages/supplier/SupplierMain";
 import BuyDetail from "../components/import/BuyDetail";
 import OrderDetail from "../components/order/OrderDetail";
-import OrderMain from "../pages/order/orderMain";
+import OrderMain from "../pages/order/OrderMain";
 import ImportDetail from "../components/import/ImportDetail";
 import ErrorPage from "../components/error/ErrorPage";
 
