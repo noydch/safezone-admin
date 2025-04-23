@@ -19,10 +19,17 @@ const Buy = () => {
         setLoading(true);
         setError(null);
         try {
+            console.log("API URL:", ApiPath.getPurchaseOrders);
             const response = await axios.get(ApiPath.getPurchaseOrders);
+            console.log("API Response:", response.data);
             setPurchaseOrders(response.data.map(po => ({ ...po, key: po.id })));
         } catch (err) {
-            console.error("Error fetching purchase orders:", err);
+            console.error("Error details:", {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                url: err.config?.url
+            });
             setError('Failed to load purchase orders. Please try again later.');
             message.error('Failed to load purchase orders.');
         } finally {
