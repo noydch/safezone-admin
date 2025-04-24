@@ -5,6 +5,7 @@ import ApiPath from '../../api/apiPath';
 import moment from 'moment';
 import { updateOrderApi } from '../../api/order';
 import { useNavigate } from 'react-router-dom';
+import useSafezoneStore from '../../store/safezoneStore';
 
 const ORDER_STATUSES = [
     { value: 'PENDING', label: 'ລໍຖ້າຄິວ/ລໍຖ້າຄົວ', color: 'orange' },
@@ -25,6 +26,7 @@ const TableOrder = () => {
     const [error, setError] = useState(null);
     const [updatingStatus, setUpdatingStatus] = useState({});
     const navigate = useNavigate();
+    const user = useSafezoneStore((state) => state.user)
 
     const handleStatusChange = async (orderId, newStatus) => {
         setUpdatingStatus(prev => ({ ...prev, [orderId]: true }));
@@ -49,6 +51,19 @@ const TableOrder = () => {
         }
     };
 
+    const handleStatusAction = async (orderId, currentStatus) => {
+        let newStatus;
+        if (currentStatus === 'PENDING') {
+            newStatus = 'COOKING';
+        } else if (currentStatus === 'COOKING') {
+            newStatus = 'READY';
+        }
+
+        if (newStatus) {
+            await handleStatusChange(orderId, newStatus);
+        }
+    };
+
     const columns = [
         {
             title: <p className='text-center'>ລະຫັດອໍເດີ</p>,
@@ -69,26 +84,30 @@ const TableOrder = () => {
             title: 'ສະຖານະ',
             key: 'status',
             dataIndex: 'status',
-            render: (status, record) => (
-                <Select
-                    value={status}
-                    style={{ width: 150 }}
-                    onChange={(newStatus) => {
-                        console.log(`ສະຖານະອໍເດີ ${record.key} ປ່ຽນເປັນ: ${newStatus}`);
-                        handleStatusChange(record.key, newStatus);
-                    }}
-                    loading={updatingStatus[record.key]}
-                    disabled={updatingStatus[record.key]}
-                >
-                    {ORDER_STATUSES.map(stat => (
-                        <Select.Option key={stat.value} value={stat.value}>
-                            <Tag color={stat.color}>
-                                {stat.label}
+            render: (status, record) => {
+                if (user?.role === 'CHEF' && (status === 'PENDING' || status === 'COOKING')) {
+                    return (
+                        <Space>
+                            <Tag color={getStatusColor(status)}>
+                                {ORDER_STATUSES.find(s => s.value === status)?.label}
                             </Tag>
-                        </Select.Option>
-                    ))}
-                </Select>
-            ),
+                            <Button
+                                type="primary"
+                                loading={updatingStatus[record.key]}
+                                onClick={() => handleStatusAction(record.key, status)}
+                            >
+                                {status === 'PENDING' ? 'ດຳເນີນການ' : 'ສຳເລັດ'}
+                            </Button>
+                        </Space>
+                    );
+                }
+
+                return (
+                    <Tag color={getStatusColor(status)}>
+                        {ORDER_STATUSES.find(s => s.value === status)?.label}
+                    </Tag>
+                );
+            },
         },
         {
             title: 'ເບີໂທ',
