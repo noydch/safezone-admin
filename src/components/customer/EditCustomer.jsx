@@ -3,14 +3,14 @@ import { Modal, Form, Input, Spin, message } from 'antd';
 import axios from 'axios';
 import ApiPath from '../../api/apiPath';
 
-const EditCustomer = ({ visible, customerId, onClose, onCustomerUpdated }) => {
+const EditCustomer = ({ open, customerId, onClose, onCustomerUpdated }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
     // Fetch customer data when the modal becomes visible and customerId is valid
     useEffect(() => {
-        if (visible && customerId) {
+        if (open && customerId) {
             setLoading(true);
             const fetchCustomerData = async () => {
                 try {
@@ -25,10 +25,8 @@ const EditCustomer = ({ visible, customerId, onClose, onCustomerUpdated }) => {
                 }
             };
             fetchCustomerData();
-        } else {
-             form.resetFields(); // Reset form when modal is hidden or no ID
         }
-    }, [visible, customerId, form, onClose]);
+    }, [open, customerId, form, onClose]);
 
     const handleSubmit = async (values) => {
         setSubmitting(true);
@@ -46,10 +44,10 @@ const EditCustomer = ({ visible, customerId, onClose, onCustomerUpdated }) => {
             if (error.response?.status === 409) {
                 errorMessage = error.response.data.message || 'ເບີໂທນີ້ມີລູກຄ້າຄົນອື່ນໃຊ້ແລ້ວ';
             }
-             // Check for 404 Not Found
-             else if (error.response?.status === 404) {
-                 errorMessage = 'ບໍ່ພົບຂໍ້ມູນລູກຄ້າທີ່ຈະແກ້ໄຂ';
-             }
+            // Check for 404 Not Found
+            else if (error.response?.status === 404) {
+                errorMessage = 'ບໍ່ພົບຂໍ້ມູນລູກຄ້າທີ່ຈະແກ້ໄຂ';
+            }
             message.error(errorMessage);
         } finally {
             setSubmitting(false);
@@ -59,7 +57,7 @@ const EditCustomer = ({ visible, customerId, onClose, onCustomerUpdated }) => {
     return (
         <Modal
             title="ແກ້ໄຂຂໍ້ມູນລູກຄ້າ"
-            visible={visible}
+            open={open}
             onCancel={onClose} // Use onClose prop for Cancel button
             onOk={() => form.submit()} // Trigger form submission on OK
             okText="ບັນທຶກການແກ້ໄຂ"

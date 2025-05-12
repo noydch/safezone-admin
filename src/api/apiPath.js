@@ -4,6 +4,7 @@ const baseUrl = 'https://safezone-backend-5.onrender.com/api';
 
 export default class ApiPath {
     static login = `${baseUrl}/login`
+    static register = `${baseUrl}/register`
     static getEmployee = `${baseUrl}/getEmployee`
 
     // category

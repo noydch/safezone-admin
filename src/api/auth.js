@@ -16,3 +16,4 @@ export const LoginApi = async (email, password) => {
         console.log(error);
     }
 }
+

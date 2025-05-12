@@ -13,12 +13,14 @@ import { insertFoodApi, deleteFoodApi, deleteDrinkApi } from '../../api/product'
 import ModalFoodAdd from './ModalFoodAdd'
 import ModalDrinkAdd from './ModalDrinkAdd'
 import dayjs from 'dayjs'
+import { useAuth } from '../../context/AuthContext'
 
 const Product = () => {
     const navigate = useNavigate()
+    const { user } = useAuth()
 
     const token = localStorage.getItem('token')
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
     const [isSelected, setIsSelected] = useState('ທັງໝົດ');
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({
@@ -58,16 +60,19 @@ const Product = () => {
     }, [listCategory, listFood, listDrink]);
     console.log(form.image);
 
-
-
-    const showModal = () => {
-        setIsModalOpen(true);
+    // Handlers for Food Modal
+    const showFoodModal = () => {
+        if (user?.role === 'Owner' || user?.role === 'Manager') {
+            setIsFoodModalOpen(true);
+        } else {
+            message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມອາຫານ');
+        }
     };
-    const handleOk = () => {
-        setIsModalOpen(false);
+    const handleFoodOk = () => {
+        setIsFoodModalOpen(false);
     };
-    const handleCancel = () => {
-        setIsModalOpen(false);
+    const handleFoodCancel = () => {
+        setIsFoodModalOpen(false);
     };
 
     const handleDeleteFood = async (id, imageUrl) => {
@@ -89,8 +94,11 @@ const Product = () => {
     }
 
     const handleEditProduct = (product) => {
-        setSelectedProduct(product);
-        showModal();
+        if (user?.role === 'Owner' || user?.role === 'Manager') {
+            setSelectedProduct(product);
+        } else {
+            message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂ');
+        }
     };
 
     return (
@@ -135,24 +143,26 @@ const Product = () => {
 
             <div className=' '>
                 <div className=' flex justify-end my-2 gap-x-2'>
-                    <button onClick={showModal}
+                    <button onClick={showFoodModal}
                         className='h-[35px] w-[120px] rounded bg-green-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-green-500 hover:text-green-500 duration-300 cursor-pointer'>
                         ເພີ່ມອາຫານ
                     </button>
                     <ModalFoodAdd
-                        isModalOpen={isModalOpen}
-                        handleOk={handleOk}
-                        handleCancel={handleCancel}
+                        isModalOpen={isFoodModalOpen}
+                        handleOk={handleFoodOk}
+                        handleCancel={handleFoodCancel}
                         form={form}
                         setForm={setForm}
                         categories={categories}
                         listFood={listFood}
+                        user={user}
                     />
                     <ModalDrinkAdd
                         form={form}
                         setForm={setForm}
                         categories={categories}
-                        listFood={listFood}
+                        listDrink={listDrink}
+                        user={user}
                     />
                 </div>
                 {isLoading ? (
@@ -217,15 +227,24 @@ const Product = () => {
                                                         okText="ຢືນຢັນ"
                                                         cancelText="ຍົກເລີກ"
                                                         onConfirm={() => {
-                                                            if (productItem.type === 'drink') {
-                                                                handleDeleteDrink(productItem.id, productItem.imageUrl)
+                                                            if (user?.role === 'Owner' || user?.role === 'Manager') {
+                                                                if (productItem.type === 'drink') {
+                                                                    handleDeleteDrink(productItem.id, productItem.imageUrl)
+                                                                } else {
+                                                                    handleDeleteFood(productItem.id, productItem.imageUrl)
+                                                                }
                                                             } else {
-                                                                handleDeleteFood(productItem.id, productItem.imageUrl)
+                                                                message.error('ທ່ານບໍ່ມີສິດລົບລາຍການນີ້');
                                                             }
                                                         }}
+                                                        disabled={!(user?.role === 'Owner' || user?.role === 'Manager')}
                                                     >
                                                         <button
-                                                            className=' bg-red-500 text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
+                                                            disabled={!(user?.role === 'Owner' || user?.role === 'Manager')}
+                                                            className={`text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent duration-300 cursor-pointer ${(user?.role === 'Owner' || user?.role === 'Manager')
+                                                                ? 'bg-red-500 hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500'
+                                                                : 'bg-gray-400 cursor-not-allowed'
+                                                                }`}>
                                                             ລົບ
                                                         </button>
                                                     </Popconfirm>
@@ -245,9 +264,9 @@ const Product = () => {
                 {selectedProduct && (
                     <ModalProductEdit
                         product={selectedProduct}
-                        isModalOpen={isModalOpen}
-                        handleOk={handleOk}
-                        handleCancel={handleCancel}
+                        isModalOpen={!!selectedProduct}
+                        handleOk={() => { setSelectedProduct(null); }}
+                        handleCancel={() => setSelectedProduct(null)}
                         isDrink={selectedProduct.type === 'drink'}
                         categories={categories}
                         listFood={listFood}

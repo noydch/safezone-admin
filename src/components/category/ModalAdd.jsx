@@ -2,10 +2,14 @@ import { Button, Form, Input, message, Modal, Space, Table, Tag } from 'antd';
 import React, { useEffect, useState } from 'react'
 import { insetCategoryApi } from '../../api/category';
 import useSafezoneStore from '../../store/safezoneStore';
+import { useAuth } from '../../context/AuthContext';
+import { LiaSpinnerSolid } from "react-icons/lia";
 
 const ModalAdd = ({ token }) => {
+    const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [cateogryName, setCategoryName] = useState("")
+    const [isLoading, setIsLoading] = useState(false);
     const listCategory = useSafezoneStore((state) => state.listCategory)
     const categories = useSafezoneStore((state) => state.categories)
 
@@ -13,6 +17,12 @@ const ModalAdd = ({ token }) => {
     const [form] = Form.useForm();
 
     const handleOk = async () => {
+        if (user?.role !== 'Owner' && user?.role !== 'Manager') {
+            message.error('ທ່ານບໍ່ມີສິດເພີ່ມປະເພດ!');
+            setIsModalOpen(false);
+            return;
+        }
+        setIsLoading(true);
         try {
             const response = await insetCategoryApi(token, { "name": cateogryName })
             if (response) {
@@ -21,13 +31,16 @@ const ModalAdd = ({ token }) => {
                 // Clear the form
                 setCategoryName("")
                 form.resetFields()
+                setIsModalOpen(false);
             }
 
         } catch (error) {
             message.error('ເກີດຂໍ້ຜິດພາດ!!!');
-            console.error('Delete error:', error);
+            console.error('Save error:', error);
+            setIsModalOpen(false);
+        } finally {
+            setIsLoading(false);
         }
-        setIsModalOpen(false);
     };
     const showModal = () => {
         setIsModalOpen(true);
@@ -75,15 +88,29 @@ const ModalAdd = ({ token }) => {
                 <div className='flex justify-center items-center gap-x-4 mt-5'>
                     <button
                         onClick={handleCancel}
-                        className='bg-red-500 text-white w-[70px] py-1 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'
+                        disabled={isLoading}
+                        className={`bg-red-500 text-white w-[80px] py-1 rounded border-1 border-transparent duration-300 cursor-pointer ${isLoading
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500'
+                            }`}
                     >
                         ຍົກເລີກ
                     </button>
                     <button
                         onClick={handleOk}
-                        className='bg-blue-500 text-white w-[70px] py-1 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'
+                        disabled={isLoading}
+                        className={`bg-blue-500 text-white w-[110px] py-1 rounded border-1 border-transparent duration-300 cursor-pointer flex items-center justify-center gap-1 ${isLoading
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500'
+                            }`}
                     >
-                        ບັນທຶກ
+                        {isLoading ? (
+                            <>
+                                ກຳລັງບັນທຶກ <LiaSpinnerSolid className='animate-spin text-[16px]' />
+                            </>
+                        ) : (
+                            'ບັນທຶກ'
+                        )}
                     </button>
                 </div>
             </Modal>

@@ -1,54 +1,37 @@
 import React, { useState } from 'react';
-import { Table } from 'antd';
+import { Table, message } from 'antd';
 import ModalRegister from './ModalRegister';
+import { useAuth } from './../../context/AuthContext'
 
 const User = ({ employee }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { user } = useAuth();
+    console.log(user?.role === 'Owner');
+
 
     const showModal = () => {
-        setIsModalOpen(true);
+        if (user?.role === 'Owner') {
+            setIsModalOpen(true);
+        } else {
+            message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມຜູ້ໃຊ້ງານໄດ້');
+        }
     };
 
     const handleClose = () => {
         setIsModalOpen(false);
-    }
-    const handleSubmit = async (values) => {
-        // จัดการข้อมูลที่ได้จาก form
-        console.log('Form values:', values);
-        // ทำการ API call หรือ อื่นๆ
     };
-    // กำหนด columns สำหรับ Table
+
+    const handleSubmit = async (values) => {
+        console.log('Form values:', values);
+    };
+
     const columns = [
-        {
-            title: 'ຊື່',
-            dataIndex: 'fname',
-            key: 'fname'
-        },
-        {
-            title: 'ນາມສະກຸນ',
-            dataIndex: 'lname',
-            key: 'lname'
-        },
-        {
-            title: 'ເພດ',
-            dataIndex: 'gender',
-            key: 'gender'
-        },
-        {
-            title: 'ເບີໂທ',
-            dataIndex: 'phone',
-            key: 'phone'
-        },
-        {
-            title: 'ອີເມລ',
-            dataIndex: 'email',
-            key: 'email'
-        },
-        {
-            title: 'Role',
-            dataIndex: 'role',
-            key: 'role'
-        },
+        { title: 'ຊື່', dataIndex: 'fname', key: 'fname' },
+        { title: 'ນາມສະກຸນ', dataIndex: 'lname', key: 'lname' },
+        { title: 'ເພດ', dataIndex: 'gender', key: 'gender' },
+        { title: 'ເບີໂທ', dataIndex: 'phone', key: 'phone' },
+        { title: 'ອີເມລ', dataIndex: 'email', key: 'email' },
+        { title: 'Role', dataIndex: 'role', key: 'role' },
         {
             title: 'ຈັດການ',
             key: 'action',
@@ -72,32 +55,32 @@ const User = ({ employee }) => {
     ];
 
     const handleEdit = (record) => {
-        // ເພີ່ມ logic ສຳລັບການແກ້ໄຂຂໍ້ມູນ
         console.log('Edit:', record);
     };
 
     const handleDelete = (record) => {
-        // ເພີ່ມ logic ສຳລັບການລົບຂໍ້ມູນ
         console.log('Delete:', record);
     };
 
     return (
         <div>
-            <div className=' flex items-center justify-between  mb-2'>
+            <div className='flex items-center justify-between mb-2'>
                 <h1 className='text-[20px] font-semibold'>ຂໍ້ມູນຜູ້ໃຊ້ລະບົບ</h1>
+
                 <button
                     onClick={showModal}
                     className='h-[35px] w-[120px] font-medium rounded bg-red-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
                     ເພີ່ມຜູ້ໃຊ້ງານ
                 </button>
+
                 <ModalRegister
                     isOpen={isModalOpen}
                     onClose={handleClose}
                     onSubmit={handleSubmit}
                 />
-
             </div>
-            <div className=' bg-white rounded-md p-4'>
+
+            <div className='bg-white rounded-md p-4'>
                 <Table
                     columns={columns}
                     dataSource={employee}

@@ -52,9 +52,9 @@ const ModalRegister = ({ isOpen, onClose, onSubmit }) => {
                             rules={[{ required: true, message: 'Please select gender!' }]}
                         >
                             <Select>
-                                <Select.Option value="Male">Male</Select.Option>
-                                <Select.Option value="Female">Female</Select.Option>
-                                <Select.Option value="Orther">Other</Select.Option>
+                                <Select.Option value="Male">ຊາຍ</Select.Option>
+                                <Select.Option value="Female">ຍິງ</Select.Option>
+                                <Select.Option value="Other">ອື່ນໆ</Select.Option>
                             </Select>
                         </Form.Item>
                     </Col>
