@@ -1,11 +1,12 @@
-const baseUrl = 'http://localhost:5050/api';
-// const baseUrl = 'https://safezone-backend-80d4.onrender.com/api';
+// const baseUrl = 'http://localhost:5050/api';
+const baseUrl = 'https://safezone-backend-80d4.onrender.com/api';
 
 
 export default class ApiPath {
     static login = `${baseUrl}/login`
     static register = `${baseUrl}/register`
     static getEmployee = `${baseUrl}/getEmployee`
+    static updateEmployee = `${baseUrl}/updateEmployee`
 
     // category
     static insertCategory = `${baseUrl}/category`

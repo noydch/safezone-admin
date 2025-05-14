@@ -41,12 +41,20 @@ const Sale = () => {
     const handleAddToCart = (item) => {
         if (!token) return message.error("Please log in first");
 
+        // Find the category name based on item.categoryId
+        const category = categories.find(cat => cat.id === item?.categoryId);
+        const categoryName = category ? category.name : '';
+
+        // Determine the type based on category name
+        const itemType = categoryName.includes('ເຄື່ອງດື່ມ') ? 'drink' : 'food';
+
         actionAddToCart({
             id: item?.id,
             name: item?.name,
             price: parseInt(item?.price),
             imageUrl: item?.imageUrl,
-            type: item?.categoryId === 4 ? "drink" : "food"
+            // Use the dynamically determined type
+            type: itemType
         });
     };
 

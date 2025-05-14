@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Table, message } from 'antd';
 import ModalRegister from './ModalRegister';
+import EditUserModal from './EditUserModal';
 import { useAuth } from './../../context/AuthContext'
 
 const User = ({ employee }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
     const { user } = useAuth();
-    console.log(user?.role === 'Owner');
+    console.log(user?.role);
 
 
     const showModal = () => {
@@ -23,6 +26,29 @@ const User = ({ employee }) => {
 
     const handleSubmit = async (values) => {
         console.log('Form values:', values);
+    };
+
+    const handleEdit = (record) => {
+        if (user?.role === 'Owner') {
+            setEditingUser(record);
+            setIsEditModalOpen(true);
+        } else {
+            message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂຜູ້ໃຊ້ງານໄດ້');
+        }
+    };
+
+    const handleEditClose = () => {
+        setIsEditModalOpen(false);
+        setEditingUser(null);
+    };
+
+    const handleEditSubmit = async (values) => {
+        console.log('Submitting edited user:', values);
+        handleEditClose();
+    };
+
+    const handleDelete = (record) => {
+        console.log('Delete:', record);
     };
 
     const columns = [
@@ -54,14 +80,6 @@ const User = ({ employee }) => {
         }
     ];
 
-    const handleEdit = (record) => {
-        console.log('Edit:', record);
-    };
-
-    const handleDelete = (record) => {
-        console.log('Delete:', record);
-    };
-
     return (
         <div>
             <div className='flex items-center justify-between mb-2'>
@@ -79,6 +97,15 @@ const User = ({ employee }) => {
                     onSubmit={handleSubmit}
                 />
             </div>
+
+            {editingUser && (
+                <EditUserModal
+                    isOpen={isEditModalOpen}
+                    onClose={handleEditClose}
+                    onSubmit={handleEditSubmit}
+                    initialValues={editingUser}
+                />
+            )}
 
             <div className='bg-white rounded-md p-4'>
                 <Table

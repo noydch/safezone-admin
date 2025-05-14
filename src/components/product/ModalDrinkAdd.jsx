@@ -78,6 +78,8 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
             setLoading(false)
         }
     }
+    console.log(categories);
+
 
     return (
         <div>
@@ -122,8 +124,7 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                                     });
                                 }}
                                 options={
-                                    categories
-                                        .filter(cat => cat.type === 'ເຄື່ອງດື່ມ' || cat.type === 'ທົ່ວໄປ')
+                                    categories.filter(category => category.name.includes('ເຄື່ອງດື່ມ'))
                                         .map((category) => ({
                                             value: category.id,
                                             label: category.name
