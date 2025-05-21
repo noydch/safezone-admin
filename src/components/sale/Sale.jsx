@@ -100,7 +100,7 @@ const Sale = () => {
                         <ul className="grid grid-cols-5 gap-4 mb-4">
                             <li
                                 onClick={() => handleCategoryClick(null)}
-                                className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border border-gray-700 text-gray-700 font-medium p-2
+                                className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
                                 ${activeCategory === null ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
                             >
                                 <p>ທັງໝົດ</p>
@@ -109,7 +109,7 @@ const Sale = () => {
                                 <li
                                     key={item?.id}
                                     onClick={() => handleCategoryClick(item.id)}
-                                    className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border border-gray-700 text-gray-700 font-medium p-2
+                                    className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
                                     ${activeCategory === item?.id ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
                                 >
                                     <p>{item?.name}</p>

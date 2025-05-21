@@ -9,8 +9,11 @@ export const createOrderApi = async (token, data) => {
     })
 }
 
-export const updateOrderApi = async (token, status, id) => {
-    return axios.put(`${ApiPath.updateOrder}/${id}`, status, {
+export const updateOrderApi = async (token, id, status) => {
+    const data = { status: status };
+    console.log('Sending update:', { id, data });
+
+    return axios.put(`${ApiPath.updateOrder}/${id}`, data, {
         headers: {
             Authorization: `Bearer ${token}`
         }
