@@ -3,7 +3,7 @@ import { Button, Space, Table, Tag, Spin, Alert, message } from 'antd';
 import axios from 'axios'; // ยังคงใช้ axios สำหรับ fetchOrders
 import ApiPath from '../../api/apiPath';
 import moment from 'moment';
-import { updateOrderApi } from '../../api/order'; // API function สำหรับอัปเดต
+// import { updateOrderApi } from '../../api/order'; // API function สำหรับอัปเดต
 import { useNavigate } from 'react-router-dom';
 import useSafezoneStore from '../../store/safezoneStore';
 
@@ -25,6 +25,24 @@ const getStatusLabel = (statusValue) => {
     return status ? status.label : statusValue;
 };
 
+// เพิ่มตัวแปรสำหรับ payment method
+const PAYMENT_METHODS = [
+    { value: 'CASH', label: 'ເງິນສົດ', color: 'green' },
+    { value: 'TRANSFER', label: 'ເງິນໂອນ', color: 'blue' },
+    { value: 'ຍັງບໍ່ທັນຊຳລະເງິນ', label: 'ຍັງບໍ່ທັນຊຳລະເງິນ', color: 'red' },
+];
+
+// เพิ่มฟังก์ชันสำหรับแสดงผล payment method
+const getPaymentMethodLabel = (method) => {
+    const payment = PAYMENT_METHODS.find(p => p.value === method);
+    return payment ? payment.label : method;
+};
+
+const getPaymentMethodColor = (method) => {
+    const payment = PAYMENT_METHODS.find(p => p.value === method);
+    return payment ? payment.color : 'default';
+};
+
 const TableOrder = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,12 +52,42 @@ const TableOrder = () => {
     const user = useSafezoneStore((state) => state.user);
     const token = useSafezoneStore((state) => state.token); // Move this to component level
 
+    // Add new function to register service worker
+    const registerServiceWorker = async () => {
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/service-worker.js');
+                console.log('Service Worker registered with scope:', registration.scope);
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+            }
+        }
+    };
+
+    // Add new function to send notification
+    const sendNotification = async (message) => {
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    const registration = await navigator.serviceWorker.ready;
+                    await registration.showNotification('Order Status Update', {
+                        body: message,
+                        icon: '/icon.png',
+                        badge: '/badge.png'
+                    });
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
+        }
+    };
+
     // Function to handle the API call and state update
     const handleStatusChange = async (orderId, newStatus) => {
         setUpdatingStatus(prev => ({ ...prev, [orderId]: true }));
 
         try {
-            // Use token from component level instead of calling hook inside function
             await updateOrderApi(token, orderId, newStatus);
 
             setOrders(prevOrders =>
@@ -47,7 +95,12 @@ const TableOrder = () => {
                     order.orderID === orderId ? { ...order, status: newStatus } : order
                 )
             );
-            message.success(`ອັບເດດສະຖານະອໍເດີ ${orderId} ເປັນ ${getStatusLabel(newStatus)} ສຳເລັດ`);
+
+            // Send notification
+            const notificationMessage = `ອັບເດດສະຖານະອໍເດີ ${orderId} ເປັນ ${getStatusLabel(newStatus)}`;
+            await sendNotification(notificationMessage);
+
+            message.success(notificationMessage);
         } catch (err) {
             console.error("ຜິດພາດໃນການອັບເດດສະຖານະອໍເດີ:", err);
             const errorMsg = err.response?.data?.error || err.response?.data?.message || 'ການອັບເດດສະຖານະລົ້ມເຫລວ.';
@@ -75,79 +128,6 @@ const TableOrder = () => {
             key: 'employee',
         },
         {
-            title: 'ສະຖານະ',
-            key: 'status',
-            dataIndex: 'status',
-            render: (status, record) => {
-                const currentStatusLabel = getStatusLabel(status);
-                let actionButton = null;
-
-                // Logic for Chef
-                if (user?.role === 'CHEF' || user?.role === 'Chef') {
-                    if (status === 'PENDING') {
-                        actionButton = (
-                            <Button
-                                type="primary"
-                                loading={updatingStatus[record.orderID]}
-                                onClick={() => handleStatusChange(record.orderID, 'COOKING')}
-                            >
-                                ເລີ່ມເຮັດ (Cooking)
-                            </Button>
-                        );
-                    } else if (status === 'COOKING') {
-                        actionButton = (
-                            <Button
-                                type="primary"
-                                loading={updatingStatus[record.orderID]}
-                                onClick={() => handleStatusChange(record.orderID, 'READY')}
-                            >
-                                ພ້ອມເສີບ (Ready)
-                            </Button>
-                        );
-                    }
-                }
-                // Logic for Waiter
-                else if (user?.role === 'WAITER' || user?.role === 'Waiter') {
-                    if (status === 'READY') {
-                        actionButton = (
-                            <Button
-                                type="primary"
-                                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-                                loading={updatingStatus[record.orderID]}
-                                onClick={() => handleStatusChange(record.orderID, 'SERVED')}
-                            >
-                                ເສີບແລ້ວ (Served)
-                            </Button>
-                        );
-                    }
-                }
-                // Logic for Cashier
-                else if (user?.role === 'CASHIER' || user?.role === 'Cashier') {
-                    if (status === 'SERVED') {
-                        actionButton = (
-                            <Button
-                                type="primary"
-                                style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }}
-                                loading={updatingStatus[record.orderID]}
-                                onClick={() => handleStatusChange(record.orderID, 'PAID')}
-                            >
-                                ຈ່າຍແລ້ວ (Paid)
-                            </Button>
-                        );
-                    }
-                }
-
-                return (
-                    <Space>
-                        <Tag color={getStatusColor(status)}>
-                            {currentStatusLabel}
-                        </Tag>
-                        {actionButton}
-                    </Space>
-                );
-            },
-        },
-        {
             title: 'ເບີໂທ (ຜູ້ສ້າງ)', // ระบุว่าเป็นเบอร์โทรของใคร
             dataIndex: 'phone',
             key: 'phone',
@@ -158,6 +138,16 @@ const TableOrder = () => {
             key: 'total',
             align: 'right', // ราคาควรชิดขวา
             render: (text) => <p style={{ textAlign: 'right' }}>{text}</p>
+        },
+        {
+            title: 'ວິທີຊຳລະ',
+            dataIndex: 'payment_method',
+            key: 'payment_method',
+            render: (method) => (
+                <Tag color={getPaymentMethodColor(method)}>
+                    {getPaymentMethodLabel(method)}
+                </Tag>
+            ),
         },
         {
             title: <p className='text-center'>ລາຍລະອຽດ</p>,
@@ -181,17 +171,20 @@ const TableOrder = () => {
             setLoading(true);
             setError(null);
             try {
-                // สมมติว่า ApiPath.getOrders ถูกต้อง และ axios instance มีการตั้งค่า auth header แล้ว
                 const response = await axios.get(ApiPath.getOrders);
-                const formattedData = response.data.map(order => ({
-                    key: order.id,
-                    orderID: order.id, // ส่งเป็นตัวเลขหรือ string ก็ได้ แล้ว render function จัดการ
-                    dateTime: moment(order.orderDate).format('DD/MM/YYYY HH:mm'),
-                    employee: order.employee ? `${order.employee.fname} ${order.employee.lname}` : 'ບໍ່ມີຂໍ້ມູນ',
-                    status: order.status,
-                    phone: order.employee ? order.employee.phone : 'ບໍ່ມີຂໍ້ມູນ',
-                    total: (order.total_price || 0).toLocaleString() + ' ກີບ',
-                }));
+                // กรองเฉพาะออเดอร์ที่ยังไม่มี payment_method
+                const formattedData = response.data
+                    .filter(order => !order.payment_method) // เพิ่มเงื่อนไขการกรอง
+                    .map(order => ({
+                        key: order.id,
+                        orderID: order.id,
+                        dateTime: moment(order.orderDate).format('DD/MM/YYYY HH:mm'),
+                        employee: order.employee ? `${order.employee.fname} ${order.employee.lname}` : 'ບໍ່ມີຂໍ້ມູນ',
+                        status: order.kitchenStatus,
+                        phone: order.employee ? order.employee.phone : 'ບໍ່ມີຂໍ້ມູນ',
+                        total: (order.total_price || 0).toLocaleString() + ' ກີບ',
+                        payment_method: order.payment_method || 'ຍັງບໍ່ທັນຊຳລະເງິນ',
+                    }));
                 setOrders(formattedData);
             } catch (err) {
                 console.error("ຜິດພາດໃນການດຶງຂໍ້ມູນອໍເດີ:", err);
@@ -204,6 +197,11 @@ const TableOrder = () => {
 
         fetchOrders();
     }, []); // Dependency array ว่างเปล่า หมายถึงจะ fetch ข้อมูลเมื่อ component mount เท่านั้น
+
+    // Add useEffect to register service worker on component mount
+    useEffect(() => {
+        registerServiceWorker();
+    }, []);
 
     // เพิ่ม useEffect เพื่อ fetch ข้อมูลใหม่เมื่อมีการเปลี่ยน user (ถ้าจำเป็น)
     // หรือถ้ามี action อื่นที่ควร trigger การ fetch ใหม่

@@ -1,5 +1,5 @@
-// const baseUrl = 'http://localhost:5050/api';
-const baseUrl = 'https://safezone-backend-80d4.onrender.com/api';
+const baseUrl = 'http://localhost:5050/api';
+// const baseUrl = 'https://safezone-backend-80d4.onrender.com/api';
 
 
 export default class ApiPath {
@@ -86,9 +86,10 @@ export default class ApiPath {
     // order
     static createOrder = `${baseUrl}/createOrder`
     static getOrders = `${baseUrl}/getOrders`
-    static getOrderById = `${baseUrl}/getOrder`
+    static getOrderById = `${baseUrl}/orders`
     static deleteOrder = `${baseUrl}/deleteOrder`
-    static updateOrder = `${baseUrl}/updateOrder`
+    static updateRoundStatus = `${baseUrl}/orders/rounds`
+    static checkOutOrder = `${baseUrl}/orders/checkout`
 
     //report
     static reportFoodDrink = `${baseUrl}/reportFoodDrink`
