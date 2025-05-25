@@ -114,32 +114,44 @@ const SaleReportPDF = ({ orders, totalOrders, totalRevenue, totalItemsSold, date
                         <Text style={styles.tableCell}>ການຊຳລະ</Text>
                     </View>
                     <View style={{ ...styles.tableColHeader, ...styles.colStatus }}>
-                        <Text style={styles.tableCell}>ສະຖານະ</Text>
+                        <Text style={styles.tableCell}>ຜູ້ຂາຍ</Text>
                     </View>
                 </View>
 
-                {orders.map((order, index) => (
-                    <View style={styles.tableRow} key={index}>
-                        <View style={{ ...styles.tableCol, ...styles.colNo }}>
-                            <Text style={styles.tableCell}>{index + 1}</Text>
+                {orders.map((order, index) => {
+                    const totalItems = order.orderRounds.reduce((sum, round) =>
+                        sum + round.orderDetails.reduce((roundSum, detail) =>
+                            roundSum + detail.quantity, 0), 0);
+
+                    return (
+                        <View style={styles.tableRow} key={index}>
+                            <View style={{ ...styles.tableCol, ...styles.colNo }}>
+                                <Text style={styles.tableCell}>{index + 1}</Text>
+                            </View>
+                            <View style={{ ...styles.tableCol, ...styles.colDate }}>
+                                <Text style={styles.tableCell}>
+                                    {moment(order.orderDate).format('DD/MM/YYYY HH:mm')}
+                                </Text>
+                            </View>
+                            <View style={{ ...styles.tableCol, ...styles.colItems }}>
+                                <Text style={styles.tableCell}>{totalItems}</Text>
+                            </View>
+                            <View style={{ ...styles.tableCol, ...styles.colTotal }}>
+                                <Text style={styles.tableCell}>
+                                    {order.total_price?.toLocaleString()} ກີບ
+                                </Text>
+                            </View>
+                            <View style={{ ...styles.tableCol, ...styles.colPayment }}>
+                                <Text style={styles.tableCell}>{order.payment_method}</Text>
+                            </View>
+                            <View style={{ ...styles.tableCol, ...styles.colStatus }}>
+                                <Text style={styles.tableCell}>
+                                    {order.employee?.fname} {order.employee?.lname}
+                                </Text>
+                            </View>
                         </View>
-                        <View style={{ ...styles.tableCol, ...styles.colDate }}>
-                            <Text style={styles.tableCell}>{moment(order.orderDate).format('DD/MM/YYYY HH:mm')}</Text>
-                        </View>
-                        <View style={{ ...styles.tableCol, ...styles.colItems }}>
-                            <Text style={styles.tableCell}>{order.orderDetails?.length || 0}</Text>
-                        </View>
-                        <View style={{ ...styles.tableCol, ...styles.colTotal }}>
-                            <Text style={styles.tableCell}>{order.total_price?.toLocaleString()} ກີບ</Text>
-                        </View>
-                        <View style={{ ...styles.tableCol, ...styles.colPayment }}>
-                            <Text style={styles.tableCell}>{order.paymentMethod}</Text>
-                        </View>
-                        <View style={{ ...styles.tableCol, ...styles.colStatus }}>
-                            <Text style={styles.tableCell}>{order.status}</Text>
-                        </View>
-                    </View>
-                ))}
+                    );
+                })}
             </View>
         </Page>
     </Document>
@@ -218,11 +230,16 @@ const ReportSale = () => {
             title: 'ຈຳນວນລາຍການ',
             key: 'items',
             width: 120,
-            render: (record) => (
-                <div className="bg-yellow-100 text-center py-1 px-2 rounded">
-                    {record.orderDetails?.length || 0}
-                </div>
-            )
+            render: (record) => {
+                const totalItems = record.orderRounds.reduce((sum, round) =>
+                    sum + round.orderDetails.reduce((roundSum, detail) =>
+                        roundSum + detail.quantity, 0), 0);
+                return (
+                    <div className="bg-yellow-100 text-center py-1 px-2 rounded">
+                        {totalItems}
+                    </div>
+                );
+            }
         },
         {
             title: 'ລາຄາລວມ',
@@ -233,18 +250,24 @@ const ReportSale = () => {
         },
         {
             title: 'ການຊຳລະ',
-            dataIndex: 'paymentMethod',
-            key: 'paymentMethod',
+            dataIndex: 'payment_method',
+            key: 'payment_method',
             width: 100,
-            render: (method) => {
-                console.log('Payment Method:', method);
-                return (
-                    <div className={`text-center py-1 px-2 rounded ${method === 'CASH' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                        }`}>
-                        {method || 'N/A'}
-                    </div>
-                );
-            }
+            render: (method) => (
+                <div className={`text-center py-1 px-2 rounded ${method === 'CASH' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                    {method || 'N/A'}
+                </div>
+            )
+        },
+        {
+            title: 'ຜູ້ຂາຍ',
+            key: 'employee',
+            width: 120,
+            render: (record) => (
+                <div className="bg-gray-100 text-gray-800 text-center py-1 px-2 rounded">
+                    {record.employee?.fname} {record.employee?.lname}
+                </div>
+            )
         }
     ];
 
