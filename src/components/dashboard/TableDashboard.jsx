@@ -51,16 +51,6 @@ const TableDashboard = () => {
             key: 'table',
         },
         {
-            title: 'Status',
-            key: 'status',
-            dataIndex: 'status',
-            render: (status) => (
-                <Tag color={getStatusColor(status)}>
-                    {getStatusLabel(status)}
-                </Tag>
-            ),
-        },
-        {
             title: 'ເບີໂທ',
             dataIndex: 'phone',
             key: 'phone',
@@ -93,14 +83,16 @@ const TableDashboard = () => {
             setError(null);
             try {
                 const response = await axios.get(ApiPath.getOrders);
+                console.log(response.data);
+
                 const formattedData = response.data
-                    .filter(order => order.status !== 'PAID')
+                    .filter(order => order.status !== 'PAID' && !order.payment_method)
                     .map(order => ({
                         key: order.id,
                         orderID: <p className='text-center'>{order.id}</p>,
                         dateTime: moment(order.orderDate).format('DD/MM/YYYY HH:mm'),
                         employee: order.employee ? `${order.employee.fname} ${order.employee.lname}` : 'ບໍ່ມີຂໍ້ມູນ',
-                        table: order.table_id || 'ບໍ່ມີຂໍ້ມູນ',
+                        table: order.table.table_number || 'ບໍ່ມີຂໍ້ມູນ',
                         status: order.status,
                         phone: order.employee ? order.employee.phone : 'ບໍ່ມີຂໍ້ມູນ',
                         total: (order.total_price || 0).toLocaleString() + ' ກີບ',
