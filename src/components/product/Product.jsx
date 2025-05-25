@@ -14,6 +14,9 @@ import ModalFoodAdd from './ModalFoodAdd'
 import ModalDrinkAdd from './ModalDrinkAdd'
 import dayjs from 'dayjs'
 import { useAuth } from '../../context/AuthContext'
+import ModalDrinkEdit from './ModalDrinkEdit'
+import ModalFoodEdit from './ModalFoodEdit'
+import { FaSpinner } from 'react-icons/fa'
 
 const Product = () => {
     const navigate = useNavigate()
@@ -26,11 +29,11 @@ const Product = () => {
     const [form, setForm] = useState({
         name: '',
         categoryId: 'ເລືອກປະເພດ',
-        // qty: 0,
         price: 0,
         image: ''
     });
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
     // form store
     const categories = useSafezoneStore((state) => state.categories)
@@ -77,19 +80,25 @@ const Product = () => {
 
     const handleDeleteFood = async (id, imageUrl) => {
         try {
+            setDeletingId(id);
             const response = await deleteFoodApi(id, imageUrl)
             listFood()
         } catch (error) {
             console.log(error);
+        } finally {
+            setDeletingId(null);
         }
     }
 
     const handleDeleteDrink = async (id, imageUrl) => {
         try {
+            setDeletingId(id);
             const response = await deleteDrinkApi(id, imageUrl)
             listDrink()
         } catch (error) {
             console.log(error);
+        } finally {
+            setDeletingId(null);
         }
     }
 
@@ -126,7 +135,7 @@ const Product = () => {
                             <li
                                 onClick={() => setIsSelected(categoryItem.id)}
                                 key={index}
-                                className={`w-[120px] min-w-[120px] cursor-pointer text-center py-1.5 rounded shadow-md font-medium duration-300
+                                className={`w-[120px] min-w-[150px] cursor-pointer text-center py-1.5 rounded shadow-md font-medium duration-300
                                 ${isSelected === categoryItem.id
                                         ? 'text-red-500 border-2 border-red-500 hover:text-red-600 shadow-[2px_2px_5px_0px_#f56565]'
                                         : 'border border-gray-700 text-gray-700 hover:border-red-600 hover:text-red-600 hover:shadow-[2px_2px_5px_0px_#f56565]'
@@ -198,29 +207,46 @@ const Product = () => {
                                         </div>
                                         <div className=' mt-2 w-full flex flex-col h-full'>
                                             <div className=' flex-1'>
-                                                <div className=' flex items-end justify-between'>
-                                                    <p className=' text-[16px] font-medium'>
+                                                <div className=' flex items-center justify-between'>
+                                                    <div className=' text-[14px] font-medium text-wrap break-words'>
                                                         {productItem.name}
-                                                    </p>
-                                                    <h4 className=' text-[18px] font-semibold text-red-500'>{(productItem.price).toLocaleString()} ກີບ</h4>
+                                                    </div>
+                                                    {
+                                                        productItem.type === 'drink' ? (
+                                                            <p className=' flex items-center gap-x-1 text-[12px] text-gray-300'>
+                                                                ຈຳນວນຍັງເຫຼືອ : <span>
+                                                                    {productItem.qty ? productItem.qty : 0}
+                                                                </span>
+                                                            </p>
+                                                        ) : null
+                                                    }
                                                 </div>
+                                                <h4 className=' text-[18px] font-semibold text-red-500'>{(productItem.price).toLocaleString()} ກີບ</h4>
                                             </div>
-                                            {
-                                                productItem.type === 'drink' ? (
-                                                    <p className=' flex items-center gap-x-1 text-[12px]'>
-                                                        ຈຳນວນຍັງເຫຼືອ : <span>
-                                                            {productItem.qty ? productItem.qty : 0}
-                                                        </span>
-                                                    </p>
-                                                ) : null
-                                            }
                                             <div className=' flex items-end justify-between'>
                                                 <span className=' text-[12px]'>{dayjs(productItem.createdAt).format('DD-MM-YYYY')}</span>
                                                 <div className=' flex items-center gap-x-2'>
-                                                    <button onClick={() => handleEditProduct(productItem)}
-                                                        className=' bg-blue-500 text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'>
-                                                        ແກ້ໄຂ
-                                                    </button>
+                                                    {productItem.type === 'drink' ? (
+                                                        <ModalDrinkEdit
+                                                            product={productItem}
+                                                            isModalOpen={productItem.type === 'drink' && selectedProduct?.id === productItem.id}
+                                                            handleOk={() => setSelectedProduct(null)}
+                                                            handleCancel={() => setSelectedProduct(null)}
+                                                            categories={categories}
+                                                            listDrink={listDrink}
+                                                            setSelectedProduct={setSelectedProduct}
+                                                        />
+                                                    ) : (
+                                                        <ModalFoodEdit
+                                                            product={productItem}
+                                                            isModalOpen={productItem.type === 'food' && selectedProduct?.id === productItem.id}
+                                                            handleOk={() => setSelectedProduct(null)}
+                                                            handleCancel={() => setSelectedProduct(null)}
+                                                            categories={categories}
+                                                            listFood={listFood}
+                                                            setSelectedProduct={setSelectedProduct}
+                                                        />
+                                                    )}
                                                     <Popconfirm
                                                         title="ຄຳຢືນຢັນ"
                                                         description="ເຈົ້າຕ້ອງການລົບລາຍການນີ້ບໍ່ ?"
@@ -237,15 +263,15 @@ const Product = () => {
                                                                 message.error('ທ່ານບໍ່ມີສິດລົບລາຍການນີ້');
                                                             }
                                                         }}
-                                                        disabled={!(user?.role === 'Owner' || user?.role === 'Manager')}
+                                                        disabled={!(user?.role === 'Owner' || user?.role === 'Manager') || deletingId === productItem.id}
                                                     >
                                                         <button
-                                                            disabled={!(user?.role === 'Owner' || user?.role === 'Manager')}
-                                                            className={`text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent duration-300 cursor-pointer ${(user?.role === 'Owner' || user?.role === 'Manager')
+                                                            disabled={!(user?.role === 'Owner' || user?.role === 'Manager') || deletingId === productItem.id}
+                                                            className={`text-[12px] text-white flex items-center justify-center w-[50px] py-0.5 rounded border-1 border-transparent duration-300 cursor-pointer ${(user?.role === 'Owner' || user?.role === 'Manager')
                                                                 ? 'bg-red-500 hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500'
                                                                 : 'bg-gray-400 cursor-not-allowed'
                                                                 }`}>
-                                                            ລົບ
+                                                            {deletingId === productItem.id ? <span className='flex items-center gap-2'><FaSpinner className='animate-spin' /> ລົບ</span> : 'ລົບ'}
                                                         </button>
                                                     </Popconfirm>
                                                 </div>
@@ -260,19 +286,6 @@ const Product = () => {
                             </div>
                         )}
                     </ul>
-                )}
-                {selectedProduct && (
-                    <ModalProductEdit
-                        product={selectedProduct}
-                        isModalOpen={!!selectedProduct}
-                        handleOk={() => { setSelectedProduct(null); }}
-                        handleCancel={() => setSelectedProduct(null)}
-                        isDrink={selectedProduct.type === 'drink'}
-                        categories={categories}
-                        listFood={listFood}
-                        listDrink={listDrink}
-                        setSelectedProduct={setSelectedProduct}
-                    />
                 )}
             </div >
         </div >

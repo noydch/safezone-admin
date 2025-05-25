@@ -74,10 +74,11 @@ const ModalFoodAdd = ({ isModalOpen, handleOk, handleCancel, form, setForm, cate
                                 });
                             }}
                             options={
-                                categories.map((category) => ({
-                                    value: category.id,
-                                    label: category.name
-                                }))
+                                categories.filter(category => !category.name.includes('ເຄື່ອງດື່ມ'))
+                                    .map((category) => ({
+                                        value: category.id,
+                                        label: category.name
+                                    }))
                             }
                         />
                     </div>

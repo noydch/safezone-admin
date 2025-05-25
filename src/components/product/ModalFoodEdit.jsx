@@ -1,14 +1,31 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal, Select, message } from 'antd'
 import UploadFileAdd from './UploadFileAdd'
-import { insertDrinkApi } from '../../api/product'
-import useSafezoneStore from '../../store/safezoneStore'
+import { updateFoodApi } from '../../api/product'
 import { LiaSpinnerSolid } from 'react-icons/lia'
+import { useAuth } from '../../context/AuthContext'
 
-const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
+const ModalFoodEdit = ({ product, isModalOpen, handleOk, handleCancel, categories, listFood, setSelectedProduct }) => {
+    const { user } = useAuth()
     const token = localStorage.getItem('token')
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false)
+    const [form, setForm] = useState({
+        name: product?.name || '',
+        categoryId: product?.categoryId || 'ເລືອກປະເພດ',
+        price: product?.price || 0,
+        image: product?.imageUrl ? [{ url: product.imageUrl }] : ''
+    })
+
+    useEffect(() => {
+        if (isModalOpen && product) {
+            setForm({
+                name: product.name || '',
+                categoryId: product.categoryId || 'ເລືອກປະເພດ',
+                price: product.price || 0,
+                image: product.imageUrl ? [{ url: product.imageUrl }] : ''
+            })
+        }
+    }, [isModalOpen, product])
 
     const handleChange = (e) => {
         setForm({
@@ -16,36 +33,6 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
             [e.target.name]: e.target.value
         });
     }
-
-    const showModal = () => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
-            setIsModalOpen(true);
-        } else {
-            message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມເຄື່ອງດື່ມ');
-        }
-    };
-
-    const handleOk = () => {
-        setIsModalOpen(false);
-        setForm({
-            ...form,
-            name: '',
-            categoryId: 'ເລືອກປະເພດ',
-            price: 0,
-            image: '',
-        });
-    };
-
-    const handleCancel = () => {
-        setIsModalOpen(false);
-        setForm({
-            ...form,
-            name: '',
-            categoryId: 'ເລືອກປະເພດ',
-            price: 0,
-            image: '',
-        });
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -59,37 +46,44 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                 ...form,
                 price: Number(form.price) || 0,
             };
-            const response = await insertDrinkApi(token, formData)
+            const response = await updateFoodApi(token, product.id, formData)
             if (response) {
-                message.success("ເພີ່ມເຄື່ອງດື່ມສຳເລັດ!!!")
-                listDrink()
-                setForm({
-                    name: '',
-                    categoryId: 'ເລືອກປະເພດ',
-                    price: 0,
-                    image: ''
-                })
+                message.success("ແກ້ໄຂອາຫານສຳເລັດ!!!")
+                listFood()
+                setSelectedProduct(null)
                 handleCancel()
             }
         } catch (error) {
             console.log(error);
-            message.error('ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມເຄື່ອງດື່ມ');
+            message.error('ເກີດຂໍ້ຜິດພາດໃນການແກ້ໄຂອາຫານ');
         } finally {
             setLoading(false)
         }
     }
-    console.log(categories);
 
+    const handleEdit = () => {
+        if (user?.role === 'Owner' || user?.role === 'Manager') {
+            setSelectedProduct(product);
+        } else {
+            message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂ');
+        }
+    };
 
     return (
-        <div>
-            <button onClick={showModal}
-                className='h-[35px] w-[120px] rounded bg-blue-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'>
-                ເພີ່ມເຄື່ອງດື່ມ
+        <>
+            <button
+                onClick={handleEdit}
+                disabled={!(user?.role === 'Owner' || user?.role === 'Manager')}
+                className={`text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent duration-300 cursor-pointer ${(user?.role === 'Owner' || user?.role === 'Manager')
+                    ? 'bg-blue-500 hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500'
+                    : 'bg-gray-400 cursor-not-allowed'
+                    }`}
+            >
+                ແກ້ໄຂ
             </button>
             <Modal footer={null} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
                 <h1 className=' text-center text-[20px] font-semibold mb-5'>
-                    ເພີ່ມເຄື່ອງດື່ມ
+                    ແກ້ໄຂອາຫານ
                 </h1>
                 <form action="" onSubmit={handleSubmit}
                     className='flex gap-2 w-full h-[240px]'
@@ -105,7 +99,7 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                                 onChange={handleChange}
                                 name='name'
                                 className='w-full px-2 pt-1 pb-0.5 placeholder:text-[12px] text-[14px] outline-none border-gray-300 border bg-white rounded'
-                                placeholder='ກະລຸນາປ້ອນຊື່ເຄື່ອງດື່ມ...'
+                                placeholder='ກະລຸນາປ້ອນຊື່ອາຫານ...'
                             />
                         </div>
                         <div>
@@ -113,7 +107,10 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                             <Select
                                 labelInValue
                                 name='categoryId'
-                                value={form.categoryId && form.categoryId !== 'ເລືອກປະເພດ' ? { value: form.categoryId, label: categories.find(c => c.id === form.categoryId)?.name || form.categoryId } : undefined}
+                                value={form.categoryId && form.categoryId !== 'ເລືອກປະເພດ' ? {
+                                    value: form.categoryId,
+                                    label: categories.find(c => c.id === form.categoryId)?.name || form.categoryId
+                                } : undefined}
                                 placeholder="ເລືອກປະເພດ"
                                 className='w-full'
                                 style={{ width: '100%' }}
@@ -124,7 +121,7 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                                     });
                                 }}
                                 options={
-                                    categories.filter(category => category.name.includes('ເຄື່ອງດື່ມ'))
+                                    categories.filter(category => !category.name.includes('ເຄື່ອງດື່ມ'))
                                         .map((category) => ({
                                             value: category.id,
                                             label: category.name
@@ -166,8 +163,8 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                     </button>
                 </div>
             </Modal>
-        </div>
+        </>
     )
 }
 
-export default ModalDrinkAdd
+export default ModalFoodEdit 

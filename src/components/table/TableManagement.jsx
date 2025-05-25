@@ -68,6 +68,7 @@ const TableManagement = () => {
                                     <div className=' flex flex-col items-end leading-6'>
                                         <h2 className='text-[24px] font-medium text-red-500'>ໂຕະ {table.table_number}</h2>
                                         <span className=' text-[12px] font-medium '>{table.seat} ບ່ອນນັ່ງ</span>
+                                        <span className={`text-[12px] font-medium ${table.status === 'ຖືກຈອງແລ້ວ' ? 'text-red-500' : 'text-green-500'}`}>{table.status}</span>
                                     </div>
                                 </div>
                                 <div className=' flex justify-between items-end'>

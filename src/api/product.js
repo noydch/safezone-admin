@@ -57,12 +57,15 @@ export const deleteFoodApi = async (id, imageUrl) => {
     try {
         const response = await axios.delete(`${ApiPath.deleteFood}/${id}`, {
             data: { imageUrl }
-        },)
-        // if (response) {
-        //     message.success("ລົບລາຍການອາຫານສຳເລັດ!!!")
-        // }
+        });
+        if (response) {
+            message.success("ລົບລາຍການອາຫານສຳເລັດ!!!");
+        }
+        return response;
     } catch (error) {
-        console.log(error);
+        console.error("Delete Error:", error);
+        message.error("ການລົບລາຍການອາຫານລົ້ມເຫລວ");
+        throw error;
     }
 }
 
@@ -80,22 +83,20 @@ export const updateFoodApi = async (token, id, data) => {
         }
     }
 
+    const formData = new FormData()
+
+    // ถ้ามีการอัพโหลดรูปใหม่
     if (data?.image && data.image[0]?.url.startsWith("data:image")) {
-        const file = base64ToFile(data.image[0].url, "upload.jpg"); // แปลง Base64 เป็นไฟล์
+        const file = base64ToFile(data.image[0].url, "upload.jpg");
         formData.append("image", file);
-    } else {
-        console.error("Image is not a valid Base64 string", data.image);
-        return false;
     }
 
-    const formData = new FormData()
     formData.append("name", data?.name);
     formData.append("categoryId", data?.categoryId);
-    // formData.append("qty", data?.qty);
     formData.append("price", data?.price);
 
     try {
-        const response = await axios.post(`${ApiPath.updateFood}/${id}`, formData, headerConfig);
+        const response = await axios.put(`${ApiPath.updateFood}/${id}`, formData, headerConfig);
         return response;
     } catch (error) {
         console.error("Upload Error:", error);
@@ -140,17 +141,18 @@ export const insertDrinkApi = async (token, data) => {
 };
 
 export const deleteDrinkApi = async (id, imageUrl) => {
-    console.log(id);
-
     try {
         const response = await axios.delete(`${ApiPath.deleteDrink}/${id}`, {
             data: { imageUrl }
-        },)
-        // if (response) {
-        //     message.success("ລົບລາຍການອາຫານສຳເລັດ!!!")
-        // }
+        });
+        if (response) {
+            message.success("ລົບລາຍການເຄື່ອງດື່ມສຳເລັດ!!!");
+        }
+        return response;
     } catch (error) {
-        console.log(error);
+        console.error("Delete Error:", error);
+        message.error("ການລົບລາຍການເຄື່ອງດື່ມລົ້ມເຫລວ");
+        throw error;
     }
 }
 
@@ -168,22 +170,20 @@ export const updateDrinkApi = async (token, id, data) => {
         }
     }
 
+    const formData = new FormData()
+
+    // ถ้ามีการอัพโหลดรูปใหม่
     if (data?.image && data.image[0]?.url.startsWith("data:image")) {
-        const file = base64ToFile(data.image[0].url, "upload.jpg"); // แปลง Base64 เป็นไฟล์
+        const file = base64ToFile(data.image[0].url, "upload.jpg");
         formData.append("image", file);
-    } else {
-        console.error("Image is not a valid Base64 string", data.image);
-        return false;
     }
 
-    const formData = new FormData()
     formData.append("name", data?.name);
     formData.append("categoryId", data?.categoryId);
-    // formData.append("qty", data?.qty);
     formData.append("price", data?.price);
 
     try {
-        const response = await axios.post(`${ApiPath.updateDrink}/${id}`, formData, headerConfig);
+        const response = await axios.put(`${ApiPath.updateDrink}/${id}`, formData, headerConfig);
         return response;
     } catch (error) {
         console.error("Upload Error:", error);

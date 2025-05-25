@@ -143,7 +143,7 @@ const Sidebar = ({ children }) => {
     return (
         <div className=' flex h-screen'>
             <section className=' sticky w-[220px] bg-white p-2 flex flex-col z-50'>
-                <div className=' flex justify-center my-5'>
+                <div className=' flex justify-center my-3'>
                     <img src={logo} alt=""
                         className=' w-[120px]'
                     />

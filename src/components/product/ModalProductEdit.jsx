@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import UploadFileEdit from './UploadFileEdit';
 import { MdOutlineCloudUpload } from 'react-icons/md';
 import { FaTrash, FaTrashAlt } from 'react-icons/fa';
-// import { toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { updateFoodApi, updateDrinkApi } from '../../api/product'; // นำเข้าฟังก์ชัน API
 import useSafezoneStore from '../../store/safezoneStore';
 
@@ -90,9 +90,14 @@ const ModalProductEdit = ({ product, isDrink }) => {
     const handleOnChange = (e) => {
         const files = e.target.files;
         if (files && files.length > 0) {
-            const file = files[0]; // Allow only the first file
+            const file = files[0];
             if (!file.type.startsWith('image/')) {
                 toast.error(`File ${file.name} บ่แม่นรูป`);
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                toast.error('ຂະໜາດຮູບພາບຕ້ອງບໍ່ເກີນ 5MB');
                 return;
             }
 
@@ -102,7 +107,7 @@ const ModalProductEdit = ({ product, isDrink }) => {
                     public_id: Date.now().toString(),
                     url: reader.result
                 };
-                setImages([newImage]); // Set the state to only the new image
+                setImages([newImage]);
             };
             reader.readAsDataURL(file);
         }

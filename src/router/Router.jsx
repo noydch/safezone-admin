@@ -28,114 +28,114 @@ const router = createBrowserRouter([
     {
         path: '/register',
         element: <Register />,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     {
         path: '/login',
         element: <Login />,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     // sale
     {
         path: '/',
         element: <ProtectedRoute><SaleMain /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     // order
     {
         path: '/orders',
         element: <ProtectedRoute><OrderMain /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     {
         path: '/order/orderDetail/:id',
         element: <ProtectedRoute><OrderDetail /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // dashboard
     {
         path: '/dashboard',
         element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // category
     {
         path: '/category',
         element: <ProtectedRoute><CategoryMain /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     {
         path: '/category/:id',
         element: <FrmEditCategory />,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // product
     {
         path: '/product',
         element: <ProtectedRoute><ProductMain /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     {
         path: '/booking',
         element: <ProtectedRoute> <BookingMain /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // Table
     {
         path: "/table",
         element: <ProtectedRoute><TableMain /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // import buy
     {
         path: "/import-buy",
         element: <ProtectedRoute> <ImportAndBuyMain /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
     {
         path: "/importDetail/:id",
         element: <ProtectedRoute> <ImportDetail /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // buy detail
     {
         path: "/buy-detail/:id",
         element: <ProtectedRoute> <BuyDetail /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // user list
     {
         path: "/employee",
         element: <ProtectedRoute><UserMain /></ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // customer
     {
         path: '/customer',
         element: <ProtectedRoute> <CustomerMain /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // supplier
     {
         path: '/supplier',
         element: <ProtectedRoute> <SupplierMain /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     },
 
     // report
     {
         path: '/reports',
         element: <ProtectedRoute> <ReportMain /> </ProtectedRoute>,
-        errorElement: <ErrorPage />
+        // errorElement: <ErrorPage />
     }
 ])
 
