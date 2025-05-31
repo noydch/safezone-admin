@@ -8,20 +8,72 @@ import { MdPlaylistRemove, MdTableBar } from 'react-icons/md';
 import SaleBarChart from './SaleBarChart';
 import TableDashboard from './TableDashboard';
 import OrderBarChart from './OrderBarChart';
+import { getAllOrdersApi } from '../../api/order';
+import { getTableApi } from '../../api/table';
 
 const DashboardMain = () => {
     const [isLoading, setIsLoading] = useState(true);
+    const [orderStats, setOrderStats] = useState({
+        totalOrders: 0,
+        completedOrders: 0,
+        pendingOrders: 0
+    });
+    const [todaySales, setTodaySales] = useState(0);
+    const [availableTables, setAvailableTables] = useState(0);
+    const [orders, setOrders] = useState([]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 2000);
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const orderResponse = await getAllOrdersApi(token);
+                const ordersData = orderResponse.data;
+                setOrders(ordersData);
 
-        return () => clearTimeout(timer);
+                const today = new Date();
+                const todayStr = today.toISOString().split('T')[0];
+
+                const todayOrders = ordersData.filter(order => {
+                    if (!order.updatedAt) return false;
+                    const orderDate = new Date(order.updatedAt).toISOString().split('T')[0];
+                    return orderDate === todayStr;
+                });
+
+                const totalSales = todayOrders.reduce((sum, order) => sum + (order.total_price || 0), 0);
+                setTodaySales(totalSales);
+
+                const completedOrders = ordersData.filter(order =>
+                    order.payment_method === 'TRANSFER' || order.payment_method === 'CASH'
+                ).length;
+
+                const pendingOrders = ordersData.filter(order =>
+                    !order.payment_method
+                ).length;
+
+                setOrderStats({
+                    totalOrders: todayOrders.length,
+                    completedOrders: completedOrders,
+                    pendingOrders: pendingOrders
+                });
+
+                const tableResponse = await getTableApi();
+                const tables = tableResponse.data;
+
+                const availableCount = tables.filter(table => table.status === 'ວ່າງ').length;
+                setAvailableTables(availableCount);
+
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     const handleChange = (value) => {
-        console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
+        console.log(value);
     };
 
     if (isLoading) {
@@ -60,7 +112,7 @@ const DashboardMain = () => {
                             ຍອດຂາຍມື້ນີ້
                         </h4>
                         <h2 className=' text-green-500 text-[20px] font-bold'>
-                            590,000 ກີບ
+                            {todaySales.toLocaleString()} ກີບ
                         </h2>
                     </div>
                     <div className=' w-[40px] h-[40px] bg-green-100 flex items-center justify-center rounded-full'>
@@ -73,7 +125,7 @@ const DashboardMain = () => {
                             ຈຳນວນອໍເດີທີ່ສຳເລັດ
                         </h4>
                         <h2 className=' text-orange-500 text-[20px] font-bold'>
-                            59 ອໍເດີ້
+                            {orderStats.completedOrders} ອໍເດີ້
                         </h2>
                     </div>
                     <div className=' w-[40px] h-[40px] bg-orange-100 flex items-center justify-center rounded-full'>
@@ -86,7 +138,7 @@ const DashboardMain = () => {
                             ຈຳນວນອໍເດີ້ມື້ນີ້
                         </h4>
                         <h2 className=' text-blue-500 text-[20px] font-bold'>
-                            69 ອໍເດີ້
+                            {orderStats.totalOrders} ອໍເດີ້
                         </h2>
                     </div>
                     <div className=' w-[40px] h-[40px] bg-blue-100 flex items-center justify-center rounded-full'>
@@ -99,7 +151,7 @@ const DashboardMain = () => {
                             ຈຳນວນອໍເດີ້ທີ່ຍັງບໍ່ແລ້ວ
                         </h4>
                         <h2 className=' text-red-500 text-[20px] font-bold'>
-                            10 ອໍເດີ້
+                            {orderStats.pendingOrders} ອໍເດີ້
                         </h2>
                     </div>
                     <div className=' w-[40px] h-[40px] bg-red-100 flex items-center justify-center rounded-full'>
@@ -112,7 +164,7 @@ const DashboardMain = () => {
                             ໂຕະທີ່ຍັງວ່າງ
                         </h4>
                         <h2 className=' text-yellow-500 text-[20px] font-bold'>
-                            10 ໂຕະ
+                            {availableTables} ໂຕະ
                         </h2>
                     </div>
                     <div className=' w-[40px] h-[40px] bg-yellow-100 flex items-center justify-center rounded-full'>
@@ -121,7 +173,6 @@ const DashboardMain = () => {
                 </li>
             </ul>
 
-            {/* Chart */}
             <div className='mt-7 flex gap-x-5 min-w-[1200px]'>
                 <div className='flex-1 bg-white p-4 rounded-md'>
                     <div className=' flex items-center justify-between'>
@@ -131,73 +182,22 @@ const DashboardMain = () => {
                                 ຈຳນວນຍອດຂາຍ
                             </h1>
                         </div>
-                        <Select
-                            labelInValue
-                            defaultValue={{
-                                value: 'ລາຍວັນ',
-                                label: 'ລາຍວັນ',
-                            }}
-                            style={{
-                                width: 120,
-                            }}
-                            onChange={handleChange}
-                            options={[
-                                {
-                                    value: 'ລາຍວັນ',
-                                    label: 'ລາຍວັນ',
-                                },
-                                {
-                                    value: 'ລາຍເດືອນ',
-                                    label: 'ລາຍເດືອນ',
-                                },
-                                {
-                                    value: 'ລາຍປີ',
-                                    label: 'ລາຍປີ',
-                                },
-                            ]}
-                        />
                     </div>
-                    <SaleBarChart />
+                    <SaleBarChart orders={orders} />
                 </div>
                 <div className='flex-1 bg-white p-4 rounded-md'>
                     <div className=' flex items-center justify-between'>
                         <div>
                             <p className=' text-[12px] text-gray-500'>ການເຄື່ອນໄຫວ</p>
                             <h1 className=' font-medium text-[18px]'>
-                                ຈຳນວນຍອດຂາຍ
+                                ຈຳນວນຍອດອໍເດີ
                             </h1>
                         </div>
-                        <Select
-                            labelInValue
-                            defaultValue={{
-                                value: 'ລາຍວັນ',
-                                label: 'ລາຍວັນ',
-                            }}
-                            style={{
-                                width: 120,
-                            }}
-                            onChange={handleChange}
-                            options={[
-                                {
-                                    value: 'ລາຍວັນ',
-                                    label: 'ລາຍວັນ',
-                                },
-                                {
-                                    value: 'ລາຍເດືອນ',
-                                    label: 'ລາຍເດືອນ',
-                                },
-                                {
-                                    value: 'ລາຍປີ',
-                                    label: 'ລາຍປີ',
-                                },
-                            ]}
-                        />
                     </div>
-                    <OrderBarChart />
+                    <OrderBarChart orders={orders} />
                 </div>
             </div>
 
-            {/* Order */}
             <div className='mt-5 min-w-[1200px]'>
                 <h1 className=' text-[18px] font-medium mb-1'>
                     ລາຍການອໍເດີ້ລ່າສຸດ

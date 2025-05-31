@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, message } from 'antd';
 import ModalRegister from './ModalRegister';
 import EditUserModal from './EditUserModal';
 import { useAuth } from './../../context/AuthContext'
+import axios from 'axios';
+import ApiPath from '../../api/apiPath';
 
-const User = ({ employee }) => {
+const User = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [employee, setEmployee] = useState([]);
     const { user } = useAuth();
     console.log(user?.role);
 
+    // Function to fetch employees
+    const fetchEmployees = async () => {
+        try {
+            const response = await axios.get(ApiPath.getEmployee);
+            setEmployee(response.data);
+        } catch (error) {
+            message.error('Failed to fetch employees');
+        }
+    };
+
+    // Fetch employees on component mount
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
 
     const showModal = () => {
         if (user?.role === 'Owner') {
@@ -24,8 +41,9 @@ const User = ({ employee }) => {
         setIsModalOpen(false);
     };
 
-    const handleSubmit = async (values) => {
-        console.log('Form values:', values);
+    const handleSubmit = async () => {
+        // Refresh employee list after successful registration
+        await fetchEmployees();
     };
 
     const handleEdit = (record) => {
