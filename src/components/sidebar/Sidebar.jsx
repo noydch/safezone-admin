@@ -14,7 +14,7 @@ import avatar9 from '../../assets/avatar/avatar-09.webp'
 import { FaHome } from "react-icons/fa";
 import { IoFastFoodSharp, IoPersonCircle } from "react-icons/io5";
 import { BiSolidFoodMenu, BiSolidReport, BiListUl, BiPlusCircle, BiCog } from "react-icons/bi";
-import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutlineImportantDevices, MdNoteAlt } from "react-icons/md";
+import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutlineImportantDevices, MdNoteAlt, MdDashboard } from "react-icons/md";
 import { BsFillPersonVcardFill } from "react-icons/bs";
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
@@ -50,8 +50,8 @@ const Sidebar = ({ children }) => {
         },
         {
             path: '/dashboard',
-            name: 'ໜ້າຫຼັກ',
-            icon: <FaHome />
+            name: 'Dashboard',
+            icon: <MdDashboard />
         },
         {
             path: '/category',
