@@ -155,7 +155,9 @@ const OrderBarChart = ({ orders }) => {
         scales: {
             y: {
                 beginAtZero: true,
+                max: 40,
                 ticks: {
+                    stepSize: 1,
                     callback: (value) => value + ' ອໍເດີ',
                 },
             },
