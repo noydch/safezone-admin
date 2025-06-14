@@ -29,13 +29,14 @@ const ReportImport = () => {
                 importDateRaw: new Date(item.importDate),
                 date: new Date(item.importDate).toLocaleDateString('en-GB'),
                 time: new Date(item.importDate).toLocaleTimeString('en-GB', { hour12: false }),
-                supplier: item.purchaseOrder?.supplier?.name || '-',
-                phoneNumber: item.purchaseOrder?.supplier?.phone || '-',
-                importQuantity: item.purchaseOrder?.details?.reduce((sum, detail) => sum + detail.quantity, 0) || 0,
+                supplier: item.supplier?.name || '-',
+                phoneNumber: item.supplier?.phone || '-',
+                importQuantity: item.details?.reduce((sum, detail) => sum + detail.quantity, 0) || 0,
                 total: `${item.totalPrice.toLocaleString()} ກີບ`,
                 status: item.status === 'pending' ? 'ລໍຖ້າຢືນຢັນ' :
                     item.status === 'approved' ? 'ອະນຸມັດແລ້ວ' :
-                        item.status === 'rejected' ? 'ຖືກປະຕິເສດ' : item.status
+                        item.status === 'rejected' ? 'ຖືກປະຕິເສດ' :
+                            item.status === 'completed' ? 'ສຳເລັດແລ້ວ' : item.status
             }));
             setImportData(formattedData);
         } catch (error) {

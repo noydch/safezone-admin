@@ -1,14 +1,30 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Modal, Select, message } from 'antd'
 import UploadFileAdd from './UploadFileAdd'
 import { insertDrinkApi } from '../../api/product'
 import useSafezoneStore from '../../store/safezoneStore'
 import { LiaSpinnerSolid } from 'react-icons/lia'
+import { getUnitApi } from '../../api/unit'
 
 const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
     const token = localStorage.getItem('token')
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false)
+    const [baseUnits, setBaseUnits] = useState([]);
+
+    useEffect(() => {
+        const fetchUnits = async () => {
+            try {
+                const response = await getUnitApi();
+                setBaseUnits(response.data);
+            } catch (error) {
+                console.error("Error fetching units:", error);
+                message.error('Error fetching base units.');
+            }
+        };
+        fetchUnits();
+    }, []);
+    console.log(baseUnits);
 
     const handleChange = (e) => {
         setForm({
@@ -20,6 +36,13 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
     const showModal = () => {
         if (user?.role === 'Owner' || user?.role === 'Manager') {
             setIsModalOpen(true);
+            setForm({
+                name: '',
+                categoryId: undefined,
+                baseUnitId: undefined,
+                price: 0,
+                image: '',
+            });
         } else {
             message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມເຄື່ອງດື່ມ');
         }
@@ -28,9 +51,9 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
     const handleOk = () => {
         setIsModalOpen(false);
         setForm({
-            ...form,
             name: '',
-            categoryId: 'ເລືອກປະເພດ',
+            categoryId: undefined,
+            baseUnitId: undefined,
             price: 0,
             image: '',
         });
@@ -39,9 +62,9 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
     const handleCancel = () => {
         setIsModalOpen(false);
         setForm({
-            ...form,
             name: '',
-            categoryId: 'ເລືອກປະເພດ',
+            categoryId: undefined,
+            baseUnitId: undefined,
             price: 0,
             image: '',
         });
@@ -49,8 +72,8 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.name || form.categoryId === 'ເລືອກປະເພດ' || !form.price || !form.image) {
-            message.error('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ');
+        if (!form.name || !form.baseUnitId || !form.price || !form.image) {
+            message.error('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ (ຊື່, ໜ່ວຍພື້ນຖານ, ລາຄາ, ແລະຮູບພາບ)');
             return;
         }
         setLoading(true)
@@ -65,7 +88,8 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                 listDrink()
                 setForm({
                     name: '',
-                    categoryId: 'ເລືອກປະເພດ',
+                    categoryId: undefined,
+                    baseUnitId: undefined,
                     price: 0,
                     image: ''
                 })
@@ -78,8 +102,6 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
             setLoading(false)
         }
     }
-    console.log(categories);
-
 
     return (
         <div>
@@ -113,14 +135,14 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                             <Select
                                 labelInValue
                                 name='categoryId'
-                                value={form.categoryId && form.categoryId !== 'ເລືອກປະເພດ' ? { value: form.categoryId, label: categories.find(c => c.id === form.categoryId)?.name || form.categoryId } : undefined}
-                                placeholder="ເລືອກປະເພດ"
+                                value={form.categoryId ? { value: form.categoryId, label: categories.find(c => c.id === form.categoryId)?.name || form.categoryId } : undefined}
+                                placeholder="ເລືອກປະເພດ (ທາງເລືອກ)"
                                 className='w-full'
                                 style={{ width: '100%' }}
                                 onChange={(value) => {
                                     setForm({
                                         ...form,
-                                        categoryId: value.value
+                                        categoryId: value ? value.value : undefined
                                     });
                                 }}
                                 options={
@@ -134,7 +156,30 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
                             />
                         </div>
                         <div>
-                            <label htmlFor="price" className=' block'>ລາຄາ:</label>
+                            <label htmlFor="baseUnitId" className=' block'>ໜ່ວຍພື້ນຖານ:</label>
+                            <Select
+                                name='baseUnitId'
+                                value={form.baseUnitId}
+                                placeholder="ເລືອກໜ່ວຍພື້ນຖານ"
+                                className='w-full'
+                                style={{ width: '100%' }}
+                                onChange={(value) => {
+                                    setForm({
+                                        ...form,
+                                        baseUnitId: value
+                                    });
+                                }}
+                                options={
+                                    baseUnits?.map((unit) => ({
+                                        value: unit.id,
+                                        label: unit.name
+                                    }))
+                                }
+                                allowClear
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="price" className=' block'>ລາຄາ (ຕໍ່ໜ່ວຍດຽວ):</label>
                             <input type="number"
                                 name='price'
                                 onChange={handleChange}

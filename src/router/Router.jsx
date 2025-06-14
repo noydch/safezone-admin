@@ -22,6 +22,8 @@ import OrderDetail from "../components/order/OrderDetail";
 import OrderMain from "../pages/order/OrderMain";
 import ImportDetail from "../components/import/ImportDetail";
 import ErrorPage from "../components/error/ErrorPage";
+import Unit from "../components/unit/Unit";
+import ProductUnit from "../components/unitProduct/ProductUnit";
 
 const router = createBrowserRouter([
     // auth
@@ -76,6 +78,17 @@ const router = createBrowserRouter([
     {
         path: '/product',
         element: <ProtectedRoute><ProductMain /></ProtectedRoute>,
+        // errorElement: <ErrorPage />
+    },
+    // product
+    {
+        path: '/add-unit',
+        element: <ProtectedRoute><Unit /></ProtectedRoute>,
+        // errorElement: <ErrorPage />
+    },
+    {
+        path: '/productUnit',
+        element: <ProtectedRoute><ProductUnit /></ProtectedRoute>,
         // errorElement: <ErrorPage />
     },
     {

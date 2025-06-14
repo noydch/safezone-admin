@@ -23,31 +23,64 @@ const Cart = () => {
     // โหลดรายการโต๊ะเมื่อ component โหลด
     useEffect(() => {
         listTable();
-    }, [listTable]);
+        console.log('[Cart.jsx] Current Carts (after render):', carts); // Debug log
+    }, [listTable, carts]); // Re-log เมื่อ carts เปลี่ยนแปลง
 
     // จัดการการเลือกโต๊ะ
     const handleChange = (value) => {
         setSelectedTable(value === '0' ? null : value);
-        console.log('Selected Table:', value === '0' ? null : value);
     };
 
-    // จัดการการอัปเดตจำนวนสินค้า
+    // handleUnitChange จะถูกเรียกเมื่อผู้ใช้เปลี่ยน dropdown สำหรับเครื่องดื่ม
+    const handleUnitChange = (itemId, unitId) => {
+        const itemInCart = carts.find(cartItem => cartItem.id === itemId && cartItem.type === 'drink');
+
+        if (itemInCart && itemInCart.productUnits) {
+            const newUnit = itemInCart.productUnits.find(u => u.id === unitId);
+            if (newUnit) {
+                // เมื่อเปลี่ยนหน่วย ให้ส่งข้อมูล productUnits ทั้งหมดของ item นี้ไปด้วย
+                actionUpdateCart(itemId, 'drink', newUnit.name, 1, unitId, newUnit.price, itemInCart.productUnits);
+            } else {
+                console.warn(`[Cart.jsx] Unit with ID ${unitId} not found in productUnits for item ${itemId}.`);
+                message.error("ບໍ່ພົບຫົວໜ່ວຍທີ່ເລືອກ.");
+            }
+        } else {
+            console.error(`[Cart.jsx] Item ${itemId} or its productUnits not found in cart for unit change.`);
+            message.error("ຂໍ້ມູນສິນຄ້າບໍ່ຄົບຖ້ວນ.");
+        }
+    };
+
+    // handleUpdateCart สำหรับเพิ่ม/ลดจำนวน
     const handleUpdateCart = (itemId, type, name, qty) => {
-        if (qty <= 0) return; // ไม่ให้น้อยกว่า 1
-        actionUpdateCart(itemId, type, name, qty);
+        if (qty <= 0) return;
+
+        const itemInCart = carts.find(cartItem => cartItem.id === itemId && cartItem.type === type);
+
+        if (!itemInCart) {
+            message.error("ບໍ່ພົບສິນຄ້າໃນກະຕ່າເພື່ອອັບເດດ.");
+            return;
+        }
+
+        if (type === 'drink') {
+            if (!itemInCart.selectedUnitId) {
+                message.warning('ກະລຸນາເລືອກຫົວໜ່ວຍກ່ອນ');
+                return;
+            }
+            // ส่ง productUnits ที่มีอยู่ใน item ไปด้วย
+            actionUpdateCart(itemId, type, itemInCart.name, qty, itemInCart.selectedUnitId, itemInCart.price, itemInCart.productUnits);
+        } else {
+            actionUpdateCart(itemId, type, name, qty);
+        }
     };
 
-    // จัดการการลบสินค้า
-    const handleRemoveItem = (itemId, type, name) => {
-        actionRemoveFromCart(itemId, type, name);
+    const handleRemoveItem = (itemId, type, selectedUnitId) => {
+        actionRemoveFromCart(itemId, type, selectedUnitId);
     };
 
-    // คำนวณราคารวม
     const calculateRawTotalPrice = () => {
         return carts.reduce((total, item) => total + (item.qty * item.price), 0);
     };
 
-    // จัดรูปแบบราคารวม
     const getTotalPrice = () => {
         return calculateRawTotalPrice().toLocaleString();
     };
@@ -70,19 +103,28 @@ const Cart = () => {
 
         setIsLoading(true);
 
-        // --- เตรียมข้อมูลที่จะส่ง (ไม่มี paymentMethod) ---
+        // --- เตรียมข้อมูลที่จะส่ง (ปรับโครงสร้างให้ตรงกับ Backend) ---
         const orderData = {
-            tableId: selectedTable,
-            empId: user.id,
-            orderDetails: carts.map(item => ({
-                itemId: item.id,
-                itemType: item.type,
-                quantity: item.qty,
-                price: item.price
-            }))
+            tableId: parseInt(selectedTable),
+            empId: parseInt(user.id),
+            orderDetails: carts.map(item => {
+                const detail = {
+                    quantity: item.qty,
+                    price: item.price
+                };
+
+                // แยกประเภทสินค้า (อาหาร/เครื่องดื่ม)
+                if (item.type === 'drink') {
+                    detail.productUnitId = parseInt(item.selectedUnitId);
+                } else {
+                    detail.foodId = parseInt(item.id);
+                }
+
+                return detail;
+            })
         };
 
-        console.log("Sending order data to backend (Add to Table):", orderData);
+        console.log("Sending order data to backend:", orderData);
 
         try {
             const response = await createOrderApi(token, orderData);
@@ -110,16 +152,16 @@ const Cart = () => {
 
     // ตัวเลือกสำหรับ Dropdown โต๊ะ
     const tableOptions = [
-        { value: '0', label: 'ກະລຸນາເລືອກໂຕະ' }, // Please select a table
+        { value: '0', label: 'ກະລຸນາເລືອກໂຕະ' },
         ...(tables?.map((table) => ({
             value: table.id.toString(),
-            label: `ໂຕະ ${table.table_number}`, // Table [number]
+            label: `ໂຕະ ${table.table_number}`,
         })) || []),
     ];
 
     // --- ส่วนแสดงผล (JSX) ---
     return (
-        <div className="flex-1 bg-white rounded-md py-2 px-2">
+        <div className="flex-3 bg-white rounded-md py-2 px-2">
             <h1 className="text-[24px] text-center font-semibold text-gray-700">ກະຕ່າສິນຄ້າ</h1> {/* Shopping Cart */}
             <div className="mt-4">
                 {/* Table Selection */}
@@ -142,8 +184,9 @@ const Cart = () => {
                     ) : (
                         carts.map((item) => (
                             <li
-                                key={`${item.type}-${item.id}-${item.name}`}
-                                className="w-full h-[80px] relative flex border border-gray-300 rounded p-1"
+                                // *** สำคัญ: เปลี่ยน key ให้ unique สำหรับแต่ละหน่วยขาย ***
+                                key={`${item.type}-${item.id}-${item.selectedUnitId || 'no-unit'}`}
+                                className="w-full h-[100px] relative flex border border-gray-300 rounded p-1"
                             >
                                 {/* Image */}
                                 <div className='w-[90px] h-full rounded border border-gray-200'>
@@ -157,37 +200,56 @@ const Cart = () => {
                                 {/* Details & Controls */}
                                 <div className="flex justify-between w-full ml-1.5 py-1">
                                     <div className="flex flex-col justify-between h-full">
-                                        <p className="font-medium">{item.name}</p>
-                                        {/* Quantity Controls */}
-                                        <div className="flex items-center w-[80px] justify-between border rounded border-gray-200">
-                                            <button
-                                                onClick={() => handleUpdateCart(item.id, item.type, item.name, item.qty - 1)}
-                                                className="cursor-pointer bg-gray-200 w-[24px] h-[24px] rounded flex items-center justify-center hover:bg-gray-300"
-                                                aria-label="Decrease quantity"
-                                            >
-                                                <HiMinus className="text-[14px]" />
-                                            </button>
-                                            <span className="text-[14px] font-medium">{item.qty}</span>
-                                            <button
-                                                onClick={() => handleUpdateCart(item.id, item.type, item.name, item.qty + 1)}
-                                                className="cursor-pointer bg-gray-200 w-[24px] h-[24px] rounded flex items-center justify-center hover:bg-gray-300"
-                                                aria-label="Increase quantity"
-                                            >
-                                                <HiPlus className="text-[14px]" />
-                                            </button>
+                                        <div>
+                                            <p className="font-medium">{item.name}</p>
+                                        </div>
+                                        <div className=''>
+                                            {item.type === 'drink' && (
+                                                <Select
+                                                    value={item.selectedUnitId}
+                                                    style={{ width: 200, marginBottom: 4, fontSize: 10 }}
+                                                    onChange={(value) => handleUnitChange(item.id, value)}
+                                                    options={item.productUnits?.map(unit => ({
+                                                        value: unit.id,
+                                                        label: `${unit.name} (${unit.price.toLocaleString()} ກີບ)`
+                                                    })) || []}
+                                                    placeholder="ເລືອກຫົວໜ່ວຍ"
+                                                    disabled={!item.productUnits || item.productUnits.length === 0}
+                                                />
+                                            )}
+                                            {/* Quantity Controls */}
+                                            <div className="flex items-center w-[80px] justify-between border rounded border-gray-200">
+                                                <button
+                                                    onClick={() => handleUpdateCart(item.id, item.type, item.name, item.qty - 1)}
+                                                    className="cursor-pointer bg-gray-200 w-[24px] h-[24px] rounded flex items-center justify-center hover:bg-gray-300"
+                                                    aria-label="Decrease quantity"
+                                                >
+                                                    <HiMinus className="text-[14px]" />
+                                                </button>
+                                                <span className="text-[14px] font-medium">{item.qty}</span>
+                                                <button
+                                                    onClick={() => handleUpdateCart(item.id, item.type, item.name, item.qty + 1)}
+                                                    className="cursor-pointer bg-gray-200 w-[24px] h-[24px] rounded flex items-center justify-center hover:bg-gray-300"
+                                                    aria-label="Increase quantity"
+                                                >
+                                                    <HiPlus className="text-[14px]" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     {/* Price & Remove */}
                                     <div className="flex flex-col items-end justify-between pr-1">
                                         <button
-                                            onClick={() => handleRemoveItem(item.id, item.type, item.name)}
+                                            onClick={() => handleRemoveItem(item.id, item.type, item.selectedUnitId)}
                                             className="text-red-700 cursor-pointer hover:text-red-500"
                                             aria-label="Remove item"
                                         >
                                             <FaRegTrashAlt />
                                         </button>
                                         <p className="font-semibold">
-                                            {(item.price * item.qty).toLocaleString()} ກີບ {/* Kip */}
+                                            {item.type === 'drink' && item.selectedUnitId && item.productUnits?.length > 0
+                                                ? `${item.productUnits.find(unit => unit.id === item.selectedUnitId)?.price.toLocaleString() || '0'} ກີບ (x${item.qty})`
+                                                : `${(item.price * item.qty).toLocaleString()} ກີບ`}
                                         </p>
                                     </div>
                                 </div>

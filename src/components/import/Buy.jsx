@@ -4,7 +4,7 @@ import { RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ApiPath from '../../api/apiPath';
-import ModalCreatePurchaseOrder from './ModalBuy';
+import ModalCreatePurchaseOrder from './ModalCreatePurchaseOrder';
 import moment from 'moment';
 
 const Buy = () => {
@@ -159,7 +159,24 @@ const Buy = () => {
                     >
                         ອະນຸມັດ
                     </Button>
-                    <Button danger disabled={record.status !== 'pending'} onClick={() => console.log('Cancel PO:', record.id)}>ຍົກເລີກ</Button>
+                    <Button
+                        danger
+                        disabled={record.status !== 'pending'}
+                        onClick={async () => {
+                            try {
+                                await axios.put(`${ApiPath.updatePurchaseOrderStatus}/${record.id}`, {
+                                    status: 'cancelled'
+                                });
+                                message.success('ຍົກເລີກລາຍການສັ່ງຊື້ສຳເລັດ');
+                                fetchPurchaseOrders(); // Refresh the table
+                            } catch (err) {
+                                message.error('ລົ້ມເຫຼວໃນການຍົກເລີກລາຍການສັ່ງຊື້');
+                                console.error(err);
+                            }
+                        }}
+                    >
+                        ຍົກເລີກ
+                    </Button>
                     <Button
                         type="link"
                         className="text-amber-500 flex items-center"

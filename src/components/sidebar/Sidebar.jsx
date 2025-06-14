@@ -13,7 +13,7 @@ import avatar9 from '../../assets/avatar/avatar-09.webp'
 
 import { FaHome } from "react-icons/fa";
 import { IoFastFoodSharp, IoPersonCircle } from "react-icons/io5";
-import { BiSolidFoodMenu, BiSolidReport } from "react-icons/bi";
+import { BiSolidFoodMenu, BiSolidReport, BiListUl, BiPlusCircle, BiCog } from "react-icons/bi";
 import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutlineImportantDevices, MdNoteAlt } from "react-icons/md";
 import { BsFillPersonVcardFill } from "react-icons/bs";
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
@@ -29,6 +29,7 @@ const Sidebar = ({ children }) => {
         return localStorage.getItem('avatar') || avatar1;
     });
     const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+    const [isProductMenuOpen, setIsProductMenuOpen] = useState(false);
 
     const handleChangeAvatar = (newAvatar) => {
         setAvatar(newAvatar);
@@ -58,9 +59,26 @@ const Sidebar = ({ children }) => {
             icon: <IoFastFoodSharp />
         },
         {
-            path: '/product',
-            name: 'ລາຍການອາຫານ - ເຄື່ອງດື່ມ',
-            icon: <BiSolidFoodMenu />
+            type: 'dropdown',
+            name: 'ຈັດການສິນຄ້າ',
+            icon: <BiSolidFoodMenu />,
+            submenu: [
+                {
+                    path: '/product',
+                    name: 'ລາຍການອາຫານ - ເຄື່ອງດື່ມ',
+                    icon: <BiListUl className="text-[18px]" />
+                },
+                {
+                    path: '/add-unit',
+                    name: 'ເພີ່ມຫົວໜ່ວຍ',
+                    icon: <BiPlusCircle className="text-[18px]" />
+                },
+                {
+                    path: '/productUnit',
+                    name: 'ຈັດການຫົວໜ່ວຍສິນຄ້າ',
+                    icon: <BiCog className="text-[18px]" />
+                }
+            ]
         },
         {
             path: '/booking',
@@ -140,6 +158,11 @@ const Sidebar = ({ children }) => {
     const pathname = "/" + useLocation().pathname.split("/")[1];
     const isActivePath = (path) => { return pathname === path };
 
+    // เพิ่มฟังก์ชันใหม่สำหรับตรวจสอบ active ของ submenu
+    const isSubmenuActive = (submenu) => {
+        return submenu.some(item => item.path === pathname);
+    };
+
     return (
         <div className=' flex h-screen'>
             <section className=' sticky w-[220px] bg-white p-2 flex flex-col z-50'>
@@ -151,17 +174,46 @@ const Sidebar = ({ children }) => {
                 <div className=' w-full space-y-2 flex-1 mt-5'>
                     {
                         path.map((item, index) => (
-                            <NavLink
-                                key={index}
-                                to={item.path}
-                                end
-                                className={`${isActivePath(item.path) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
-                            >
-                                <div className=' text-[22px]'>
-                                    {item.icon}
+                            item.type === 'dropdown' ? (
+                                <div key={index}>
+                                    <div
+                                        onClick={() => setIsProductMenuOpen(!isProductMenuOpen)}
+                                        className={`${isSubmenuActive(item.submenu) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200 cursor-pointer`}
+                                    >
+                                        <div className=' text-[22px]'>
+                                            {item.icon}
+                                        </div>
+                                        {item.name}
+                                        <IoIosArrowDown className={`ml-auto transition-transform ${isProductMenuOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+                                    {isProductMenuOpen && (
+                                        <div className="ml-6 mt-2 space-y-2">
+                                            {item.submenu.map((subItem, subIndex) => (
+                                                <NavLink
+                                                    key={subIndex}
+                                                    to={subItem.path}
+                                                    className={({ isActive }) => `${isActive ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[14px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
+                                                >
+                                                    {subItem.icon}
+                                                    {subItem.name}
+                                                </NavLink>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                                {item.name}
-                            </NavLink>
+                            ) : (
+                                <NavLink
+                                    key={index}
+                                    to={item.path}
+                                    end
+                                    className={`${isActivePath(item.path) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
+                                >
+                                    <div className=' text-[22px]'>
+                                        {item.icon}
+                                    </div>
+                                    {item.name}
+                                </NavLink>
+                            )
                         ))
                     }
                 </div>

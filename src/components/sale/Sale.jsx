@@ -3,6 +3,7 @@ import useSafezoneStore from "../../store/safezoneStore";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { message, Skeleton } from "antd";
 import Cart from "./Cart";
+import { getProductUnitsByDrinkIdApi } from '../../api/productUnit';
 
 const Sale = () => {
     const [activeCategory, setActiveCategory] = useState(null);
@@ -38,24 +39,49 @@ const Sale = () => {
     };
 
     // Handle add to cart
-    const handleAddToCart = (item) => {
-        if (!token) return message.error("Please log in first");
+    const handleAddToCart = async (item) => {
+        if (!token) {
+            message.error("ກະລຸນາເຂົ້າສູ່ລະບົບກ່ອນ");
+            return;
+        }
 
-        // Find the category name based on item.categoryId
         const category = categories.find(cat => cat.id === item?.categoryId);
         const categoryName = category ? category.name : '';
-
-        // Determine the type based on category name
         const itemType = categoryName.includes('ເຄື່ອງດື່ມ') ? 'drink' : 'food';
 
-        actionAddToCart({
-            id: item?.id,
-            name: item?.name,
-            price: parseInt(item?.price),
-            imageUrl: item?.imageUrl,
-            // Use the dynamically determined type
-            type: itemType
-        });
+        if (itemType === 'drink') {
+            try {
+                // ดึง product units สำหรับเครื่องดื่มนี้
+                const response = await getProductUnitsByDrinkIdApi(token, item.id);
+                console.log(`[Sale.jsx] API response for units of drinkId ${item.id}:`, response.data);
+
+                if (response?.data?.length > 0) {
+                    const firstUnit = response.data[0];
+                    actionAddToCart({
+                        id: item?.id,
+                        name: firstUnit.name,
+                        price: firstUnit.price,
+                        imageUrl: item?.imageUrl,
+                        type: itemType,
+                        selectedUnitId: firstUnit.id,
+                        productUnits: response.data
+                    });
+                } else {
+                    message.warning('ບໍ່ພົບຫົວໜ່ວຍສິນຄ້າສໍາລັບເຄື່ອງດື່ມນີ້.');
+                }
+            } catch (error) {
+                console.error('[Sale.jsx] Error fetching product units for add to cart:', error.response?.data || error.message);
+                message.error('ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມເຄື່ອງດື່ມ.');
+            }
+        } else {
+            actionAddToCart({
+                id: item?.id,
+                name: item?.name,
+                price: parseInt(item?.price),
+                imageUrl: item?.imageUrl,
+                type: itemType
+            });
+        }
     };
 
     // Handle update cart quantity
@@ -95,9 +121,9 @@ const Sale = () => {
         <div className="h-screen">
             <h1 className="text-[20px] font-semibold">ໜ້າການຂາຍ</h1>
             <div className="flex gap-x-5 mt-2 h-[calc(100%-40px)]">
-                <div className="bg-white flex-3 p-5 rounded h-full overflow-y-auto">
+                <div className="bg-white flex-5 p-5 rounded h-full overflow-y-auto">
                     <div className="w-full">
-                        <ul className="grid grid-cols-5 gap-4 mb-4">
+                        <ul className="grid grid-cols-4 gap-2 mb-4">
                             <li
                                 onClick={() => handleCategoryClick(null)}
                                 className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
@@ -121,22 +147,22 @@ const Sale = () => {
                     {/* Products list */}
                     <div className="mt-5">
                         {isLoading ? (
-                            <ul className="grid grid-cols-5 gap-2">
+                            <ul className="grid grid-cols-4 gap-2">
                                 {renderSkeleton()}
                             </ul>
                         ) : (
-                            <ul className="grid grid-cols-5 gap-2">
+                            <ul className="grid grid-cols-4 gap-2">
                                 {filteredProducts?.map((item) => (
-                                    <li key={item?.id} className="border border-gray-200 w-[170px] h-[210px] rounded-xl shadow-md p-1 flex flex-col justify-between">
-                                        <div className="h-[140px] w-full rounded-xl">
+                                    <li key={item?.id} className="border border-gray-200 w-[170px] h-[190px] rounded-xl shadow-md p-1 flex flex-col justify-between">
+                                        <div className="h-[140px] w-full border border-gray-200 rounded-xl">
                                             <img src={item?.imageUrl} alt={item?.name} className="object-cover w-full h-full rounded-xl" />
                                         </div>
                                         <div className="p-1">
-                                            <p className="font-medium">{item?.name}</p>
                                             <div className="flex justify-between items-center">
-                                                <p className="text-[18px] font-semibold text-red-500">
+                                                <p className="font-medium">{item?.name}</p>
+                                                {/* <p className="text-[18px] font-semibold text-red-500">
                                                     {parseInt(item?.price).toLocaleString()} ກີບ
-                                                </p>
+                                                </p> */}
                                                 <div
                                                     onClick={() => handleAddToCart(item)}
                                                     className="bg-yellow-100 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { reportIncomeExprenseApi } from '../../api/reports'
-import { Table } from 'antd';
+import { Table, DatePicker, Space, Tag } from 'antd';
 import { Page, Text, View, Document, StyleSheet, PDFDownloadLink, Font } from '@react-pdf/renderer';
 import NotoSansLaoFont from '../../fonts/NOTOSANSLAO-MEDIUM.TTF';
 import moment from 'moment';
+import { getAllOrdersApi } from '../../api/order';
+import { comfirmImport } from '../../api/import';
+import axios from 'axios';
+import ApiPath from '../../api/apiPath';
 
 // ลงทะเบียนฟอนต์ลาว
 Font.register({
@@ -105,8 +109,7 @@ const IncomeExpenseReportPDF = ({ data }) => (
                         <Text style={styles.tableCell}>ຈຳນວນເງິນ</Text>
                     </View>
                 </View>
-
-                {data.incomeDetails.map((item, index) => (
+                {(Array.isArray(data.incomeDetails) && data.incomeDetails.length > 0) ? data.incomeDetails.map((item, index) => (
                     <View style={styles.tableRow} key={index}>
                         <View style={{ ...styles.tableCol, ...styles.colNo }}>
                             <Text style={styles.tableCell}>{index + 1}</Text>
@@ -118,7 +121,13 @@ const IncomeExpenseReportPDF = ({ data }) => (
                             <Text style={styles.tableCell}>{item.total_price?.toLocaleString()} ກີບ</Text>
                         </View>
                     </View>
-                ))}
+                )) : (
+                    <View style={styles.tableRow}>
+                        <View style={{ ...styles.tableCol, width: '100%' }}>
+                            <Text style={styles.tableCell}>ບໍ່ມີຂໍ້ມູນ</Text>
+                        </View>
+                    </View>
+                )}
             </View>
 
             {/* ตารางรายจ่าย */}
@@ -135,8 +144,7 @@ const IncomeExpenseReportPDF = ({ data }) => (
                         <Text style={styles.tableCell}>ຈຳນວນເງິນ</Text>
                     </View>
                 </View>
-
-                {data.expenseDetails.length > 0 ? data.expenseDetails.map((item, index) => (
+                {(Array.isArray(data.expenseDetails) && data.expenseDetails.length > 0) ? data.expenseDetails.map((item, index) => (
                     <View style={styles.tableRow} key={index}>
                         <View style={{ ...styles.tableCol, ...styles.colNo }}>
                             <Text style={styles.tableCell}>{index + 1}</Text>
@@ -160,28 +168,100 @@ const IncomeExpenseReportPDF = ({ data }) => (
     </Document>
 );
 
+const { RangePicker } = DatePicker;
+
 const ReportIncomeExpense = () => {
     const [data, setData] = useState({
+        period: { from: null, to: null },
         totalIncome: 0,
         totalExpense: 0,
         netProfit: 0,
         incomeDetails: [],
         expenseDetails: []
     });
+    const [filteredIncome, setFilteredIncome] = useState([]);
+    const [filteredExpense, setFilteredExpense] = useState([]);
+    const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 
     const fetchData = async () => {
         try {
-            const response = await reportIncomeExprenseApi();
-            setData(response.data);
+            const token = localStorage.getItem('token');
+
+            // ดึงข้อมูลรายรับ (orders)
+            const ordersResponse = await getAllOrdersApi(token);
+            console.log('Orders Response:', ordersResponse.data);
+
+            const incomeDetails = ordersResponse.data.map(order => ({
+                id: order.id,
+                createdAt: order.createdAt,
+                total_price: order.total_price,
+                status: order.billStatus,
+                tableNumber: order.table?.table_number,
+                employee: `${order.employee?.fname} ${order.employee?.lname}`
+            }));
+
+            // ดึงข้อมูลรายจ่าย (imports)
+            const importsResponse = await axios.get(ApiPath.getImport, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const expenseDetails = importsResponse.data.map(importItem => ({
+                id: importItem.id,
+                createdAt: importItem.importDate,
+                totalPrice: importItem.totalPrice,
+                status: importItem.status,
+                supplier: importItem.supplier?.name
+            }));
+
+            // คำนวณผลรวม
+            const totalIncome = incomeDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
+            const totalExpense = expenseDetails.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+            const netProfit = totalIncome - totalExpense;
+
+            setData({
+                period: { from: null, to: null },
+                totalIncome,
+                totalExpense,
+                netProfit,
+                incomeDetails,
+                expenseDetails
+            });
+            setFilteredIncome(incomeDetails);
+            setFilteredExpense(expenseDetails);
         } catch (error) {
-            console.log(error);
+            console.error('Error fetching data:', error);
         }
-    }
+    };
 
     useEffect(() => {
         fetchData();
     }, []);
 
+    // ฟังก์ชันกรองวันที่
+    const onDateChange = (dates, dateStrings) => {
+        setSelectedDateRange(dateStrings);
+        if (dateStrings[0] && dateStrings[1]) {
+            setFilteredIncome(
+                (data.incomeDetails || []).filter(item => {
+                    const date = moment(item.createdAt).format('YYYY-MM-DD');
+                    return date >= dateStrings[0] && date <= dateStrings[1];
+                })
+            );
+            setFilteredExpense(
+                (data.expenseDetails || []).filter(item => {
+                    const date = moment(item.createdAt).format('YYYY-MM-DD');
+                    return date >= dateStrings[0] && date <= dateStrings[1];
+                })
+            );
+        } else {
+            setFilteredIncome(data.incomeDetails || []);
+            setFilteredExpense(data.expenseDetails || []);
+        }
+    };
+
+    // คอลัมน์สำหรับรายรับ (orders)
     // คอลัมน์สำหรับรายรับ (ใช้ total_price)
     const incomeColumns = [
         {
@@ -198,11 +278,35 @@ const ReportIncomeExpense = () => {
             render: (date) => moment(date).format('DD/MM/YYYY HH:mm')
         },
         {
+            title: 'ໂຕະ',
+            dataIndex: 'tableNumber',
+            key: 'tableNumber',
+            width: 100,
+        },
+        {
+            title: 'ພະນັກງານ',
+            dataIndex: 'employee',
+            key: 'employee',
+            width: 150,
+        },
+        {
             title: 'ຈຳນວນເງິນ',
             dataIndex: 'total_price',
             key: 'total_price',
             width: 150,
             render: (amount) => `${amount?.toLocaleString()} ກີບ`
+        },
+        {
+            title: 'ສະຖານະ',
+            dataIndex: 'status',
+            key: 'status',
+            width: 120,
+            render: (status) => {
+                let color = 'blue';
+                if (status === 'OPEN') color = 'orange';
+                else if (status === 'CLOSED') color = 'green';
+                return <Tag color={color}>{status}</Tag>;
+            }
         }
     ];
 
@@ -222,11 +326,29 @@ const ReportIncomeExpense = () => {
             render: (date) => moment(date).format('DD/MM/YYYY HH:mm')
         },
         {
+            title: 'ຜູ້ສະໜອງ',
+            dataIndex: 'supplier',
+            key: 'supplier',
+            width: 200,
+        },
+        {
             title: 'ຈຳນວນເງິນ',
             dataIndex: 'totalPrice', // เปลี่ยนเป็น totalPrice สำหรับรายจ่าย
             key: 'totalPrice',
             width: 150,
             render: (amount) => `${amount?.toLocaleString()} ກີບ`
+        },
+        {
+            title: 'ສະຖານະ',
+            dataIndex: 'status',
+            key: 'status',
+            width: 120,
+            render: (status) => {
+                let color = 'blue';
+                if (status === 'completed') color = 'green';
+                else if (status === 'cancelled') color = 'red';
+                return <Tag color={color}>{status}</Tag>;
+            }
         }
     ];
 
@@ -235,15 +357,31 @@ const ReportIncomeExpense = () => {
             <div className='flex items-center justify-between mb-4'>
                 <div>
                     <h2 className='text-xl font-bold mb-2'>ລາຍງານລາຍຮັບ-ລາຍຈ່າຍ</h2>
+                    <div className='flex items-center gap-x-2 mb-2'>
+                        <span>ເລືອກຊ່ວງວັນທີ:</span>
+                        <Space direction="vertical">
+                            <RangePicker
+                                format="YYYY-MM-DD"
+                                onChange={onDateChange}
+                                allowClear={true}
+                            />
+                        </Space>
+                    </div>
                     <div className='space-y-1'>
-                        <p className='text-green-500 font-medium'>ລາຍຮັບທັງໝົດ: {data.totalIncome?.toLocaleString()} ກີບ</p>
-                        <p className='text-blue-500 font-medium'>ລາຍຈ່າຍທັງໝົດ: {data.totalExpense?.toLocaleString()} ກີບ</p>
-                        <p className={`${data.netProfit > 0 ? 'text-orange-500' : 'text-red-500'} font-medium`}>ກຳໄລສຸດທິ: {data.netProfit?.toLocaleString()} ກີບ</p>
+                        <p className='text-green-500 font-medium'>
+                            ລາຍຮັບທັງໝົດ: {data.totalIncome?.toLocaleString()} ກີບ
+                        </p>
+                        <p className='text-blue-500 font-medium'>
+                            ລາຍຈ່າຍທັງໝົດ: {data.totalExpense?.toLocaleString()} ກີບ
+                        </p>
+                        <p className={`${data.netProfit >= 0 ? 'text-orange-500' : 'text-red-500'} font-medium`}>
+                            ກຳໄລສຸດທິ: {data.netProfit?.toLocaleString()} ກີບ
+                        </p>
                     </div>
                 </div>
                 <PDFDownloadLink
                     document={<IncomeExpenseReportPDF data={data} />}
-                    fileName="ລາຍງານລາຍຮັບ-ລາຍຈ່າຍ.pdf"
+                    fileName={`ລາຍງານລາຍຮັບ-ລາຍຈ່າຍ_${moment(data.period?.from).format('DD-MM-YYYY')}_to_${moment(data.period?.to).format('DD-MM-YYYY')}.pdf`}
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                 >
                     {({ loading }) =>
@@ -256,18 +394,17 @@ const ReportIncomeExpense = () => {
                 <div>
                     <h3 className='text-lg font-semibold mb-2'>ລາຍລະອຽດລາຍຮັບ</h3>
                     <Table
-                        dataSource={data.incomeDetails}
+                        dataSource={filteredIncome}
                         columns={incomeColumns}
                         pagination={{ pageSize: 10 }}
                         rowKey="id"
                         bordered
                     />
                 </div>
-
                 <div>
                     <h3 className='text-lg font-semibold mb-2'>ລາຍລະອຽດລາຍຈ່າຍ</h3>
                     <Table
-                        dataSource={data.expenseDetails}
+                        dataSource={filteredExpense}
                         columns={expenseColumns}
                         pagination={{ pageSize: 10 }}
                         rowKey="id"

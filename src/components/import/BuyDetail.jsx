@@ -13,32 +13,31 @@ const BuyDetail = () => {
     const [details, setDetails] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [purchaseOrderData, setPurchaseOrderData] = useState(null);
     // Optional: State to store PO header info if needed later
     // const [purchaseOrderInfo, setPurchaseOrderInfo] = useState(null);
 
     const fetchDetails = useCallback(async () => {
-        if (!id) return; // Check for id
-        console.log(`Fetching details for Purchase Order ID: ${id}`); // Use id
+        if (!id) return;
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`${ApiPath.getDetailsByOrderId}/${id}`);
-            setDetails(response.data.map(detail => ({ ...detail, key: detail.id })));
-             // Optional: Fetch PO header info separately if needed
-             // const poInfoResponse = await axios.get(`${ApiPath.getPurchaseOrderById}/${id}`);
-             // setPurchaseOrderInfo(poInfoResponse.data);
+            const response = await axios.get(`${ApiPath.getPurchaseOrderById}/${id}`);
+            setPurchaseOrderData(response.data);
+            setDetails(response.data.details.map(detail => ({
+                ...detail,
+                key: detail.id,
+                drinkName: detail.productUnit?.drink?.name || '-',
+                unitName: detail.productUnit?.name || '-'
+            })));
         } catch (err) {
-            console.error(`Error fetching details for PO ID ${id}:`, err); // Use id in log
-            let errorMsg = 'Failed to load purchase order details.';
-            if (err.response?.status === 404) {
-                 errorMsg = err.response.data.message || `Purchase Order with ID ${id} not found.`; // Use id in message
-            }
-            setError(errorMsg);
-            message.error(errorMsg);
+            console.error(`Error fetching details for PO ID ${id}:`, err);
+            setError('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນລາຍລະອຽດການສັ່ງຊື້ໄດ້');
+            message.error('ບໍ່ສາມາດໂຫຼດຂໍ້ມູນລາຍລະອຽດການສັ່ງຊື້ໄດ້');
         } finally {
             setLoading(false);
         }
-    }, [id]); // Depend on id
+    }, [id]);
 
     useEffect(() => {
         fetchDetails();
@@ -54,9 +53,15 @@ const BuyDetail = () => {
         },
         {
             title: 'ເຄື່ອງດື່ມ',
-            dataIndex: ['drink', 'name'], // Access nested drink name
+            dataIndex: 'drinkName',
             key: 'drinkName',
-            render: (name, record) => name || `Drink ID: ${record.drinkId}`, // Fallback
+            width: 200,
+        },
+        {
+            title: 'ຫົວໜ່ວຍ',
+            dataIndex: 'unitName',
+            key: 'unitName',
+            width: 200,
         },
         {
             title: 'ຈຳນວນ',
@@ -64,6 +69,7 @@ const BuyDetail = () => {
             key: 'quantity',
             align: 'right',
             width: 120,
+            render: (quantity) => quantity.toLocaleString(),
         },
         {
             title: 'ລາຄາຕໍ່ໜ່ວຍ',
@@ -71,7 +77,7 @@ const BuyDetail = () => {
             key: 'price',
             align: 'right',
             width: 150,
-            render: (price) => `${(price || 0).toLocaleString()} ກີບ`,
+            render: (price) => `${price.toLocaleString()} ກີບ`,
         },
         {
             title: 'ລາຄາລວມ',
@@ -79,7 +85,7 @@ const BuyDetail = () => {
             align: 'right',
             width: 180,
             render: (_, record) => {
-                const total = (record.quantity || 0) * (record.price || 0);
+                const total = record.quantity * record.price;
                 return `${total.toLocaleString()} ກີບ`;
             },
         },
@@ -96,46 +102,55 @@ const BuyDetail = () => {
     if (error) {
         return (
             <div className='bg-white p-4 rounded-md'>
-                 <Breadcrumb style={{ marginBottom: 16 }}>
-                     <Breadcrumb.Item><Link to="/import-buy">ລາຍການສັ່ງຊື້</Link></Breadcrumb.Item>
-                     <Breadcrumb.Item>ລາຍລະອຽດ</Breadcrumb.Item>
-                 </Breadcrumb>
-                 <Alert message="Error Loading Data" description={error} type="error" showIcon />
+                <Breadcrumb style={{ marginBottom: 16 }}>
+                    <Breadcrumb.Item><Link to="/import-buy">ລາຍການສັ່ງຊື້</Link></Breadcrumb.Item>
+                    <Breadcrumb.Item>ລາຍລະອຽດ</Breadcrumb.Item>
+                </Breadcrumb>
+                <Alert message="Error Loading Data" description={error} type="error" showIcon />
             </div>
         );
     }
 
     return (
         <Sidebar>
-        <div className=' bg-white p-4 rounded-md '>
-             <Breadcrumb style={{ marginBottom: 16 }}>
-                 <Breadcrumb.Item><Link to="/import-buy">ລາຍການສັ່ງຊື້</Link></Breadcrumb.Item> {/* Adjust link if route is different */} 
-                 <Breadcrumb.Item>ລາຍລະອຽດ PO #{id}</Breadcrumb.Item> {/* Use id */}
-             </Breadcrumb>
-            <Title level={3}>ລາຍລະອຽດການສັ່ງຊື້ #{id}</Title> {/* Use id */}
-            {/* Optional: Display PO header info here if fetched */}
-             {/* 
-             {purchaseOrderInfo && (
-                 <div style={{ marginBottom: 16 }}>
-                     <Text strong>ຜູ້ສະໜອງ:</Text> {purchaseOrderInfo.supplier?.name || `ID: ${purchaseOrderInfo.supplierId}`}<br />
-                     <Text strong>ວັນທີສັ່ງຊື້:</Text> {moment(purchaseOrderInfo.orderDate).format('DD/MM/YYYY HH:mm')}<br />
-                     <Text strong>ສະຖານະ:</Text> {purchaseOrderInfo.status}<br />
-                 </div>
-             )}
-             */} 
-            <Table
-                dataSource={details}
-                columns={columns}
-                pagination={false} // Typically don't need pagination for details view
-                bordered
-                summary={() => (
-                     <Table.Summary.Row>
-                         <Table.Summary.Cell index={0} colSpan={4}><Text strong>ລວມທັງໝົດ:</Text></Table.Summary.Cell>
-                         <Table.Summary.Cell index={1} align="right"><Text strong>{overallTotalPrice.toLocaleString()} ກີບ</Text></Table.Summary.Cell>
-                     </Table.Summary.Row>
-                )}
-            />
-        </div>
+            <div className=' bg-white p-4 rounded-md '>
+                <Breadcrumb style={{ marginBottom: 16 }}>
+                    <Breadcrumb.Item><Link to="/import-buy">ລາຍການສັ່ງຊື້</Link></Breadcrumb.Item> {/* Adjust link if route is different */}
+                    <Breadcrumb.Item>ລາຍລະອຽດ PO #{id}</Breadcrumb.Item> {/* Use id */}
+                </Breadcrumb>
+                <Title level={3}>ລາຍລະອຽດການສັ່ງຊື້ #{id}</Title> {/* Use id */}
+
+                {/* แสดงข้อมูล PO header */}
+                <div className="mb-4">
+                    <Text strong>ຜູ້ສະໜອງ: </Text>
+                    <Text>{purchaseOrderData?.supplier?.name}</Text>
+                    <br />
+                    <Text strong>ເບີໂທ: </Text>
+                    <Text>{purchaseOrderData?.supplier?.phone}</Text>
+                    <br />
+                    <Text strong>ວັນທີສັ່ງຊື້: </Text>
+                    <Text>{moment(purchaseOrderData?.orderDate).format('DD/MM/YYYY HH:mm')}</Text>
+                    <br />
+                    <Text strong>ສະຖານະ: </Text>
+                    <Text>{purchaseOrderData?.status === 'approved' ? 'ອະນຸມັດແລ້ວ' :
+                        purchaseOrderData?.status === 'cancelled' ? 'ຍົກເລີກ' :
+                            purchaseOrderData?.status === 'pending' ? 'ລໍຖ້າຢືນຢັນ' :
+                                purchaseOrderData?.status}</Text>
+                </div>
+
+                <Table
+                    dataSource={details}
+                    columns={columns}
+                    pagination={false} // Typically don't need pagination for details view
+                    bordered
+                    summary={() => (
+                        <Table.Summary.Row>
+                            <Table.Summary.Cell index={0} colSpan={5}><Text strong>ລວມທັງໝົດ:</Text></Table.Summary.Cell>
+                            <Table.Summary.Cell index={1} align="right"><Text strong>{purchaseOrderData?.totalPrice.toLocaleString()} ກີບ</Text></Table.Summary.Cell>
+                        </Table.Summary.Row>
+                    )}
+                />
+            </div>
         </Sidebar>
     );
 };

@@ -175,8 +175,26 @@ const ReportSale = () => {
     const fetchData = async () => {
         try {
             const response = await reportOrderApi();
-            setOrderData(response.data);
-            setFilteredData(response.data);
+            // ຂໍ້ມູນຈາກ API ຢູ່ໃນ response.data.orders
+            const orders = response.data.orders; // ແກ້ໄຂບ່ອນນີ້
+            const totalRevenue = orders.reduce((sum, order) => sum + (order.total_price || 0), 0);
+            const totalItemsSold = orders.reduce((sum, order) =>
+                sum + order.orderRounds.reduce((roundSum, round) =>
+                    roundSum + round.orderDetails.reduce((detailSum, detail) =>
+                        detailSum + detail.quantity, 0), 0), 0);
+
+            setOrderData({
+                orders,
+                totalOrders: orders.length,
+                totalRevenue,
+                totalItemsSold
+            });
+            setFilteredData({
+                orders,
+                totalOrders: orders.length,
+                totalRevenue,
+                totalItemsSold
+            });
         } catch (error) {
             console.log(error);
         }

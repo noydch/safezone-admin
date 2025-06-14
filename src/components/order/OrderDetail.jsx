@@ -14,12 +14,7 @@ const columns = [
         dataIndex: 'item',
         key: 'item',
         render: (_, record) => {
-            if (record.food) {
-                return record.food.name || `ໄອດີອາຫານ: ${record.foodId}`;
-            } else if (record.drink) {
-                return record.drink.name || `ໄອດີເຄື່ອງດື່ມ: ${record.drinkId}`;
-            }
-            return 'N/A';
+            return record.productUnit?.name || `ໄອດີ: ${record.id}`;
         },
     },
     {

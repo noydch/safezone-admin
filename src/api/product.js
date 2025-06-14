@@ -128,7 +128,7 @@ export const insertDrinkApi = async (token, data) => {
 
     formData.append("name", data?.name);
     formData.append("categoryId", data?.categoryId);
-    // formData.append("qty", data?.qty);
+    formData.append("baseUnitId", data?.baseUnitId);
     formData.append("price", data?.price);
 
     try {

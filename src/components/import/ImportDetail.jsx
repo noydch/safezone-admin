@@ -13,6 +13,7 @@ const ImportDetail = () => {
     const [details, setDetails] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [importData, setImportData] = useState(null);
 
     const fetchDetails = useCallback(async () => {
         if (!id) return;
@@ -20,8 +21,8 @@ const ImportDetail = () => {
         setError(null);
         try {
             const response = await axios.get(`${ApiPath.getImportDetail}/${id}`);
-            // ປັບໂຄງສ້າງຂໍ້ມູນໃຫ້ເໝາະສົມກັບຕາຕະລາງ
-            const formattedData = response.data.purchaseOrder.details.map(detail => ({
+            setImportData(response.data);
+            const formattedData = response.data.details.map(detail => ({
                 key: detail.id,
                 drinkName: detail.drink.name,
                 quantity: detail.quantity,
@@ -109,6 +110,16 @@ const ImportDetail = () => {
                     <Breadcrumb.Item>ລາຍລະອຽດການນຳເຂົ້າ #{id}</Breadcrumb.Item>
                 </Breadcrumb>
                 <Title level={3}>ລາຍລະອຽດການນຳເຂົ້າ #{id}</Title>
+                <div className="mb-4">
+                    <Text strong>ຜູ້ສະໜອງ: </Text>
+                    <Text>{importData?.supplier.name}</Text>
+                    <br />
+                    <Text strong>ເບີໂທ: </Text>
+                    <Text>{importData?.supplier.phone}</Text>
+                    <br />
+                    <Text strong>ວັນທີນຳເຂົ້າ: </Text>
+                    <Text>{moment(importData?.importDate).format('DD/MM/YYYY HH:mm')}</Text>
+                </div>
                 <Table
                     dataSource={details}
                     columns={columns}
@@ -118,7 +129,7 @@ const ImportDetail = () => {
                         <Table.Summary.Row>
                             <Table.Summary.Cell index={0} colSpan={4}><Text strong>ລວມທັງໝົດ:</Text></Table.Summary.Cell>
                             <Table.Summary.Cell index={1} align="right">
-                                <Text strong>{overallTotal.toLocaleString()} ກີບ</Text>
+                                <Text strong>{importData?.totalPrice.toLocaleString()} ກີບ</Text>
                             </Table.Summary.Cell>
                         </Table.Summary.Row>
                     )}

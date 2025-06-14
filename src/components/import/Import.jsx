@@ -20,13 +20,13 @@ const Import = () => {
                 order: index + 1,
                 date: new Date(item.importDate).toLocaleDateString(),
                 time: new Date(item.importDate).toLocaleTimeString(),
-                supplier: item.purchaseOrder?.supplier?.name || '-',
-                phoneNumber: item.purchaseOrder?.supplier?.phone || '-',
-                importQuantity: item.purchaseOrder?.details?.reduce((sum, detail) => sum + detail.quantity, 0) || 0,
+                supplier: item.supplier?.name || '-',
+                phoneNumber: item.supplier?.phone || '-',
+                importQuantity: item.details?.reduce((sum, detail) => sum + detail.quantity, 0) || 0,
                 total: `${item.totalPrice.toLocaleString()} ກີບ`,
-                status: item.status === 'pending' ? 'ລໍຖ້າຢືນຢັນ' :
-                    item.status === 'approved' ? 'ອະນຸມັດແລ້ວ' :
-                        item.status === 'rejected' ? 'ຖືກປະຕິເສດ' : item.status
+                status: item.status === 'completed' ? 'ສຳເລັດແລ້ວ' :
+                    item.status === 'pending' ? 'ລໍຖ້າຢືນຢັນ' :
+                        item.status === 'cancelled' ? 'ຍົກເລີກ' : item.status
             }));
             setImportData(formattedData);
         } catch (error) {
@@ -113,8 +113,8 @@ const Import = () => {
             render: (status) => {
                 let color = 'blue';
                 if (status === 'ລໍຖ້າຢືນຢັນ') color = 'gold';
-                else if (status === 'ອະນຸມັດແລ້ວ') color = 'green';
-                else if (status === 'ຖືກປະຕິເສດ') color = 'red';
+                else if (status === 'ສຳເລັດແລ້ວ') color = 'green';
+                else if (status === 'ຍົກເລີກ') color = 'red';
 
                 return (
                     <Tag color={color} className="px-4 py-1">
