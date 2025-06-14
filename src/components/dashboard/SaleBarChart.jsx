@@ -191,7 +191,7 @@ const SaleBarChart = ({ orders }) => {
     }));
 
     return (
-        <div className="h-72">
+        <div className="h-74">
             <div className="flex justify-end mb-4 gap-2">
                 <Select
                     value={selectedRange}

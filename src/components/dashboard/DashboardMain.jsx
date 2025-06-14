@@ -174,7 +174,7 @@ const DashboardMain = () => {
             </ul>
 
             <div className='mt-7 flex gap-x-5 min-w-[1200px]'>
-                <div className='flex-1 bg-white p-4 rounded-md'>
+                <div className='flex-1 bg-white p-4 rounded-md h-[410px]'>
                     <div className=' flex items-center justify-between'>
                         <div>
                             <p className=' text-[12px] text-gray-500'>ການເຄື່ອນໄຫວ</p>
