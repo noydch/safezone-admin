@@ -183,14 +183,21 @@ const ReportIncomeExpense = () => {
     const [filteredExpense, setFilteredExpense] = useState([]);
     const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
 
+    // เพิ่มฟังก์ชันคำนวณผลรวม
+    const calculateTotals = (incomeData, expenseData) => {
+        const totalIncome = incomeData.reduce((sum, item) => sum + (item.total_price || 0), 0);
+        const totalExpense = expenseData.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+        const netProfit = totalIncome - totalExpense;
+        return { totalIncome, totalExpense, netProfit };
+    };
+
+    // แก้ไขฟังก์ชัน fetchData
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token');
 
             // ดึงข้อมูลรายรับ (orders)
             const ordersResponse = await getAllOrdersApi(token);
-            console.log('Orders Response:', ordersResponse.data);
-
             const incomeDetails = ordersResponse.data.map(order => ({
                 id: order.id,
                 createdAt: order.createdAt,
@@ -215,10 +222,8 @@ const ReportIncomeExpense = () => {
                 supplier: importItem.supplier?.name
             }));
 
-            // คำนวณผลรวม
-            const totalIncome = incomeDetails.reduce((sum, item) => sum + (item.total_price || 0), 0);
-            const totalExpense = expenseDetails.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-            const netProfit = totalIncome - totalExpense;
+            // คำนวณผลรวมโดยใช้ฟังก์ชัน calculateTotals
+            const { totalIncome, totalExpense, netProfit } = calculateTotals(incomeDetails, expenseDetails);
 
             setData({
                 period: { from: null, to: null },
@@ -239,23 +244,52 @@ const ReportIncomeExpense = () => {
         fetchData();
     }, []);
 
-    // ฟังก์ชันกรองวันที่
+    // แก้ไขฟังก์ชัน onDateChange
     const onDateChange = (dates, dateStrings) => {
         setSelectedDateRange(dateStrings);
         if (dateStrings[0] && dateStrings[1]) {
-            setFilteredIncome(
-                (data.incomeDetails || []).filter(item => {
-                    const date = moment(item.createdAt).format('YYYY-MM-DD');
-                    return date >= dateStrings[0] && date <= dateStrings[1];
-                })
-            );
-            setFilteredExpense(
-                (data.expenseDetails || []).filter(item => {
-                    const date = moment(item.createdAt).format('YYYY-MM-DD');
-                    return date >= dateStrings[0] && date <= dateStrings[1];
-                })
-            );
+            // กรองข้อมูลรายรับตามช่วงวันที่
+            const filteredIncomeData = (data.incomeDetails || []).filter(item => {
+                const date = moment(item.createdAt).format('YYYY-MM-DD');
+                return date >= dateStrings[0] && date <= dateStrings[1];
+            });
+
+            // กรองข้อมูลรายจ่ายตามช่วงวันที่
+            const filteredExpenseData = (data.expenseDetails || []).filter(item => {
+                const date = moment(item.createdAt).format('YYYY-MM-DD');
+                return date >= dateStrings[0] && date <= dateStrings[1];
+            });
+
+            // คำนวณผลรวมใหม่โดยใช้ฟังก์ชัน calculateTotals
+            const { totalIncome, totalExpense, netProfit } = calculateTotals(filteredIncomeData, filteredExpenseData);
+
+            // อัพเดทข้อมูลสรุปและข้อมูลที่กรองแล้ว
+            setData(prev => ({
+                ...prev,
+                period: { from: dateStrings[0], to: dateStrings[1] },
+                totalIncome,
+                totalExpense,
+                netProfit,
+                incomeDetails: filteredIncomeData,
+                expenseDetails: filteredExpenseData
+            }));
+
+            setFilteredIncome(filteredIncomeData);
+            setFilteredExpense(filteredExpenseData);
         } else {
+            // ถ้าไม่มีช่วงวันที่ที่เลือก ให้แสดงข้อมูลทั้งหมด
+            const { totalIncome, totalExpense, netProfit } = calculateTotals(data.incomeDetails, data.expenseDetails);
+
+            setData(prev => ({
+                ...prev,
+                period: { from: null, to: null },
+                totalIncome,
+                totalExpense,
+                netProfit,
+                incomeDetails: prev.incomeDetails,
+                expenseDetails: prev.expenseDetails
+            }));
+
             setFilteredIncome(data.incomeDetails || []);
             setFilteredExpense(data.expenseDetails || []);
         }

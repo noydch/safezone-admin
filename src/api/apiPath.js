@@ -94,7 +94,7 @@ export default class ApiPath {
     //report
     static reportFoodDrink = `${baseUrl}/reportFoodDrink`
     static reportOrder = `${baseUrl}/reportOrder`
-    static reportIncomeExpense = `${baseUrl}/reportIncomeExpense`
+    // static reportIncomeExpense = `${baseUrl}/reportIncomeExpense`
 
     // unit
     static getAllUnit = `${baseUrl}/getAllUnits`

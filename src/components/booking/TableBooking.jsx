@@ -27,16 +27,21 @@ const TableBooking = ({ onChange }) => {
             setError(null);
             try {
                 const response = await axios.get(ApiPath.getReservations);
-                const formattedData = response.data.map(res => ({
-                    key: res.id,
-                    id: res.id,
-                    datetime: moment(res.reservationTime).format('DD/MM/YYYY HH:mm'),
-                    tableNo: res.table ? `No.${res.table.table_number}` : 'N/A',
-                    status: res.status,
-                    customer: res.customer ? `${res.customer.fname} ${res.customer.lname}` : 'N/A',
-                    phone: res.customer ? res.customer.phone : 'N/A',
-                    _reservationTime: res.reservationTime
-                }));
+                console.log('API Response:', response.data);
+
+                const formattedData = response.data.map(res => {
+                    console.log('Reservation Time:', res.reservationTime);
+                    return {
+                        key: res.id,
+                        id: res.id,
+                        datetime: moment(res.reservationTime).local().format('DD/MM/YYYY HH:mm'),
+                        tableNo: res.table ? `No.${res.table.table_number}` : 'N/A',
+                        status: res.status,
+                        customer: res.customer ? `${res.customer.fname} ${res.customer.lname}` : 'N/A',
+                        phone: res.customer ? res.customer.phone : 'N/A',
+                        _reservationTime: res.reservationTime
+                    };
+                });
                 setReservations(formattedData);
             } catch (err) {
                 console.error("Error fetching reservations:", err);
@@ -189,7 +194,7 @@ const TableBooking = ({ onChange }) => {
                                 loading={updatingStatus[`${record.id}_confirmed`]}
                                 onClick={() => handleStatusChange(record.id, 'confirmed')}
                             >
-                                ຄອນເຟີມ
+                                ຢືນຢັນ
                             </Button>
                             <Button
                                 danger
