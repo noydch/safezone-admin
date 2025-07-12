@@ -27,9 +27,45 @@ const TableBooking = ({ onChange }) => {
             setError(null);
             try {
                 const response = await axios.get(ApiPath.getReservations);
-                console.log('API Response:', response.data);
+                let fetchedReservations = response.data; // Store raw data to modify
 
-                const formattedData = response.data.map(res => {
+                // Process for auto-cancellation of overdue pending reservations
+                const autoCancellationPromises = [];
+                for (const res of fetchedReservations) {
+                    const reservationMoment = moment(res.reservationTime);
+                    // Calculate the auto-cancellation threshold: 8:20 PM on the reservation day
+                    const cancellationThreshold = reservationMoment.clone().set({ hour: 20, minute: 20, second: 0, millisecond: 0 });
+
+                    // Check if status is pending AND current time is past the 8:20 PM threshold of the reservation day
+                    if (res.status === 'pending' && moment().isAfter(cancellationThreshold)) {
+                        console.log(`Reservation ${res.id} (booked for ${res.reservationTime}) is pending and the cancellation threshold (${cancellationThreshold.format('DD/MM/YYYY HH:mm')}) has passed. Attempting to auto-cancel.`);
+                        autoCancellationPromises.push(
+                            updateReservationStatus(res.id, 'cancelled')
+                                .then(() => {
+                                    // Update the status in the local array to reflect the change immediately
+                                    res.status = 'cancelled';
+                                    message.info(`ການຈອງເລກທີ ${res.id} ຖືກຍົກເລີກອັດຕະໂນມັດຍ້ອນໝົດເວລາ.`);
+                                })
+                                .catch(err => {
+                                    console.error(`Failed to auto-cancel reservation ${res.id}:`, err);
+                                    // Do not change local status if API update failed
+                                    message.error(`ບໍ່ສາມາດຍົກເລີກການຈອງເລກທີ ${res.id} ໂດຍອັດຕະໂນມັດ.`);
+                                })
+                        );
+                    }
+                }
+
+                // Wait for all auto-cancellation updates to complete (or settle)
+                if (autoCancellationPromises.length > 0) {
+                    await Promise.allSettled(autoCancellationPromises);
+                    // The fetchedReservations array already has updated statuses due to direct modification
+                    // if the update was successful.
+                }
+
+                // Filter to only include 'pending' reservations for this table view
+                const pendingReservations = fetchedReservations.filter(res => res.status === 'pending');
+
+                const formattedData = pendingReservations.map(res => {
                     console.log('Reservation Time:', res.reservationTime);
                     return {
                         key: res.id,

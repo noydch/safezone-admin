@@ -12,6 +12,8 @@ const Cart = () => {
 
     // ดึงข้อมูลและ actions จาก Zustand store
     const carts = useSafezoneStore((state) => state.carts);
+    console.log(carts);
+
     const token = useSafezoneStore((state) => state.token);
     const user = useSafezoneStore((state) => state.user);
     const tables = useSafezoneStore((state) => state.tables);
@@ -201,7 +203,7 @@ const Cart = () => {
                                 <div className="flex justify-between w-full ml-1.5 py-1">
                                     <div className="flex flex-col justify-between h-full">
                                         <div>
-                                            <p className="font-medium">{item.name}</p>
+                                            <p className="font-medium">{item?.productUnits[0]?.drink.name} ({item.name}) </p>
                                         </div>
                                         <div className=''>
                                             {item.type === 'drink' && (
@@ -246,11 +248,11 @@ const Cart = () => {
                                         >
                                             <FaRegTrashAlt />
                                         </button>
-                                        <p className="font-semibold">
+                                        {/* <p className="font-semibold">
                                             {item.type === 'drink' && item.selectedUnitId && item.productUnits?.length > 0
                                                 ? `${item.productUnits.find(unit => unit.id === item.selectedUnitId)?.price.toLocaleString() || '0'} ກີບ (x${item.qty})`
-                                                : `${(item.price * item.qty).toLocaleString()} ກີບ`}
-                                        </p>
+                                                : `${(itemใproductUnits[0].price * item.qty).toLocaleString()} ກີບ`}
+                                        </p> */}
                                     </div>
                                 </div>
                             </li>

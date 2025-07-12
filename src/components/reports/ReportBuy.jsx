@@ -36,7 +36,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     tableColHeader: {
-        width: '12.5%',
+        // width: '16.66%', // Changed from '12.5%' // เดิม
+        width: 'auto', // เปลี่ยนเป็น auto
         borderStyle: 'solid',
         borderWidth: 1,
         borderColor: '#bfbfbf',
@@ -44,7 +45,8 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     tableCol: {
-        width: '12.5%',
+        // width: '16.66%', // Changed from '12.5%' // เดิม
+        width: 'auto', // เปลี่ยนเป็น auto
         borderStyle: 'solid',
         borderWidth: 1,
         borderColor: '#bfbfbf',
@@ -59,28 +61,28 @@ const styles = StyleSheet.create({
 // สร้าง Component สำหรับ PDF
 const PurchaseOrderPDF = ({ purchaseOrders }) => (
     <Document>
-        <Page size="A4" orientation="landscape" style={styles.page}>
+        <Page size="A4" style={styles.page}> {/* ลบ orientation="landscape" ออก */}
             <Text style={styles.title}>ລາຍງານການສັ່ງຊື້ເຄື່ອງດື່ມ</Text>
 
             <View style={styles.table}>
                 {/* หัวตาราง */}
                 <View style={styles.tableRow}>
-                    <View style={styles.tableColHeader}>
+                    <View style={{ ...styles.tableColHeader, width: '10%' }}> {/* ลำดับ PO */}
                         <Text style={styles.tableCell}>ລຳດັບ PO</Text>
                     </View>
-                    <View style={styles.tableColHeader}>
+                    <View style={{ ...styles.tableColHeader, width: '25%' }}> {/* ชื่อผู้จัดหา */}
                         <Text style={styles.tableCell}>ຊື່ຜູ້ສະໜອງ</Text>
                     </View>
-                    <View style={styles.tableColHeader}>
+                    <View style={{ ...styles.tableColHeader, width: '15%' }}> {/* จำนวน (รายการ) */}
                         <Text style={styles.tableCell}>ຈຳນວນ (ລາຍການ)</Text>
                     </View>
-                    <View style={styles.tableColHeader}>
+                    <View style={{ ...styles.tableColHeader, width: '15%' }}> {/* ราคารวม */}
                         <Text style={styles.tableCell}>ລາຄາລວມ</Text>
                     </View>
-                    <View style={styles.tableColHeader}>
+                    <View style={{ ...styles.tableColHeader, width: '20%' }}> {/* วันที่สั่งซื้อ */}
                         <Text style={styles.tableCell}>ວັນທີສັ່ງຊື້</Text>
                     </View>
-                    <View style={styles.tableColHeader}>
+                    <View style={{ ...styles.tableColHeader, width: '15%' }}> {/* สถานะ */}
                         <Text style={styles.tableCell}>ສະຖານະ</Text>
                     </View>
                 </View>
@@ -88,22 +90,22 @@ const PurchaseOrderPDF = ({ purchaseOrders }) => (
                 {/* ข้อมูลในตาราง */}
                 {purchaseOrders && purchaseOrders.length > 0 ? purchaseOrders.map((order) => (
                     <View style={styles.tableRow} key={order.id}>
-                        <View style={styles.tableCol}>
+                        <View style={{ ...styles.tableCol, width: '10%' }}>
                             <Text style={styles.tableCell}>{order.id}</Text>
                         </View>
-                        <View style={styles.tableCol}>
+                        <View style={{ ...styles.tableCol, width: '25%' }}>
                             <Text style={styles.tableCell}>{order.supplier?.name || 'N/A'}</Text>
                         </View>
-                        <View style={styles.tableCol}>
+                        <View style={{ ...styles.tableCol, width: '15%' }}>
                             <Text style={styles.tableCell}>{(order.details?.length || 0)} ລາຍການ</Text>
                         </View>
-                        <View style={styles.tableCol}>
+                        <View style={{ ...styles.tableCol, width: '15%' }}>
                             <Text style={styles.tableCell}>{(order.totalPrice || 0).toLocaleString()} ກີບ</Text>
                         </View>
-                        <View style={styles.tableCol}>
+                        <View style={{ ...styles.tableCol, width: '20%' }}>
                             <Text style={styles.tableCell}>{moment(order.orderDate).format('DD/MM/YYYY')}</Text>
                         </View>
-                        <View style={styles.tableCol}>
+                        <View style={{ ...styles.tableCol, width: '15%' }}>
                             <Text style={styles.tableCell}>{order.status?.toUpperCase() || 'UNKNOWN'}</Text>
                         </View>
                     </View>

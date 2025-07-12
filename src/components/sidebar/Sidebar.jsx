@@ -16,14 +16,15 @@ import { IoFastFoodSharp, IoPersonCircle } from "react-icons/io5";
 import { BiSolidFoodMenu, BiSolidReport, BiListUl, BiPlusCircle, BiCog } from "react-icons/bi";
 import { MdTableRestaurant, MdLogout, MdOutlineProductionQuantityLimits, MdOutlineImportantDevices, MdNoteAlt, MdDashboard } from "react-icons/md";
 import { BsFillPersonVcardFill } from "react-icons/bs";
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
 import { FaTruck } from "react-icons/fa";
 import useSafezoneStore from '../../store/safezoneStore';
 
 const Sidebar = ({ children }) => {
     const user = useSafezoneStore((state) => state.user);
-
+    const navigate = useNavigate();
+    const logoutAction = useSafezoneStore((state) => state.actionLogout);
     const [avatar, setAvatar] = useState(() => {
         // Load avatar from localStorage or use default
         return localStorage.getItem('avatar') || avatar1;
@@ -166,21 +167,21 @@ const Sidebar = ({ children }) => {
     return (
         <div className=' flex h-screen'>
             <section className=' sticky w-[220px] bg-white p-2 flex flex-col z-50'>
-                <div className=' flex justify-center my-3'>
+                <div className=' flex justify-center my-1'>
                     <img src={logo} alt=""
                         className=' w-[120px]'
                     />
                 </div>
-                <div className=' w-full space-y-2 flex-1 mt-5'>
+                <div className=' w-full space-y-1 flex-1 mt-5'>
                     {
                         path.map((item, index) => (
                             item.type === 'dropdown' ? (
                                 <div key={index}>
                                     <div
                                         onClick={() => setIsProductMenuOpen(!isProductMenuOpen)}
-                                        className={`${isSubmenuActive(item.submenu) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200 cursor-pointer`}
+                                        className={`${isSubmenuActive(item.submenu) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[14px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200 cursor-pointer`}
                                     >
-                                        <div className=' text-[22px]'>
+                                        <div className=' text-[18px]'>
                                             {item.icon}
                                         </div>
                                         {item.name}
@@ -192,7 +193,7 @@ const Sidebar = ({ children }) => {
                                                 <NavLink
                                                     key={subIndex}
                                                     to={subItem.path}
-                                                    className={({ isActive }) => `${isActive ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[14px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
+                                                    className={({ isActive }) => `${isActive ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[12px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
                                                 >
                                                     {subItem.icon}
                                                     {subItem.name}
@@ -206,9 +207,9 @@ const Sidebar = ({ children }) => {
                                     key={index}
                                     to={item.path}
                                     end
-                                    className={`${isActivePath(item.path) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
+                                    className={`${isActivePath(item.path) ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[14px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
                                 >
-                                    <div className=' text-[22px]'>
+                                    <div className=' text-[18px]'>
                                         {item.icon}
                                     </div>
                                     {item.name}
@@ -218,19 +219,22 @@ const Sidebar = ({ children }) => {
                     }
                 </div>
                 <footer className=''>
-                    <NavLink
-                        to={'/login'}
-                        end
-                        className={({ isActive }) => `${isActive ? ' bg-red-100 border-2 border-red-700 text-red-700' : ' border-2 border-transparent'} flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md hover:bg-red-100 hover:border-2 hover:border-red-500 hover:text-red-500 duration-200`}
+                    <button
+                        onClick={() => {
+                            logoutAction();
+                            navigate('/login');
+                        }}
+                        className='w-full flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md bg-white border-2 border-transparent hover:bg-red-100 hover:border-red-500 hover:text-red-500 duration-200'
                     >
                         <MdLogout className=' text-[24px]' />
                         ອອກຈາກລະບົບ
-                    </NavLink>
+                    </button>
                 </footer>
+
             </section>
             <section className=' w-full h-screen flex-1 flex flex-col'>
                 <nav className=' bg-white w-full h-[70px] flex items-center justify-end px-4 drop-shadow-lg sticky z-40'>
-                    <div className=' flex items-center justify-between p-1 px-2 rounded gap-2 w-[220px] bg-white'>
+                    <div className=' flex items-center justify-end p-1 px-2 rounded gap-2 w-[300px] bg-white'>
                         <div
                             className=' relative flex items-center gap-x-2'>
                             <div className=' cursor-pointer w-[40px] h-[40px] rounded-full border border-gray-700'
@@ -262,7 +266,7 @@ const Sidebar = ({ children }) => {
                                 {user ? `${user.fname} ${user.lname}` : 'Loading User...'}
                             </p>
                         </div>
-                        <IoIosArrowDown />
+                        {/* <IoIosArrowDown /> */}
                     </div>
                 </nav>
                 <main className=' flex-1 p-4 bg-gray-100 overflow-y-auto'>

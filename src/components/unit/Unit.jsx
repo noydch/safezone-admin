@@ -8,27 +8,46 @@ import useSafezoneStore from '../../store/safezoneStore';
 import ModalAddUnit from './ModalAddUnit';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../sidebar/Sidebar';
+import FrmEditUnit from './FrmEditUnit';
 
 const Unit = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedUnit, setSelectedUnit] = useState(null);
+
+    const handleEditClick = (unit) => {
+        setSelectedUnit(unit);
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditModalClose = () => {
+        setIsEditModalOpen(false);
+        setSelectedUnit(null); // Clear selected unit when modal closes
+    };
+
+    const handleEditSuccess = () => {
+        // Logic to refresh the unit list after a successful edit
+        console.log('Unit updated successfully! Refreshing list...');
+        // Example: listUnits(); // Call your function to fetch units again
+    };
 
     const columns = [
         {
             title: <p className='text-center'>ລຳດັບ</p>,
-            dataIndex: 'uid',
-            key: 'uid',
+            dataIndex: 'id', // เปลี่ยนจาก 'uid' เป็น 'id' เพื่อใช้ ID ตรงๆ
+            key: 'id',
             width: 50,
-            render: (text) => loading ? <Skeleton.Input style={{ width: 30 }} active size="small" /> : text
+            render: (text) => loading ? <Skeleton.Input style={{ width: 30 }} active size="small" /> : <p className='text-center'>{text}</p> // ห่อด้วย <p> ตรงนี้
         },
         {
             title: 'ຊື່ຫົວໜ່ວຍ',
-            dataIndex: 'name',
+            dataIndex: 'name', // ใช้ 'name' ตรงๆ
             key: 'name',
             width: 300,
-            render: (text) => loading ? <Skeleton.Input style={{ width: 200 }} active size="small" /> : text
+            render: (text) => loading ? <Skeleton.Input style={{ width: 200 }} active size="small" /> : <p className='text-[16px]'>{text}</p> // ห่อด้วย <p> ตรงนี้
         },
         {
             title: <p className='text-center'>ຈັດການ</p>,
@@ -43,7 +62,7 @@ const Unit = () => {
                     ) : (
                         <>
                             <BiSolidEdit
-                                onClick={() => navigate(`/unit/${record.id}`)}
+                                onClick={() => handleEditClick(record)} // Add onClick to open edit modal
                                 className='cursor-pointer text-[24px] text-blue-500'
                             />
                             <Popconfirm
@@ -98,20 +117,13 @@ const Unit = () => {
     const data = loading
         ? Array(5).fill({}).map((_, index) => ({
             key: `skeleton-${index}`,
-            uid: <Skeleton.Input style={{ width: 30 }} active size="small" />,
-            name: <Skeleton.Input style={{ width: 200 }} active size="small" />,
-            action: (
-                <div className='flex items-center justify-center gap-x-2'>
-                    <Skeleton.Button active size="small" shape="circle" />
-                    <Skeleton.Button active size="small" shape="circle" />
-                </div>
-            )
+            id: `skeleton-${index}`, // ทำให้เป็น string ตรงๆ
+            name: `skeleton-name-${index}`, // ทำให้เป็น string ตรงๆ
         }))
         : units.map(unit => ({
             key: unit.id,
-            id: unit.id,
-            uid: <p className='text-center'>{unit.id}</p>,
-            name: <p className='text-[16px]'>{unit.name}</p>
+            id: unit.id, // เป็น string ตรงๆ
+            name: unit.name // เปลี่ยนให้เป็น string ตรงๆ
         }));
 
     return (
@@ -152,6 +164,15 @@ const Unit = () => {
                     </div>
                 </div>
             </div>
+            {selectedUnit && ( // Only render the modal if a unit is selected
+                <FrmEditUnit
+                    isModalOpen={isEditModalOpen}
+                    handleCancel={handleEditModalClose}
+                    unit={selectedUnit}
+                    onSuccess={handleEditSuccess}
+                    fetchUnits={fetchUnits}
+                />
+            )}
         </Sidebar>
     )
 }

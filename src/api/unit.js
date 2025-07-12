@@ -26,7 +26,7 @@ export const delUnitApi = async (token, id) => {
 }
 
 export const updateUnitApi = async (token, id, name) => {
-    return await axios.put(`${ApiPath.updateUnit}/:${id}`, name, {
+    return await axios.put(`${ApiPath.updateUnit}/${id}`, name, {
         headers: {
             Authorization: `Bearer ${token}`
         }

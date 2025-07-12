@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Modal, Form } from 'antd';
+import { Modal, Form, Tabs } from 'antd';
 import ModalBooking from './ModalBooking';
 import TableBooking from './TableBooking';
+import TableBookingHistory from './TableBookingHistory';
 
 const Booking = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,9 +19,31 @@ const Booking = () => {
         setRefreshKey(prevKey => prevKey + 1);
     };
 
-    const onChange = (pagination, filters, sorter, extra) => {
+    const onTableChange = (pagination, filters, sorter, extra) => {
         console.log('Table params changed in Booking:', pagination, filters, sorter, extra);
     };
+
+    const items = [
+        {
+            key: '1',
+            label: 'ລາຍການຈອງທັງໝົດ',
+            children: (
+                <TableBooking
+                    key={refreshKey}
+                    onChange={onTableChange}
+                />
+            ),
+        },
+        {
+            key: '2',
+            label: 'ປະຫວັດການຈອງ',
+            children: (
+                <TableBookingHistory
+                    key={`cancelled-${refreshKey}`}
+                />
+            ),
+        },
+    ];
 
     return (
         <div>
@@ -40,10 +63,7 @@ const Booking = () => {
                     />
                 </div>
 
-                <TableBooking
-                    key={refreshKey}
-                    onChange={onChange}
-                />
+                <Tabs defaultActiveKey="1" items={items} />
             </div>
         </div>
     );

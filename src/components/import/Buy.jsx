@@ -13,6 +13,8 @@ const Buy = () => {
     const [purchaseOrders, setPurchaseOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [confirmLoadingId, setConfirmLoadingId] = useState(null); // New state for approve button loading
+    const [cancelLoadingId, setCancelLoadingId] = useState(null);   // New state for cancel button loading
 
     const fetchPurchaseOrders = useCallback(async () => {
         console.log("Fetching purchase orders...");
@@ -146,14 +148,18 @@ const Buy = () => {
                     <Button
                         type="primary"
                         disabled={record.status !== 'pending'}
+                        loading={confirmLoadingId === record.id} // Apply loading state
                         onClick={async () => {
                             try {
+                                setConfirmLoadingId(record.id); // Set loading for this specific record
                                 await axios.post(`${ApiPath.confirmPurchaseOrder}/${record.id}`);
                                 message.success('ອະນຸມັດສຳເລັດ');
                                 fetchPurchaseOrders(); // รีเฟรชตาราง
                             } catch (err) {
                                 message.error('ລົ້ມເຫຼວໃນການອະນຸມັດ');
                                 console.error(err);
+                            } finally {
+                                setConfirmLoadingId(null); // Reset loading
                             }
                         }}
                     >
@@ -162,8 +168,10 @@ const Buy = () => {
                     <Button
                         danger
                         disabled={record.status !== 'pending'}
+                        loading={cancelLoadingId === record.id} // Apply loading state
                         onClick={async () => {
                             try {
+                                setCancelLoadingId(record.id); // Set loading for this specific record
                                 await axios.put(`${ApiPath.updatePurchaseOrderStatus}/${record.id}`, {
                                     status: 'cancelled'
                                 });
@@ -172,6 +180,8 @@ const Buy = () => {
                             } catch (err) {
                                 message.error('ລົ້ມເຫຼວໃນການຍົກເລີກລາຍການສັ່ງຊື້');
                                 console.error(err);
+                            } finally {
+                                setCancelLoadingId(null); // Reset loading
                             }
                         }}
                     >

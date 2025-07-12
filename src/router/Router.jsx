@@ -24,6 +24,7 @@ import ImportDetail from "../components/import/ImportDetail";
 import ErrorPage from "../components/error/ErrorPage";
 import Unit from "../components/unit/Unit";
 import ProductUnit from "../components/unitProduct/ProductUnit";
+import FrmEditUnit from "../components/unit/FrmEditUnit";
 
 const router = createBrowserRouter([
     // auth
@@ -84,6 +85,11 @@ const router = createBrowserRouter([
     {
         path: '/add-unit',
         element: <ProtectedRoute><Unit /></ProtectedRoute>,
+        // errorElement: <ErrorPage />
+    },
+    {
+        path: '/edit-unit/:id',
+        element: <ProtectedRoute><FrmEditUnit /></ProtectedRoute>,
         // errorElement: <ErrorPage />
     },
     {

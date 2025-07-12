@@ -83,7 +83,7 @@ const ModalAddTable = ({ listTable }) => {
                     >
                         <Input />
                     </Form.Item>
-                    <Form.Item
+                    {/* <Form.Item
                         name={"reservationTime"}
                         label="ວັນທີ ແລະ ເວລາຈອງ"
                         rules={[{
@@ -96,7 +96,7 @@ const ModalAddTable = ({ listTable }) => {
                             format="DD/MM/YYYY HH:mm"
                             placeholder="ເລືອກວັນທີ ແລະ ເວລາຈອງ"
                         />
-                    </Form.Item>
+                    </Form.Item> */}
                 </Form>
                 <div className='flex justify-center items-center gap-x-4 mt-5'>
                     <button onClick={handleCancel}

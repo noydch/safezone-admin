@@ -1,75 +1,108 @@
-import React, { useState } from 'react'
-import Sidebar from '../sidebar/Sidebar'
-import { Form, Input, message } from 'antd'
-import { IoIosArrowBack } from 'react-icons/io'
-import { useNavigate, useParams } from 'react-router-dom'
-import { updateUnitApi } from '../../api/unit'
+import React, { useState, useEffect } from 'react';
+import { Form, Input, message, Modal } from 'antd';
+import { updateUnitApi } from '../../api/unit';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { LiaSpinnerSolid } from "react-icons/lia"; // For loading spinner
 
-const FrmEditUnit = () => {
-    const navigate = useNavigate()
-    const { id } = useParams()
-    const [unitName, setUnitName] = useState("")
-    const token = localStorage.getItem('token')
+// Rename this component to ModalEditUnit if you also rename the file
+const FrmEditUnit = ({ isModalOpen, handleCancel, unit, onSuccess, fetchUnits }) => {
+    const { user } = useAuth(); // Get user from AuthContext
+    const [isLoading, setIsLoading] = useState(false);
+    const [form] = Form.useForm(); // Use Ant Design form instance
 
-    const handleOnChange = (e) => {
-        setUnitName(e.target.value)
-    }
+    useEffect(() => {
+        // Set form fields when the unit prop changes (i.e., when modal opens with new data)
+        if (unit) {
+            form.setFieldsValue({ name: unit.name });
+        }
+    }, [unit, form]);
 
-    const handleSubmit = async () => {
+    const handleOk = async () => {
+        if (user?.role !== 'Owner' && user?.role !== 'Manager') {
+            message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂຫົວໜ່ວຍ!');
+            handleCancel();
+            return;
+        }
+
         try {
-            const response = await updateUnitApi(token, id, { "name": unitName })
+            const values = await form.validateFields(); // Validate form fields
+            setIsLoading(true);
+
+            const response = await updateUnitApi(user.token, unit.id, { "name": values.name });
             if (response) {
-                message.success("ອັບເດດສຳເລັດ!!!")
-                navigate(-1)
+                message.success("ອັບເດດສຳເລັດ!!!");
+                onSuccess(); // Call onSuccess callback from parent
+                fetchUnits()
+                handleCancel(); // Close modal
             }
         } catch (error) {
-            message.error('ເກີດຂໍ້ຜິດພາດ!!!');
-            console.error('Update error:', error);
+            if (error.errorFields) {
+                // Ant Design form validation failed, message will be shown by Form.Item
+                console.error('Validation Failed:', error);
+            } else {
+                message.error('ເກີດຂໍ້ຜິດພາດ!!!');
+                console.error('Update error:', error);
+            }
+        } finally {
+            setIsLoading(false);
         }
-    }
+    };
 
     return (
-        <Sidebar>
-            <div className=' h-full flex items-center justify-center'>
-                <div className=' bg-white flex flex-col justify-between py-8 px-4 w-[300px] h-[240px] rounded-md'>
-                    <h1 className=' text-[18px] font-medium text-center'>ແກ້ໄຂຫົວໜ່ວຍສິນຄ້າ</h1>
-                    <Form name="validateOnly" layout="vertical" autoComplete="off">
-                        <Form.Item
-                            name="name"
-                            label="ຊື່ຫົວໜ່ວຍ"
-                            rules={[
-                                {
-                                    required: true,
-                                },
-                            ]}
-                        >
-                            <Input
-                                name="name"
-                                value={unitName}
-                                onChange={handleOnChange}
-                                placeholder='ກະລຸນາປ້ອນຊື່...'
-                            />
-                        </Form.Item>
-                    </Form>
-                    <div className=' flex justify-center items-center gap-x-4'>
-                        <button
-                            onClick={() => navigate(-1)}
-                            className=' bg-red-500 text-white w-[70px] py-1 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'
-                        >
-                            ກັບຄືນ
-                        </button>
-                        <button
-                            type='submit'
-                            onClick={handleSubmit}
-                            className=' bg-blue-500 text-white w-[70px] py-1 rounded border-1 border-transparent hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'
-                        >
-                            ບັນທຶກ
-                        </button>
-                    </div>
-                </div>
+        <Modal footer={null} open={isModalOpen} onCancel={handleCancel}>
+            <Form
+                form={form}
+                name="validateOnly"
+                layout="vertical"
+                autoComplete="off"
+            >
+                <h1 className=' text-[18px] font-medium text-center'>ແກ້ໄຂຫົວໜ່ວຍສິນຄ້າ</h1>
+                <Form.Item
+                    name="name"
+                    label="ຊື່ຫົວໜ່ວຍ"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'ກະລຸນາປ້ອນຊື່ຫົວໜ່ວຍ!',
+                        },
+                    ]}
+                >
+                    <Input
+                        placeholder='ກະລຸນາປ້ອນຊື່...'
+                    />
+                </Form.Item>
+            </Form>
+            <div className=' flex justify-center items-center gap-x-4'>
+                <button
+                    onClick={handleCancel}
+                    disabled={isLoading}
+                    className={`bg-red-500 text-white w-[80px] py-1 rounded border-1 border-transparent duration-300 cursor-pointer ${isLoading
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'hover:border-1 hover:bg-transparent hover:border-red-500 hover:text-red-500'
+                        }`}
+                >
+                    ຍົກເລີກ
+                </button>
+                <button
+                    type='button' // Changed to button type to prevent default submit
+                    onClick={handleOk}
+                    disabled={isLoading}
+                    className={`bg-blue-500 text-white w-[110px] py-1 rounded border-1 border-transparent duration-300 cursor-pointer flex items-center justify-center gap-1 ${isLoading
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500'
+                        }`}
+                >
+                    {isLoading ? (
+                        <>
+                            ກຳລັງບັນທຶກ <LiaSpinnerSolid className='animate-spin text-[16px]' />
+                        </>
+                    ) : (
+                        'ບັນທຶກ'
+                    )}
+                </button>
             </div>
-        </Sidebar>
-    )
-}
+        </Modal>
+    );
+};
 
-export default FrmEditUnit 
+export default FrmEditUnit; 

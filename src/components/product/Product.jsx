@@ -98,10 +98,16 @@ const Product = () => {
     // Table Columns
     const columns = [
         {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+            width: 80, // Optional: Adjust width as needed
+        },
+        {
             title: 'ຮູບພາບ',
             dataIndex: 'imageUrl',
             key: 'imageUrl',
-            render: (text) => <Image width={80} height={60} src={text} style={{ objectFit: 'cover', borderRadius: '4px', padding: '2px', border: '2px solid #f0f0f0' }} />,
+            render: (text) => <Image className=' object-contain' width={90} height={90} src={text} style={{ objectFit: 'cover', borderRadius: '4px', padding: '2px', border: '2px solid #f0f0f0' }} />,
         },
         {
             title: 'ຊື່ລາຍການ',

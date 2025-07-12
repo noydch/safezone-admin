@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Select, message, Spin, Radio } from 'antd';
 import axios from 'axios';
-import ApiPath from '../../api/apiPath';
+import ApiPath from '../../api/apiPath'; // Ensure this path is correct
 import moment from 'moment';
 
 const { Option } = Select;
@@ -16,15 +16,22 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
 
     useEffect(() => {
         if (isModalOpen) {
-            setIsNewCustomer(false);
-            if (!isNewCustomer) {
+            // Reset form fields when modal opens
+            form.resetFields();
+            // Set default for Radio Group
+            setIsNewCustomer(false); // Default to selecting existing customer
+            form.setFieldsValue({ customerToggle: false }); // Ensure radio button reflects initial state
+
+            // Fetch data only if not adding a new customer initially or if no customers exist
+            if (!isNewCustomer || customers.length === 0) {
                 fetchCustomers();
             }
             fetchTables();
         } else {
+            // Reset form fields when modal closes
             form.resetFields();
         }
-    }, [isModalOpen]);
+    }, [isModalOpen]); // Depend on isModalOpen
 
     const fetchCustomers = async () => {
         setLoadingCustomers(true);
@@ -43,6 +50,7 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
         setLoadingTables(true);
         try {
             const response = await axios.get(ApiPath.getTable);
+            // Filter tables that are 'ວ່າງ' (available)
             setTables(response.data.filter(table => table.status === 'ວ່າງ'));
         } catch (error) {
             console.error("Error fetching tables:", error);
@@ -55,12 +63,14 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
     const handleCustomerToggleChange = (e) => {
         const newIsNewCustomer = e.target.value;
         setIsNewCustomer(newIsNewCustomer);
-        form.setFieldsValue({ 
-            customerId: undefined, 
+        // Reset customer-related fields based on toggle
+        form.setFieldsValue({
+            customerId: undefined,
             fname: undefined,
             lname: undefined,
             phone: undefined
         });
+        // If switching to "Select Customer" and customers list is empty, fetch them
         if (!newIsNewCustomer && customers.length === 0) {
             fetchCustomers();
         }
@@ -86,12 +96,12 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                     console.error("Error creating customer:", customerError.response?.data || customerError.message);
                     const customerErrorMessage = customerError.response?.data?.message || 'ເກີດຂໍ້ຜິດພາດໃນການສ້າງລູກຄ້າ';
                     if (customerError.response?.status === 409) {
-                         message.error('ເບີໂທນີ້ມີລູກຄ້າຢູ່ແລ້ວ.');
+                        message.error('ເບີໂທນີ້ມີລູກຄ້າຢູ່ແລ້ວ.');
                     } else {
                         message.error(customerErrorMessage);
                     }
                     setSubmitting(false);
-                    return;
+                    return; // Stop execution if customer creation fails
                 }
             }
 
@@ -101,10 +111,12 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                 return;
             }
 
+            // Ensure reservationTime is a Moment object, then convert to ISO string
             const reservationPayload = {
                 customerId: customerIdToUse,
                 tableId: values.tableId,
-                reservationTime: moment(values.reservationTime).toISOString(),
+                // Ensure values.reservationTime is a moment object and convert to ISO string (UTC)
+                reservationTime: values.reservationTime.toISOString(),
             };
 
             console.log("Creating reservation with payload:", reservationPayload);
@@ -112,8 +124,8 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
 
             console.log("Reservation created:", reservationResponse.data);
             message.success('ສ້າງການຈອງສຳເລັດ!');
-            onBookingCreated();
-            handleCloseModal();
+            onBookingCreated(); // Callback to refresh parent component data
+            handleCloseModal(); // Close the modal
 
         } catch (error) {
             console.error("Error creating reservation:", error.response?.data || error.message);
@@ -133,7 +145,7 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
             okText="ບັນທຶກ"
             cancelText="ຍົກເລີກ"
             confirmLoading={submitting}
-            destroyOnClose
+            destroyOnClose // Important to reset form state when closing
         >
             <Spin spinning={loadingCustomers || loadingTables || submitting}>
                 <Form
@@ -141,8 +153,11 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                     layout="vertical"
                     onFinish={handleSubmit}
                     name="bookingForm"
+                    initialValues={{
+                        customerToggle: false, // Default value for radio group
+                    }}
                 >
-                    <Form.Item label="ເລືອກ ຫຼື ເພີ່ມລູກຄ້າ">
+                    <Form.Item label="ເລືອກ ຫຼື ເພີ່ມລູກຄ້າ" name="customerToggle">
                         <Radio.Group onChange={handleCustomerToggleChange} value={isNewCustomer}>
                             <Radio value={false}>ເລືອກລູກຄ້າ</Radio>
                             <Radio value={true}>ເພີ່ມລູກຄ້າໃໝ່</Radio>
@@ -155,10 +170,10 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                             label="ເລືອກລູກຄ້າ"
                             rules={[{ required: !isNewCustomer, message: 'ກະລຸນາເລືອກລູກຄ້າ' }]}
                         >
-                            <Select 
+                            <Select
                                 placeholder="ເລືອກລູກຄ້າ"
                                 loading={loadingCustomers}
-                                showSearch 
+                                showSearch
                                 filterOption={(input, option) =>
                                     (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
                                 }
@@ -189,7 +204,11 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                             <Form.Item
                                 name="phone"
                                 label="ເບີໂທ"
-                                rules={[{ required: isNewCustomer, message: 'ກະລຸນາປ້ອນເບີໂທ' }]}
+                                rules={[
+                                    { required: isNewCustomer, message: 'ກະລຸນາປ້ອນເບີໂທ' },
+                                    { pattern: /^[0-9]+$/, message: 'ເບີໂທຕ້ອງເປັນຕົວເລກເທົ່ານັ້ນ!' },
+                                    { len: 10, message: 'ເບີໂທຕ້ອງມີ 10 ຫຼັກ!' }
+                                ]}
                             >
                                 <Input />
                             </Form.Item>
@@ -216,9 +235,39 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                         rules={[{ required: true, message: 'ກະລຸນາເລືອກວັນທີ ແລະ ເວລາຈອງ' }]}
                     >
                         <DatePicker
-                            showTime
+                            showTime={{ format: 'HH:mm' }} // Ensure time picker is shown
                             format="DD/MM/YYYY HH:mm"
                             style={{ width: '100%' }}
+                            // Disable dates/times in the past
+                            disabledDate={(current) => {
+                                return current && current < moment().endOf('day').subtract(1, 'day'); // Disable all days before today
+                            }}
+                            disabledTime={(current) => {
+                                if (!current) return {};
+                                // Disable hours before current hour if the date is today
+                                if (current.isSame(moment(), 'day')) {
+                                    return {
+                                        disabledHours: () => {
+                                            const hours = [];
+                                            for (let i = 0; i < moment().hour(); i++) {
+                                                hours.push(i);
+                                            }
+                                            return hours;
+                                        },
+                                        disabledMinutes: (selectedHour) => {
+                                            if (selectedHour === moment().hour()) {
+                                                const minutes = [];
+                                                for (let i = 0; i < moment().minute(); i++) {
+                                                    minutes.push(i);
+                                                }
+                                                return minutes;
+                                            }
+                                            return [];
+                                        }
+                                    };
+                                }
+                                return {};
+                            }}
                         />
                     </Form.Item>
                 </Form>

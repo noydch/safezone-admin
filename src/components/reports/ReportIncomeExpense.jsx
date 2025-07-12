@@ -53,9 +53,12 @@ const styles = StyleSheet.create({
         borderColor: '#bfbfbf',
         padding: 6,
     },
-    colNo: { width: '15%' },
-    colDate: { width: '45%' },
-    colAmount: { width: '40%' },
+    colNo: { width: '10%' }, // ลดความกว้าง
+    colDate: { width: '25%' }, // ลดความกว้าง
+    colTable: { width: '15%' }, // เพิ่มสำหรับคอลัมน์ "ໂຕະ"
+    colEmployee: { width: '25%' }, // เพิ่มสำหรับคอลัมน์ "ພະນັກງານ"
+    colSupplier: { width: '30%' }, // เพิ่มคอลัมน์ผู้จัดหา
+    colAmount: { width: '25%' }, // ปรับลดความกว้าง
     tableCell: {
         fontSize: 10,
         fontFamily: 'NotoSansLao',
@@ -105,6 +108,12 @@ const IncomeExpenseReportPDF = ({ data }) => (
                     <View style={{ ...styles.tableColHeader, ...styles.colDate }}>
                         <Text style={styles.tableCell}>ວັນທີ/ເວລາ</Text>
                     </View>
+                    <View style={{ ...styles.tableColHeader, ...styles.colTable }}> {/* เพิ่ม โຕະ */}
+                        <Text style={styles.tableCell}>ໂຕະ</Text>
+                    </View>
+                    <View style={{ ...styles.tableColHeader, ...styles.colEmployee }}> {/* เพิ่ม ພະນັກງານ */}
+                        <Text style={styles.tableCell}>ພະນັກງານ</Text>
+                    </View>
                     <View style={{ ...styles.tableColHeader, ...styles.colAmount }}>
                         <Text style={styles.tableCell}>ຈຳນວນເງິນ</Text>
                     </View>
@@ -116,6 +125,12 @@ const IncomeExpenseReportPDF = ({ data }) => (
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colDate }}>
                             <Text style={styles.tableCell}>{moment(item.createdAt).format('DD/MM/YYYY HH:mm')}</Text>
+                        </View>
+                        <View style={{ ...styles.tableCol, ...styles.colTable }}> {/* เพิ่ม item.tableNumber */}
+                            <Text style={styles.tableCell}>{item.tableNumber}</Text>
+                        </View>
+                        <View style={{ ...styles.tableCol, ...styles.colEmployee }}> {/* เพิ่ม item.employee */}
+                            <Text style={styles.tableCell}>{item.employee}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colAmount }}>
                             <Text style={styles.tableCell}>{item.total_price?.toLocaleString()} ກີບ</Text>
@@ -140,6 +155,9 @@ const IncomeExpenseReportPDF = ({ data }) => (
                     <View style={{ ...styles.tableColHeader, ...styles.colDate }}>
                         <Text style={styles.tableCell}>ວັນທີ/ເວລາ</Text>
                     </View>
+                    <View style={{ ...styles.tableColHeader, ...styles.colSupplier }}> {/* เพิ่มคอลัมน์ผู้จัดหา */}
+                        <Text style={styles.tableCell}>ຜູ້ສະໜອງ</Text>
+                    </View>
                     <View style={{ ...styles.tableColHeader, ...styles.colAmount }}>
                         <Text style={styles.tableCell}>ຈຳນວນເງິນ</Text>
                     </View>
@@ -151,6 +169,9 @@ const IncomeExpenseReportPDF = ({ data }) => (
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colDate }}>
                             <Text style={styles.tableCell}>{moment(item.createdAt).format('DD/MM/YYYY HH:mm')}</Text>
+                        </View>
+                        <View style={{ ...styles.tableCol, ...styles.colSupplier }}> {/* เพิ่มข้อมูลผู้จัดหา */}
+                            <Text style={styles.tableCell}>{item.supplier}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colAmount }}>
                             <Text style={styles.tableCell}>{item.totalPrice?.toLocaleString()} ກີບ</Text>

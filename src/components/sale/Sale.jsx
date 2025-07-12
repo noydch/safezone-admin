@@ -59,13 +59,15 @@ const Sale = () => {
                     const firstUnit = response.data[0];
                     actionAddToCart({
                         id: item?.id,
-                        name: firstUnit.name,
+                        name: firstUnit.name, // คือชื่อหน่วย (เช่น "แก้ว", "ขวด")
+                        productName: item?.name,
                         price: firstUnit.price,
                         imageUrl: item?.imageUrl,
                         type: itemType,
                         selectedUnitId: firstUnit.id,
                         productUnits: response.data
                     });
+
                 } else {
                     message.warning('ບໍ່ພົບຫົວໜ່ວຍສິນຄ້າສໍາລັບເຄື່ອງດື່ມນີ້.');
                 }
@@ -153,13 +155,13 @@ const Sale = () => {
                         ) : (
                             <ul className="grid grid-cols-4 gap-2">
                                 {filteredProducts?.map((item) => (
-                                    <li key={item?.id} className="border border-gray-200 w-[170px] h-[190px] rounded-xl shadow-md p-1 flex flex-col justify-between">
-                                        <div className="h-[140px] w-full border border-gray-200 rounded-xl">
-                                            <img src={item?.imageUrl} alt={item?.name} className="object-cover w-full h-full rounded-xl" />
+                                    <li key={item?.id} className="border border-gray-200 w-[170px] h-[200px] rounded-xl shadow-md p-1 flex flex-col justify-between">
+                                        <div className="h-[150px] w-full border border-gray-200 rounded-xl p-1 bg-white">
+                                            <img src={item?.imageUrl} alt={item?.name} className="object-contain w-full h-full rounded-xl" />
                                         </div>
                                         <div className="p-1">
                                             <div className="flex justify-between items-center">
-                                                <p className="font-medium">{item?.name}</p>
+                                                <p className="font-medium">{item?.name} ({item?.productUnits[0]?.name})</p>
                                                 {/* <p className="text-[18px] font-semibold text-red-500">
                                                     {parseInt(item?.price).toLocaleString()} ກີບ
                                                 </p> */}

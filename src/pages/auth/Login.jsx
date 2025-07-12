@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Checkbox, Form, Input, message } from 'antd';
 
 import bg from '../../assets/bg.jpg'
@@ -14,6 +14,9 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(true)
     const [rememberMe, setRememberMe] = useState(false)
     const actionLogin = useSafezoneStore((state) => state.actionLogin)
+    const emailInputRef = useRef(null)
+    const passwordInputRef = useRef(null)
+
     const [form, setForm] = useState({
         email: '',
         password: ''
@@ -34,6 +37,13 @@ const Login = () => {
             setRememberMe(true)
         }
     }, [])
+
+    const handleEmailKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            passwordInputRef.current?.focus()
+        }
+    }
 
 
     const onFinish = async (e) => {
@@ -88,6 +98,8 @@ const Login = () => {
                         <input type="text" name="email"
                             value={form.email}
                             onChange={handleChange}
+                            onKeyDown={handleEmailKeyDown}
+                            ref={emailInputRef}
                             className='w-full rounded px-2 pt-1 focus:border-blue-500 pb-0.5 placeholder:text-[12px] border-2 border-gray-200 bg-white outline-none'
                             placeholder='ກະລຸນາປ້ອນອີເມລ...'
                         />
@@ -100,6 +112,7 @@ const Login = () => {
                         <div className=' relative w-full'>
                             <input type={`${showPassword ? 'password' : 'text'}`} name="password"
                                 onChange={handleChange}
+                                ref={passwordInputRef}
                                 className='w-full rounded px-2 pt-1 focus:border-blue-500 pb-0.5 placeholder:text-[12px] border-2 border-gray-200 bg-white outline-none'
                                 placeholder='ກະລຸນາປ້ອນລະຫັດຜ່ານ...'
                             />

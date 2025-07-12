@@ -138,7 +138,7 @@ const safezoneStore = (set, get) => ({
     // ล้างตะกร้าสินค้า
     actionClearCart: () => {
         set({ carts: [] });
-        message.info("ລະງັບກະຕ່າສຳເລັດ");
+        message.info("ເພີ່ມລາຍການອໍເດີ້ສຳເລັດ!!!");
     },
 
     // เข้าสู่ระบบ
@@ -156,7 +156,15 @@ const safezoneStore = (set, get) => ({
             console.log("Error logging in:", error);
         }
     },
-
+    // ออกจากระบบ
+    actionLogout: () => {
+        set({
+            user: null,
+            token: null,
+            carts: [],
+        });
+        message.success("ອອກຈາກລະບົບສຳເລັດ!");
+    },
     // ดึงข้อมูลประเภทสินค้า
     listCategory: async () => {
         try {
