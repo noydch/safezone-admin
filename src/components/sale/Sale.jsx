@@ -102,6 +102,7 @@ const Sale = () => {
     const filteredProducts = allProducts.filter(
         (product) => !activeCategory || product?.categoryId === activeCategory
     );
+    console.log(filteredProducts);
 
     // Function to render skeleton items
     const renderSkeleton = () => {
@@ -155,22 +156,21 @@ const Sale = () => {
                         ) : (
                             <ul className="grid grid-cols-4 gap-2">
                                 {filteredProducts?.map((item) => (
-                                    <li key={item?.id} className="border border-gray-200 w-[170px] h-[200px] rounded-xl shadow-md p-1 flex flex-col justify-between">
+                                    <li key={item?.id} className="border relative border-gray-200 w-[180px] h-[220px] rounded-xl shadow-md p-1 flex flex-col ">
                                         <div className="h-[150px] w-full border border-gray-200 rounded-xl p-1 bg-white">
                                             <img src={item?.imageUrl} alt={item?.name} className="object-contain w-full h-full rounded-xl" />
                                         </div>
-                                        <div className="p-1">
-                                            <div className="flex justify-between items-center">
-                                                <p className="font-medium">{item?.name} ({item?.productUnits[0]?.name})</p>
-                                                {/* <p className="text-[18px] font-semibold text-red-500">
+                                        <p className=" px-1.5 text-[15px] font-medium flex-grow min-w-0 break-words mt-1.5">{item?.name} {item?.category?.name ? null : `( ${item?.productUnits[0]?.name} )`}</p>
+                                        <div className="flex justify-end items-center">
+                                            {/* <p className="font-medium">{item?.name} ({item?.productUnits[0]?.name})</p> */}
+                                            {/* <p className="text-[18px] font-semibold text-red-500">
                                                     {parseInt(item?.price).toLocaleString()} ກີບ
                                                 </p> */}
-                                                <div
-                                                    onClick={() => handleAddToCart(item)}
-                                                    className="bg-yellow-100 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"
-                                                >
-                                                    <MdOutlineShoppingCart className="text-yellow-500 text-[20px]" />
-                                                </div>
+                                            <div
+                                                onClick={() => handleAddToCart(item)}
+                                                className="bg-yellow-100 absolute bottom-2 right-2 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"
+                                            >
+                                                <MdOutlineShoppingCart className="text-yellow-500 text-[20px]" />
                                             </div>
                                         </div>
                                     </li>

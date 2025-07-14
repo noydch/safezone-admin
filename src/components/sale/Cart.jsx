@@ -203,7 +203,10 @@ const Cart = () => {
                                 <div className="flex justify-between w-full ml-1.5 py-1">
                                     <div className="flex flex-col justify-between h-full">
                                         <div>
-                                            <p className="font-medium">{item?.productUnits[0]?.drink.name} ({item.name}) </p>
+                                            <p className="font-medium">
+                                                {/* ตรวจสอบประเภทสินค้าเพื่อแสดงชื่อที่ถูกต้อง */}
+                                                {item.type === 'drink' ? `${item.productName} (${item.name})` : item.name}
+                                            </p>
                                         </div>
                                         <div className=''>
                                             {item.type === 'drink' && (

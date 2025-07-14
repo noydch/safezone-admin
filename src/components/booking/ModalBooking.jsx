@@ -207,7 +207,7 @@ const ModalBooking = ({ isModalOpen, handleCloseModal, form, onBookingCreated })
                                 rules={[
                                     { required: isNewCustomer, message: 'ກະລຸນາປ້ອນເບີໂທ' },
                                     { pattern: /^[0-9]+$/, message: 'ເບີໂທຕ້ອງເປັນຕົວເລກເທົ່ານັ້ນ!' },
-                                    { len: 10, message: 'ເບີໂທຕ້ອງມີ 10 ຫຼັກ!' }
+                                    { message: 'ເບີໂທຕ້ອງມີ 10 ຫຼັກ!' }
                                 ]}
                             >
                                 <Input />

@@ -14,7 +14,14 @@ const columns = [
         dataIndex: 'item',
         key: 'item',
         render: (_, record) => {
-            return record.productUnit?.name || `ໄອດີ: ${record.id}`;
+            // ตรวจสอบว่าเป็นอาหาร (food) หรือเครื่องดื่ม (drink/productUnit)
+            if (record.food) {
+                return record.food.name; // ถ้าเป็นอาหาร ให้แสดงชื่ออาหาร
+            } else if (record.productUnit) {
+                // ถ้าเป็นเครื่องดื่ม ให้แสดงชื่อเครื่องดื่มและชื่อหน่วยในวงเล็บ
+                return `${record.productUnit.drink?.name || 'Unknown Drink'} (${record.productUnit.name || 'Unknown Unit'})`;
+            }
+            return `ໄອດີ: ${record.id}`; // กรณีไม่พบข้อมูลที่คาดหวัง
         },
     },
     {
