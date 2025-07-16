@@ -52,16 +52,19 @@ const styles = StyleSheet.create({
     },
     // ปรับสัดส่วนความกว้างคอลัมน์ให้เหมาะกับ A4
     colNo: {
-        width: '12%', // ลำดับ
+        width: '8%', // ลำดับ
     },
     colName: {
-        width: '38%', // ชื่อสินค้า
+        width: '28%', // ชื่อสินค้า
     },
     colCategory: {
-        width: '25%', // ประเภท
+        width: '18%', // ประเภท
+    },
+    colQty: {
+        width: '18%', // จำนวน
     },
     colPrice: {
-        width: '25%', // ราคา
+        width: '28%', // ราคา
     },
     tableCell: {
         fontSize: 10,
@@ -83,7 +86,7 @@ const ProductReportPDF = ({ products }) => (
     <Document>
         <Page size="A4" style={styles.page}>
             <View style={styles.header}>
-                <Text style={styles.title}>ລາຍງານລາຍການອາຫານ ແລະ ເຄື່ອງດື່ມ</Text>
+                <Text style={styles.title}>ລາຍງານລາຍການເຄື່ອງດື່ມ</Text>
                 <Text style={styles.headerText}>
                     ວັນທີພິມ: {moment().format('DD/MM/YYYY')} ເວລາ: {moment().format('HH:mm:ss')}
                 </Text>
@@ -102,6 +105,9 @@ const ProductReportPDF = ({ products }) => (
                     <View style={{ ...styles.tableColHeader, ...styles.colCategory }}>
                         <Text style={styles.tableCell}>ປະເພດ</Text>
                     </View>
+                    <View style={{ ...styles.tableColHeader, ...styles.colQty }}>
+                        <Text style={styles.tableCell}>ຈຳນວນ</Text>
+                    </View>
                     <View style={{ ...styles.tableColHeader, ...styles.colPrice }}>
                         <Text style={styles.tableCell}>ລາຄາ</Text>
                     </View>
@@ -118,6 +124,9 @@ const ProductReportPDF = ({ products }) => (
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colCategory }}>
                             <Text style={styles.tableCell}>{item.category}</Text>
+                        </View>
+                        <View style={{ ...styles.tableCol, ...styles.colQty }}>
+                            <Text style={styles.tableCell}>{item.qty}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colPrice }}>
                             <Text style={styles.tableCell}>{Number(item.price).toLocaleString()} ກີບ</Text>
@@ -136,6 +145,8 @@ const ReportProduct = () => {
         try {
             const response = await reportFoodDrinkApi()
             setMenu(response?.data)
+            console.log(menu);
+
         } catch (error) {
             console.log(error);
         }
@@ -145,11 +156,18 @@ const ReportProduct = () => {
         fetchData()
     }, [])
 
-    // Combine foods and drinks into one array with category name
-    const combinedData = [
-        ...menu.foods.map(item => ({ ...item, category: item.category?.name })),
-        ...menu.drinks.map(item => ({ ...item, category: item.Category?.name }))
-    ];
+    // Filter to only drinks and map required fields including qty and base price
+    // Note: This already processes only drinks.
+    const combinedData = menu.drinks.map(item => ({
+        id: item.id,
+        name: item.name,
+        imageUrl: item.imageUrl,
+        category: item.Category?.name, // For drinks, the category is under item.Category
+        price: item.productUnits?.[0]?.price ?? 0, // Get the price from the first product unit, default to 0 if undefined/null
+        qty: item.qty // Add the quantity
+    }));
+    console.log(menu);
+
 
     const columns = [
         {
@@ -175,30 +193,36 @@ const ReportProduct = () => {
             title: 'ຊື່ສິນຄ້າ',
             dataIndex: 'name',
             key: 'name',
-            width: 200
+            width: 180
         },
         {
             title: 'ປະເພດ',
             dataIndex: 'category',
             key: 'category',
-            width: 150
+            width: 120
+        },
+        {
+            title: 'ຈຳນວນ',
+            dataIndex: 'qty',
+            key: 'qty',
+            width: 100
         },
         {
             title: 'ລາຄາ',
             dataIndex: 'price',
             key: 'price',
             width: 120,
-            render: (price) => `${Number(price).toLocaleString()} ກີບ`
+            render: (price) => `${Number(price).toLocaleString()} ກີບ` // แก้ไขตรงนี้: ต้องส่ง 'price' เข้าไปใน Number()
         }
     ];
 
     return (
         <div className='bg-white rounded-md p-4'>
             <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-bold'>ລາຍງານລາຍການອາຫານ ແລະ ເຄື່ອງດື່ມ</h2>
+                <h2 className='text-xl font-bold'>ລາຍງານລາຍການເຄື່ອງດື່ມ</h2>
                 <PDFDownloadLink
                     document={<ProductReportPDF products={combinedData} />}
-                    fileName="ລາຍງານລາຍການອາຫານແລະເຄື່ອງດື່ມ.pdf"
+                    fileName="ລາຍງານລາຍການເຄື່ອງດື່ມ.pdf"
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                 >
                     {({ loading }) =>

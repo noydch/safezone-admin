@@ -7,7 +7,9 @@ import { getProductUnitsByDrinkIdApi } from '../../api/productUnit';
 
 const Sale = () => {
     const [activeCategory, setActiveCategory] = useState(null);
+    const [productTypeFilter, setProductTypeFilter] = useState('all'); // all | food | drink
     const [isLoading, setIsLoading] = useState(true);
+
     const categories = useSafezoneStore((state) => state.categories);
     const food = useSafezoneStore((state) => state.food);
     const drink = useSafezoneStore((state) => state.drink);
@@ -17,7 +19,6 @@ const Sale = () => {
     const actionUpdateCart = useSafezoneStore((state) => state.actionUpdateCart);
     const token = useSafezoneStore((state) => state.token);
 
-    // Load food and drink data
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -33,12 +34,10 @@ const Sale = () => {
         fetchData();
     }, [listDrink, listFood]);
 
-    // Handle category click
     const handleCategoryClick = (categoryId) => {
-        setActiveCategory((prev) => (prev === categoryId ? null : categoryId));
+        setActiveCategory(prev => prev === categoryId ? null : categoryId);
     };
 
-    // Handle add to cart
     const handleAddToCart = async (item) => {
         if (!token) {
             message.error("ກະລຸນາເຂົ້າສູ່ລະບົບກ່ອນ");
@@ -51,15 +50,12 @@ const Sale = () => {
 
         if (itemType === 'drink') {
             try {
-                // ดึง product units สำหรับเครื่องดื่มนี้
                 const response = await getProductUnitsByDrinkIdApi(token, item.id);
-                console.log(`[Sale.jsx] API response for units of drinkId ${item.id}:`, response.data);
-
                 if (response?.data?.length > 0) {
                     const firstUnit = response.data[0];
                     actionAddToCart({
                         id: item?.id,
-                        name: firstUnit.name, // คือชื่อหน่วย (เช่น "แก้ว", "ขวด")
+                        name: firstUnit.name,
                         productName: item?.name,
                         price: firstUnit.price,
                         imageUrl: item?.imageUrl,
@@ -67,12 +63,11 @@ const Sale = () => {
                         selectedUnitId: firstUnit.id,
                         productUnits: response.data
                     });
-
                 } else {
                     message.warning('ບໍ່ພົບຫົວໜ່ວຍສິນຄ້າສໍາລັບເຄື່ອງດື່ມນີ້.');
                 }
             } catch (error) {
-                console.error('[Sale.jsx] Error fetching product units for add to cart:', error.response?.data || error.message);
+                console.error('[Sale.jsx] Error fetching product units:', error.response?.data || error.message);
                 message.error('ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມເຄື່ອງດື່ມ.');
             }
         } else {
@@ -86,25 +81,23 @@ const Sale = () => {
         }
     };
 
-    // Handle update cart quantity
     const handleUpdateCart = (cartItemId, qty) => {
         if (!token) return message.error("Please log in first");
-
         if (qty <= 0) return message.error("Quantity must be greater than zero");
-
         actionUpdateCart(token, { cartItemId, qty });
     };
 
-    // Combine food and drink
-    const allProducts = [...(food ?? []), ...(drink ?? [])];
+    const allProducts = [
+        ...(food?.map(f => ({ ...f, type: 'food' })) ?? []),
+        ...(drink?.map(d => ({ ...d, type: 'drink' })) ?? [])
+    ];
 
-    // Filter products by category
-    const filteredProducts = allProducts.filter(
-        (product) => !activeCategory || product?.categoryId === activeCategory
-    );
-    console.log(filteredProducts);
+    const filteredProducts = allProducts.filter(product => {
+        const matchType = productTypeFilter === 'all' || product.type === productTypeFilter;
+        const matchCategory = !activeCategory || product.categoryId === activeCategory;
+        return matchType && matchCategory;
+    });
 
-    // Function to render skeleton items
     const renderSkeleton = () => {
         return Array.from({ length: 10 }).map((_, index) => (
             <li key={index} className="border border-gray-200 w-[170px] h-[210px] rounded-xl shadow-md p-1 flex flex-col justify-between">
@@ -126,11 +119,13 @@ const Sale = () => {
             <div className="flex gap-x-5 mt-2 h-[calc(100%-40px)]">
                 <div className="bg-white flex-5 p-5 rounded h-full overflow-y-auto">
                     <div className="w-full">
+
+                        {/* Filter by category */}
                         <ul className="grid grid-cols-4 gap-2 mb-4">
                             <li
                                 onClick={() => handleCategoryClick(null)}
                                 className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
-                                ${activeCategory === null ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
+                                    ${activeCategory === null ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
                             >
                                 <p>ທັງໝົດ</p>
                             </li>
@@ -139,7 +134,7 @@ const Sale = () => {
                                     key={item?.id}
                                     onClick={() => handleCategoryClick(item.id)}
                                     className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
-                                    ${activeCategory === item?.id ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
+                                        ${activeCategory === item?.id ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
                                 >
                                     <p>{item?.name}</p>
                                 </li>
@@ -150,28 +145,22 @@ const Sale = () => {
                     {/* Products list */}
                     <div className="mt-5">
                         {isLoading ? (
-                            <ul className="grid grid-cols-4 gap-2">
-                                {renderSkeleton()}
-                            </ul>
+                            <ul className="grid grid-cols-4 gap-2">{renderSkeleton()}</ul>
                         ) : (
                             <ul className="grid grid-cols-4 gap-2">
                                 {filteredProducts?.map((item) => (
-                                    <li key={item?.id} className="border relative border-gray-200 w-[180px] h-[220px] rounded-xl shadow-md p-1 flex flex-col ">
+                                    <li key={item?.id} className="border relative border-gray-200 w-[180px] h-[220px] rounded-xl shadow-md p-1 flex flex-col">
                                         <div className="h-[150px] w-full border border-gray-200 rounded-xl p-1 bg-white">
                                             <img src={item?.imageUrl} alt={item?.name} className="object-contain w-full h-full rounded-xl" />
                                         </div>
-                                        <p className=" px-1.5 text-[15px] font-medium flex-grow min-w-0 break-words mt-1.5">{item?.name} {item?.category?.name ? null : `( ${item?.productUnits[0]?.name} )`}</p>
-                                        <div className="flex justify-end items-center">
-                                            {/* <p className="font-medium">{item?.name} ({item?.productUnits[0]?.name})</p> */}
-                                            {/* <p className="text-[18px] font-semibold text-red-500">
-                                                    {parseInt(item?.price).toLocaleString()} ກີບ
-                                                </p> */}
-                                            <div
-                                                onClick={() => handleAddToCart(item)}
-                                                className="bg-yellow-100 absolute bottom-2 right-2 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"
-                                            >
-                                                <MdOutlineShoppingCart className="text-yellow-500 text-[20px]" />
-                                            </div>
+                                        <p className="px-1.5 text-[15px] font-medium flex-grow break-words mt-1.5">
+                                            {item?.name}
+                                        </p>
+                                        <div
+                                            onClick={() => handleAddToCart(item)}
+                                            className="bg-yellow-100 absolute bottom-2 right-2 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"
+                                        >
+                                            <MdOutlineShoppingCart className="text-yellow-500 text-[20px]" />
                                         </div>
                                     </li>
                                 ))}
@@ -182,6 +171,7 @@ const Sale = () => {
                         )}
                     </div>
                 </div>
+
                 {/* Cart */}
                 <Cart onUpdateCart={handleUpdateCart} />
             </div>
