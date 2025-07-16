@@ -1,5 +1,5 @@
-// const baseUrl = 'http://localhost:5050/api';
-const baseUrl = 'https://safezone-backend-hg65.onrender.com/api';
+const baseUrl = 'http://localhost:5050/api';
+// const baseUrl = 'https://safezone-backend-hg65.onrender.com/api';
 
 
 export default class ApiPath {
@@ -11,6 +11,7 @@ export default class ApiPath {
     // category
     static insertCategory = `${baseUrl}/category`
     static getCategory = `${baseUrl}/getCategory`
+    static getCategoryById = `${baseUrl}/getCategoryById`
     static delCategory = `${baseUrl}/delCategory`
     static updateCategory = `${baseUrl}/updateCategory`
 

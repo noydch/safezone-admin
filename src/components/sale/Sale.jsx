@@ -4,11 +4,14 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { message, Skeleton } from "antd";
 import Cart from "./Cart";
 import { getProductUnitsByDrinkIdApi } from '../../api/productUnit';
+import { getCategoryByIdApi } from '../../api/category.js'
 
 const Sale = () => {
     const [activeCategory, setActiveCategory] = useState(null);
     const [productTypeFilter, setProductTypeFilter] = useState('all'); // all | food | drink
     const [isLoading, setIsLoading] = useState(true);
+    // New state to hold products fetched specifically for a category
+    const [categorySpecificProducts, setCategorySpecificProducts] = useState(null);
 
     const categories = useSafezoneStore((state) => state.categories);
     const food = useSafezoneStore((state) => state.food);
@@ -19,10 +22,12 @@ const Sale = () => {
     const actionUpdateCart = useSafezoneStore((state) => state.actionUpdateCart);
     const token = useSafezoneStore((state) => state.token);
 
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
+                // Fetch all food and drink initially from store actions
                 await Promise.all([listDrink(), listFood()]);
             } catch (error) {
                 console.error("Failed to fetch data:", error);
@@ -34,8 +39,34 @@ const Sale = () => {
         fetchData();
     }, [listDrink, listFood]);
 
-    const handleCategoryClick = (categoryId) => {
-        setActiveCategory(prev => prev === categoryId ? null : categoryId);
+    const handleCategoryClick = async (categoryId) => { // Made async
+        setActiveCategory(categoryId); // Set active category for styling
+
+        if (categoryId === null) {
+            // If 'All' category is selected, clear category-specific products
+            setCategorySpecificProducts(null);
+            // Re-fetch all products if needed, or rely on existing store data
+            // await Promise.all([listDrink(), listFood()]); // Uncomment if 'All' needs fresh data
+        } else {
+            setIsLoading(true); // Show loading when fetching category data
+            try {
+                // Fetch products for the specific category
+                const response = await getCategoryByIdApi(categoryId);
+                if (response?.data) {
+                    const fetchedFoods = response.data.foods?.map(f => ({ ...f, type: 'food' })) || [];
+                    const fetchedDrinks = response.data.drinks?.map(d => ({ ...d, type: 'drink' })) || [];
+                    setCategorySpecificProducts([...fetchedFoods, ...fetchedDrinks]);
+                } else {
+                    setCategorySpecificProducts([]); // No data found for category
+                }
+            } catch (error) {
+                console.error('[Sale.jsx] Error fetching category products:', error);
+                message.error('ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດສິນຄ້າຕາມປະເພດ.');
+                setCategorySpecificProducts([]);
+            } finally {
+                setIsLoading(false);
+            }
+        }
     };
 
     const handleAddToCart = async (item) => {
@@ -87,14 +118,22 @@ const Sale = () => {
         actionUpdateCart(token, { cartItemId, qty });
     };
 
-    const allProducts = [
+    // Adjust allProducts to use categorySpecificProducts if available, otherwise global store data
+    const displayedProducts = categorySpecificProducts !== null ? categorySpecificProducts : [
         ...(food?.map(f => ({ ...f, type: 'food' })) ?? []),
         ...(drink?.map(d => ({ ...d, type: 'drink' })) ?? [])
     ];
 
-    const filteredProducts = allProducts.filter(product => {
+    const filteredProducts = displayedProducts.filter(product => {
+        // Only apply productTypeFilter here, as category filtering is now handled by API call
         const matchType = productTypeFilter === 'all' || product.type === productTypeFilter;
-        const matchCategory = !activeCategory || product.categoryId === activeCategory;
+        // The category is already implicitly filtered if categorySpecificProducts is used
+        // If categorySpecificProducts is null (i.e., 'All' categories are selected),
+        // then `displayedProducts` is `allProducts`, and `activeCategory` will filter locally.
+        const matchCategory = !activeCategory || product.categoryId === activeCategory; // Keep for 'All' case or if product data from store isn't consistent
+
+        // For category-specific fetched products, `matchCategory` will always be true
+        // if `activeCategory` is not null and the product correctly belongs to that category.
         return matchType && matchCategory;
     });
 
@@ -119,7 +158,6 @@ const Sale = () => {
             <div className="flex gap-x-5 mt-2 h-[calc(100%-40px)]">
                 <div className="bg-white flex-5 p-5 rounded h-full overflow-y-auto">
                     <div className="w-full">
-
                         {/* Filter by category */}
                         <ul className="grid grid-cols-4 gap-2 mb-4">
                             <li

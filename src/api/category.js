@@ -10,6 +10,9 @@ export const insetCategoryApi = async (token, name) => {
 export const getCategoryApi = async () => {
     return await axios.get(ApiPath.getCategory)
 }
+export const getCategoryByIdApi = async (id) => {
+    return await axios.get(`${ApiPath.getCategoryById}/${id}`)
+}
 
 export const delCategoryApi = async (token, id) => {
     return await axios.delete(`${ApiPath.delCategory}/${id}`, {
