@@ -127,10 +127,10 @@ const IncomeExpenseReportPDF = ({ data }) => (
                             <Text style={styles.tableCell}>{moment(item.createdAt).format('DD/MM/YYYY HH:mm')}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colTable }}> {/* เพิ่ม item.tableNumber */}
-                            <Text style={styles.tableCell}>{item.tableNumber}</Text>
+                            <Text style={styles.tableCell}>{item.tableNumber ?? ''}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colEmployee }}> {/* เพิ่ม item.employee */}
-                            <Text style={styles.tableCell}>{item.employee}</Text>
+                            <Text style={styles.tableCell}>{item.employee ?? ''}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colAmount }}>
                             <Text style={styles.tableCell}>{item.total_price?.toLocaleString()} ກີບ</Text>
@@ -171,7 +171,7 @@ const IncomeExpenseReportPDF = ({ data }) => (
                             <Text style={styles.tableCell}>{moment(item.createdAt).format('DD/MM/YYYY HH:mm')}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colSupplier }}> {/* เพิ่มข้อมูลผู้จัดหา */}
-                            <Text style={styles.tableCell}>{item.supplier}</Text>
+                            <Text style={styles.tableCell}>{item.supplier ?? ''}</Text>
                         </View>
                         <View style={{ ...styles.tableCol, ...styles.colAmount }}>
                             <Text style={styles.tableCell}>{item.totalPrice?.toLocaleString()} ກີບ</Text>
@@ -203,6 +203,8 @@ const ReportIncomeExpense = () => {
     const [filteredIncome, setFilteredIncome] = useState([]);
     const [filteredExpense, setFilteredExpense] = useState([]);
     const [selectedDateRange, setSelectedDateRange] = useState([null, null]);
+    const [originalIncomeDetails, setOriginalIncomeDetails] = useState([]); // State to hold all income data (now will be filtered drinks)
+    const [originalExpenseDetails, setOriginalExpenseDetails] = useState([]); // State to hold all expense data
 
     // เพิ่มฟังก์ชันคำนวณผลรวม
     const calculateTotals = (incomeData, expenseData) => {
@@ -212,23 +214,53 @@ const ReportIncomeExpense = () => {
         return { totalIncome, totalExpense, netProfit };
     };
 
-    // แก้ไขฟังก์ชัน fetchData
+    // แก้ไขฟังก์ชัน fetchData เพื่อดึงข้อมูลเฉพาะเครื่องดื่ม
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token');
 
-            // ดึงข้อมูลรายรับ (orders)
+            // ดึงข้อมูลรายรับ (orders) ทั้งหมด
             const ordersResponse = await getAllOrdersApi(token);
-            const incomeDetails = ordersResponse.data.map(order => ({
-                id: order.id,
-                createdAt: order.createdAt,
-                total_price: order.total_price,
-                status: order.billStatus,
-                tableNumber: order.table?.table_number,
-                employee: `${order.employee?.fname} ${order.employee?.lname}`
-            }));
+            const allOrders = ordersResponse.data;
 
-            // ดึงข้อมูลรายจ่าย (imports)
+            // กรองและคำนวณเฉพาะรายการเครื่องดื่มจาก orders
+            const incomeDetailsFromDrinks = [];
+
+            allOrders.forEach(order => {
+                let drinkTotalPriceForOrder = 0;
+                let hasDrinkItemsInOrder = false; // Flag to check if this order contains any drink items
+
+                // วนลูปผ่าน orderRounds
+                if (order.orderRounds && Array.isArray(order.orderRounds)) {
+                    order.orderRounds.forEach(round => {
+                        // วนลูปผ่าน orderDetails ในแต่ละ round
+                        if (round.orderDetails && Array.isArray(round.orderDetails)) {
+                            round.orderDetails.forEach(detail => {
+                                // ตรวจสอบว่าเป็นรายการเครื่องดื่มหรือไม่ โดยดูจาก productUnit และ categoryId
+                                // สมมติว่า categoryId 4 คือเครื่องดื่ม (ตามข้อมูลที่คุณให้มา)
+                                if (detail.productUnit && detail.productUnit.drink && detail.productUnit.drink.categoryId === 4) {
+                                    drinkTotalPriceForOrder += (detail.price * detail.quantity);
+                                    hasDrinkItemsInOrder = true;
+                                }
+                            });
+                        }
+                    });
+                }
+
+                // หาก order นี้มีรายการเครื่องดื่ม ให้เพิ่มเข้าใน incomeDetailsFromDrinks
+                if (hasDrinkItemsInOrder) {
+                    incomeDetailsFromDrinks.push({
+                        id: order.id,
+                        createdAt: order.createdAt,
+                        total_price: drinkTotalPriceForOrder, // ราคารวมเฉพาะเครื่องดื่มในออเดอร์นี้
+                        status: order.billStatus,
+                        tableNumber: order.table?.table_number ?? '',
+                        employee: `${order.employee?.fname ?? ''} ${order.employee?.lname ?? ''}`.trim()
+                    });
+                }
+            });
+
+            // ดึงข้อมูลรายจ่าย (imports) - ส่วนนี้ไม่มีการเปลี่ยนแปลง
             const importsResponse = await axios.get(ApiPath.getImport, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -240,21 +272,25 @@ const ReportIncomeExpense = () => {
                 createdAt: importItem.importDate,
                 totalPrice: importItem.totalPrice,
                 status: importItem.status,
-                supplier: importItem.supplier?.name
+                supplier: importItem.supplier?.name ?? ''
             }));
 
-            // คำนวณผลรวมโดยใช้ฟังก์ชัน calculateTotals
-            const { totalIncome, totalExpense, netProfit } = calculateTotals(incomeDetails, expenseDetails);
+            // Store the original fetched data (ตอนนี้ originalIncomeDetails จะมีแต่ข้อมูลเครื่องดื่ม)
+            setOriginalIncomeDetails(incomeDetailsFromDrinks);
+            setOriginalExpenseDetails(expenseDetails);
+
+            // คำนวณผลรวมโดยใช้ฟังก์ชัน calculateTotals (โดยใช้ข้อมูลรายรับเครื่องดื่ม)
+            const { totalIncome, totalExpense, netProfit } = calculateTotals(incomeDetailsFromDrinks, expenseDetails);
 
             setData({
                 period: { from: null, to: null },
                 totalIncome,
                 totalExpense,
                 netProfit,
-                incomeDetails,
-                expenseDetails
+                incomeDetails: incomeDetailsFromDrinks, // ตั้งค่า incomeDetails เริ่มต้นเป็นข้อมูลเครื่องดื่ม
+                expenseDetails: expenseDetails
             });
-            setFilteredIncome(incomeDetails);
+            setFilteredIncome(incomeDetailsFromDrinks); // ตั้งค่า filteredIncome เริ่มต้นเป็นข้อมูลเครื่องดื่ม
             setFilteredExpense(expenseDetails);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -265,20 +301,24 @@ const ReportIncomeExpense = () => {
         fetchData();
     }, []);
 
-    // แก้ไขฟังก์ชัน onDateChange
+    // แก้ไขฟังก์ชัน onDateChange (มีการปรับปรุงเงื่อนไขการกรองวันที่เล็กน้อยเพื่อความแม่นยำ)
     const onDateChange = (dates, dateStrings) => {
         setSelectedDateRange(dateStrings);
-        if (dateStrings[0] && dateStrings[1]) {
-            // กรองข้อมูลรายรับตามช่วงวันที่
-            const filteredIncomeData = (data.incomeDetails || []).filter(item => {
-                const date = moment(item.createdAt).format('YYYY-MM-DD');
-                return date >= dateStrings[0] && date <= dateStrings[1];
+        if (dates && dates[0] && dates[1]) { // ตรวจสอบว่ามีวันที่เริ่มต้นและสิ้นสุดถูกเลือก
+            // กรองข้อมูลรายรับ (เครื่องดื่ม) ตามช่วงวันที่
+            const filteredIncomeData = (originalIncomeDetails || []).filter(item => {
+                const itemDate = moment(item.createdAt);
+                const startDate = moment(dateStrings[0]);
+                const endDate = moment(dateStrings[1]);
+                return itemDate.isBetween(startDate, endDate, 'day', '[]'); // '[]' includes start and end day
             });
 
             // กรองข้อมูลรายจ่ายตามช่วงวันที่
-            const filteredExpenseData = (data.expenseDetails || []).filter(item => {
-                const date = moment(item.createdAt).format('YYYY-MM-DD');
-                return date >= dateStrings[0] && date <= dateStrings[1];
+            const filteredExpenseData = (originalExpenseDetails || []).filter(item => {
+                const itemDate = moment(item.createdAt);
+                const startDate = moment(dateStrings[0]);
+                const endDate = moment(dateStrings[1]);
+                return itemDate.isBetween(startDate, endDate, 'day', '[]');
             });
 
             // คำนวณผลรวมใหม่โดยใช้ฟังก์ชัน calculateTotals
@@ -298,8 +338,8 @@ const ReportIncomeExpense = () => {
             setFilteredIncome(filteredIncomeData);
             setFilteredExpense(filteredExpenseData);
         } else {
-            // ถ้าไม่มีช่วงวันที่ที่เลือก ให้แสดงข้อมูลทั้งหมด
-            const { totalIncome, totalExpense, netProfit } = calculateTotals(data.incomeDetails, data.expenseDetails);
+            // ถ้าไม่มีช่วงวันที่ที่เลือก (หรือกด Clear) ให้แสดงข้อมูลทั้งหมดจาก original (ซึ่งตอนนี้มีแต่เครื่องดื่ม)
+            const { totalIncome, totalExpense, netProfit } = calculateTotals(originalIncomeDetails, originalExpenseDetails);
 
             setData(prev => ({
                 ...prev,
@@ -307,12 +347,12 @@ const ReportIncomeExpense = () => {
                 totalIncome,
                 totalExpense,
                 netProfit,
-                incomeDetails: prev.incomeDetails,
-                expenseDetails: prev.expenseDetails
+                incomeDetails: originalIncomeDetails,
+                expenseDetails: originalExpenseDetails
             }));
 
-            setFilteredIncome(data.incomeDetails || []);
-            setFilteredExpense(data.expenseDetails || []);
+            setFilteredIncome(originalIncomeDetails || []);
+            setFilteredExpense(originalExpenseDetails || []);
         }
     };
 

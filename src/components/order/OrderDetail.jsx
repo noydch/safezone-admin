@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Table, Spin, Alert, Button, Tag, message, Modal, Select, Space } from 'antd'; // เพิ่ม Modal, Select
 import Sidebar from '../sidebar/Sidebar';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getOrderByIdApi, updateRoundStatusApi, checkoutOrderApi } from '../../api/order'; // เพิ่ม checkoutOrderApi
+import { getOrderByIdApi, updateRoundStatusApi, checkoutOrderApi, moveOrderTableApi } from '../../api/order'; // เพิ่ม checkoutOrderApi
+import { getTableApi } from '../../api/table'; // เพิ่ม import getTableApi
 import useSafezoneStore from '../../store/safezoneStore';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaMoneyBillWave } from "react-icons/fa"; // Icon สำหรับปุ่ม Checkout
+import { FaExchangeAlt } from "react-icons/fa"; // เพิ่ม Icon สำหรับปุ่มย้ายโต๊ะ
 
 // Columns สำหรับตารางแสดงรายการสินค้าในแต่ละรอบ
 const columns = [
@@ -84,30 +86,39 @@ const OrderDetail = () => {
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+    // State สำหรับ Move Table Modal (เพิ่มใหม่)
+    const [isMoveTableModalVisible, setIsMoveTableModalVisible] = useState(false);
+    const [selectedNewTable, setSelectedNewTable] = useState(null);
+    const [availableTables, setAvailableTables] = useState([]);
+    const [moveTableLoading, setMoveTableLoading] = useState(false); // สำหรับสถานะ loading ของการย้ายโต๊ะและดึงข้อมูลโต๊ะ
+
     // Fetch ข้อมูล Order เมื่อ Component โหลด หรือ orderId/token เปลี่ยน
+    const fetchOrderDetails = async () => {
+        if (!token || !orderId) {
+            setError(!orderId ? "ບໍ່ພົບ Order ID ໃນ URL." : "ຕ້ອງການ Token ໃນການເຂົ້າເຖິງຂໍ້ມູນ.");
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await getOrderByIdApi(token, orderId);
+            if (response && response.data) {
+                setOrder(response.data);
+                console.log(order);
+
+            } else {
+                setError("ບໍ່ພົບຂໍ້ມູນຄຳສັ່ງຊື້ທີ່ລະບຸ.");
+            }
+        } catch (err) {
+            console.error("Error fetching order details:", err);
+            setError(err.response?.data?.message || "ເກີດຂໍ້ຜິດພາດໃນການດຶງຂໍ້ມູນລາຍລະອຽດຄຳສັ່ງຊື້.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchOrderDetails = async () => {
-            if (!token || !orderId) {
-                setError(!orderId ? "ບໍ່ພົບ Order ID ໃນ URL." : "ຕ້ອງການ Token ໃນການເຂົ້າເຖິງຂໍ້ມູນ.");
-                setLoading(false);
-                return;
-            }
-            try {
-                setLoading(true);
-                setError(null);
-                const response = await getOrderByIdApi(token, orderId);
-                if (response && response.data) {
-                    setOrder(response.data);
-                } else {
-                    setError("ບໍ່ພົບຂໍ້ມູນຄຳສັ່ງຊື້ທີ່ລະບຸ.");
-                }
-            } catch (err) {
-                console.error("Error fetching order details:", err);
-                setError(err.response?.data?.message || "ເກີດຂໍ້ຜິດພາດໃນການດຶງຂໍ້ມູນລາຍລະອຽດຄຳສັ່ງຊື້.");
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchOrderDetails();
     }, [orderId, token]);
 
@@ -192,6 +203,69 @@ const OrderDetail = () => {
         }
     };
 
+    // ฟังก์ชันสำหรับย้ายโต๊ะ (เพิ่มใหม่)
+    const showMoveTableModal = async () => {
+        setIsMoveTableModalVisible(true);
+        setMoveTableLoading(true); // ตั้งค่า loading ขณะดึงข้อมูลโต๊ะ
+        try {
+            // เรียก API เพื่อดึงข้อมูลโต๊ะที่ว่าง (สถานะ AVAILABLE)
+            const response = await getTableApi(token, { status: 'ວ່າງ' }); // ส่ง token และ status
+            if (response && response.data) {
+                // กรองไม่ให้แสดงโต๊ะปัจจุบันของ order ในรายการเลือก
+                const filteredTables = response.data.filter(t => t.id !== order?.table?.id && t.status === 'ວ່າງ');
+                setAvailableTables(filteredTables);
+                setSelectedNewTable(null); // รีเซ็ตค่าที่เลือกไว้
+            } else {
+                message.error("ไม่พบข้อมูลโต๊ะที่ว่าง.");
+            }
+        } catch (err) {
+            console.error("Error fetching available tables:", err);
+            message.error(`ຜິດພາດໃນການດຶງຂໍ້ມູນໂຕະທີ່ວ່າງ: ${err.response?.data?.message || err.message}`);
+        } finally {
+            setMoveTableLoading(false);
+        }
+    };
+
+    const handleMoveTableCancel = () => {
+        setIsMoveTableModalVisible(false);
+        setSelectedNewTable(null);
+    };
+
+    const handleConfirmMoveTable = async () => {
+        if (!selectedNewTable) {
+            message.warning("ກະລຸນາເລືອກໂຕະໃໝ່ທີ່ຈະຍ້າຍ.");
+            return;
+        }
+        if (!order || !order.id || !order.table?.id) {
+            message.error("ບໍ່ພົບຂໍ້ມູນອໍເດີ ຫຼື ໂຕະປັດຈຸບັນສຳລັບການຍ້າຍໂຕະ.");
+            return;
+        }
+
+        setMoveTableLoading(true);
+        try {
+            // Call the actual API to move the table
+            const fromTableId = order.table.id;
+            const toTableId = selectedNewTable;
+
+            const response = await moveOrderTableApi(token, fromTableId, toTableId);
+
+            if (response && response.data) {
+                setIsMoveTableModalVisible(false);
+                message.success(`ຍ້າຍອໍເດີ #${order.id} ໄປໂຕະ ${availableTables.find(t => t.id === selectedNewTable)?.table_number} ສຳເລັດ!`);
+                // Re-fetch order details to reflect the new table number in the UI
+                await fetchOrderDetails();
+            } else {
+                message.error("ການຕອບກັບຈາກ Server ບໍ່ຖືກຕ້ອງຫຼັງຈາກຍ້າຍໂຕະ.");
+            }
+
+        } catch (err) {
+            console.error("ຜິດພາດໃນການຍ້າຍໂຕະ:", err);
+            message.error(`ຜິດພາດ: ${err.response?.data?.message || 'ການຍ້າຍໂຕະລົ້ມເຫລວ'}`);
+        } finally {
+            setMoveTableLoading(false);
+        }
+    };
+
     // แสดงผลรายละเอียด Order ทั้งหมด
     const renderOrderDetailsContent = () => {
         if (!order) return <Alert message="ບໍ່ພົບຂໍ້ມູນຄຳສັ່ງຊື້." type="warning" showIcon />;
@@ -203,7 +277,7 @@ const OrderDetail = () => {
                         <div>
                             <h3 className="text-xl font-semibold text-gray-800">ຂໍ້ມູນຄຳສັ່ງຊື້ #{order.id}</h3>
                             <p className="text-gray-600">ພະນັກງານ: {order.employee?.fname} {order.employee?.lname}</p>
-                            <p className="text-gray-600">ໂຕະ: {order.table?.table_number}</p>
+                            <p className="text-gray-600">ໂຕະ: {order.table?.mergedName == null ? order.table?.table_number : order.table?.mergedName}</p>
                             <p className="text-gray-600">
                                 ສະຖານະບິນ: <Tag color={getStatusColor(order.billStatus)}>{getStatusLabel(order.billStatus)}</Tag>
                             </p>
@@ -214,19 +288,32 @@ const OrderDetail = () => {
                             )}
                             <p className='text-2xl font-bold text-green-600 mt-2'>ລາຄາລວມ: {order.total_price?.toLocaleString()} ກີບ</p>
                         </div>
-                        {order.billStatus === 'OPEN' && (user?.role === 'Cashier' || user?.role === 'Manager' || user?.role === 'Owner') && ( // แสดงปุ่มเฉพาะ Role ที่กำหนดและบิลยังเปิด
-                            <Button
-                                type="primary"
-                                icon={<FaMoneyBillWave className="mr-2" />}
-                                size="large"
-                                style={{ backgroundColor: '#10B981', borderColor: '#10B981' }}
-                                className="hover:bg-green-700"
-                                onClick={showCheckoutModal}
-                                loading={checkoutLoading}
-                            >
-                                ຊຳລະເງິນ (Checkout)
-                            </Button>
-                        )}
+                        <div className="flex space-x-2"> {/* ใช้ flexbox จัดเรียงปุ่ม */}
+                            {order.billStatus === 'OPEN' && (user?.role === 'Cashier' || user?.role === 'Manager' || user?.role === 'Owner') && (
+                                <Button
+                                    type="primary"
+                                    icon={<FaMoneyBillWave className="mr-2" />}
+                                    size="large"
+                                    style={{ backgroundColor: '#10B981', borderColor: '#10B981' }}
+                                    className="hover:bg-green-700"
+                                    onClick={showCheckoutModal}
+                                    loading={checkoutLoading}
+                                >
+                                    ຊຳລະເງິນ (Checkout)
+                                </Button>
+                            )}
+                            {order.billStatus === 'OPEN' && (user?.role === 'Cashier' || user?.role === 'Manager' || user?.role === 'Owner') && (
+                                <Button
+                                    type="default" // สามารถเปลี่ยนเป็น "primary" ได้ตามต้องการ
+                                    icon={<FaExchangeAlt className="mr-2" />}
+                                    size="large"
+                                    onClick={showMoveTableModal}
+                                    loading={moveTableLoading}
+                                >
+                                    ຍ້າຍໂຕະ
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -304,6 +391,35 @@ const OrderDetail = () => {
                     options={PaymentOptions}
                 />
                 <p className='mt-4 text-lg font-semibold'>ຍອດທີ່ຕ້ອງຊຳລະ: <strong className="text-green-600">{order?.total_price?.toLocaleString()} ກີບ</strong></p>
+            </Modal>
+
+            {/* Modal สำหรับย้ายโต๊ะ (เพิ่มใหม่) */}
+            <Modal
+                title={`ຍ້າຍອໍເດີ #${order?.id} ໄປໂຕະໃໝ່`}
+                visible={isMoveTableModalVisible}
+                onOk={handleConfirmMoveTable}
+                onCancel={handleMoveTableCancel}
+                confirmLoading={moveTableLoading}
+                okText="ຢືນຢັນການຍ້າຍ"
+                cancelText="ຍົກເລີກ"
+                centered
+            >
+                <p className="mb-2">ເລືອກໂຕະໃໝ່:</p>
+                <Select
+                    placeholder="ເລືອກໂຕະ"
+                    style={{ width: '100%', marginBottom: 16 }}
+                    onChange={(value) => setSelectedNewTable(value)}
+                    value={selectedNewTable}
+                    options={availableTables.map(table => ({
+                        value: table.id,
+                        label: `ໂຕະ ${table.table_number}`
+                    }))}
+                    loading={moveTableLoading}
+                    disabled={moveTableLoading} // ปิดใช้งาน Select ขณะโหลด
+                />
+                {order && <p className='mt-4 text-lg font-semibold'>
+                    ໂຕະປັດຈຸບັນ: <strong className="text-blue-600">ໂຕະ {order.table?.table_number}</strong>
+                </p>}
             </Modal>
         </Sidebar>
     );

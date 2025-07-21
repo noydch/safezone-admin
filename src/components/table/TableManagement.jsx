@@ -5,6 +5,7 @@ import useSafezoneStore from '../../store/safezoneStore';
 import ModalAddTable from './ModalAddTable';
 import ModalEditTable from './ModalEditTable';
 import { delTableApi } from '../../api/table';
+import ModalMergeTable from './ModalMergeTable';
 
 const TableManagement = () => {
     const listTable = useSafezoneStore((state) => state.listTable)
@@ -16,6 +17,8 @@ const TableManagement = () => {
     useEffect(() => {
         listTable()
     }, [listTable])
+    console.log(tables);
+
 
     const handleDeleteTable = async (id, table_number) => {
         console.log(id);
@@ -35,7 +38,10 @@ const TableManagement = () => {
         <div className=' h-screen'>
             <div className=' flex items-end justify-between'>
                 <h1 className=' text-[18px] font-medium'>ລາຍການໂຕະ</h1>
-                <ModalAddTable listTable={listTable} />
+                <div className='flex items-center gap-x-2'>
+                    <ModalMergeTable listTable={listTable} tables={tables} />
+                    <ModalAddTable listTable={listTable} />
+                </div>
             </div>
             <div className=' bg-white p-4 h-full mt-2 rounded-md'>
                 {loading ? (
@@ -62,11 +68,12 @@ const TableManagement = () => {
                 ) : (
                     <ul className=' grid grid-cols-6 gap-3 place-items-center'>
                         {tables.map((table, index) => (
-                            <li key={index} className=' flex flex-col justify-between w-[190px] h-[110px] p-2 bg-white drop-shadow-md border border-gray-200 rounded-md'>
+                            <li key={index} className=' flex flex-col justify-between w-[190px] h-[140px] p-2 bg-white drop-shadow-md border border-gray-200 rounded-md'>
                                 <div className=' flex justify-between'>
-                                    <MdTableBar className=' text-[64px]' />
+                                    <MdTableBar className=' text-[70px]' />
                                     <div className=' flex flex-col items-end leading-6'>
                                         <h2 className='text-[24px] font-medium text-red-500'>ໂຕະ {table.table_number}</h2>
+                                        <span className=' text-[12px] font-medium '>{table.mergedName}</span>
                                         <span className=' text-[12px] font-medium '>{table.seat} ບ່ອນນັ່ງ</span>
                                         <span className={`text-[12px] font-medium ${table.status === 'ຖືກຈອງແລ້ວ' ? 'text-red-500' :
                                             table.status === 'ວ່າງ' ? 'text-green-500' : 'text-yellow-500'

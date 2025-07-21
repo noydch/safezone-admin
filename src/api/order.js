@@ -48,3 +48,24 @@ export const checkoutOrderApi = async (token, orderId, paymentMethod) => {
         }
     });
 };
+
+// ** NEW FUNCTION FOR MOVING TABLE **
+export const moveOrderTableApi = async (token, fromTableId, toTableId) => {
+    const data = { fromTableId: fromTableId, toTableId: toTableId };
+
+    return axios.post(ApiPath.moveTable, data, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};
+
+export const mergeTableApi = async (token, tableIds) => {
+    const data = { tableIds: tableIds };
+
+    return axios.post(ApiPath.mergeTable, data, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};

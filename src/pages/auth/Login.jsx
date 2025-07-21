@@ -59,7 +59,7 @@ const Login = () => {
                     localStorage.setItem("token", response?.data?.token)
                     // localStorage.setItem("user", response?.data?.payload)
                     setLoading(false)
-                    navigate('/')
+                    navigate('/table')
                     message.success("Login Success!!!")
                 }, 3000)
             } else {

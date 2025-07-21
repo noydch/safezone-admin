@@ -91,6 +91,8 @@ export default class ApiPath {
     static deleteOrder = `${baseUrl}/deleteOrder`
     static updateRoundStatus = `${baseUrl}/orders/rounds`
     static checkOutOrder = `${baseUrl}/orders/checkout`
+    static moveTable = `${baseUrl}/orders/moveTable`
+    static mergeTable = `${baseUrl}/orders/mergeTables`
 
     //report
     static reportFoodDrink = `${baseUrl}/reportFoodDrink`
