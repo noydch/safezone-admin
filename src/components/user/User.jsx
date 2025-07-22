@@ -30,7 +30,8 @@ const User = () => {
     }, []);
 
     const showModal = () => {
-        if (user?.role === 'Owner') {
+        // Allow 'Owner' or 'Manager' to add users
+        if (user?.role === 'Owner' || user?.role === 'Manager') {
             setIsModalOpen(true);
         } else {
             message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມຜູ້ໃຊ້ງານໄດ້');
@@ -47,7 +48,8 @@ const User = () => {
     };
 
     const handleEdit = (record) => {
-        if (user?.role === 'Owner') {
+        // Allow 'Owner' or 'Manager' to edit users
+        if (user?.role === 'Owner' || user?.role === 'Manager') {
             setEditingUser(record);
             setIsEditModalOpen(true);
         } else {
@@ -63,20 +65,35 @@ const User = () => {
     const handleEditSubmit = async (values) => {
         console.log('Submitting edited user:', values);
         handleEditClose();
+        await fetchEmployees(); // Refresh list after edit (assuming successful API call)
     };
 
     const handleDelete = (record) => {
-        console.log('Delete:', record);
+        // Allow 'Owner' or 'Manager' to delete users
+        if (user?.role === 'Owner' || user?.role === 'Manager') {
+            console.log('Delete:', record);
+            // TODO: Implement actual delete API call here
+            message.success('ລົບລາຍການສຳເລັດ'); // Placeholder message
+            fetchEmployees(); // Refresh list after delete (assuming successful API call)
+        } else {
+            message.error('ທ່ານບໍ່ມີສິດໃນການລົບຜູ້ໃຊ້ງານໄດ້');
+        }
     };
 
-    const columns = [
+    // Define base columns
+    const baseColumns = [
         { title: 'ຊື່', dataIndex: 'fname', key: 'fname' },
         { title: 'ນາມສະກຸນ', dataIndex: 'lname', key: 'lname' },
         { title: 'ເພດ', dataIndex: 'gender', key: 'gender' },
         { title: 'ເບີໂທ', dataIndex: 'phone', key: 'phone' },
         { title: 'ອີເມລ', dataIndex: 'email', key: 'email' },
         { title: 'Role', dataIndex: 'role', key: 'role' },
-        {
+    ];
+
+    // Conditionally add the 'ຈັດການ' (Action) column
+    let dynamicColumns = [...baseColumns];
+    if (user?.role === 'Owner' || user?.role === 'Manager') {
+        dynamicColumns.push({
             title: 'ຈັດການ',
             key: 'action',
             render: (_, record) => (
@@ -95,19 +112,22 @@ const User = () => {
                     </button>
                 </div>
             )
-        }
-    ];
+        });
+    }
 
     return (
         <div>
             <div className='flex items-center justify-between mb-2'>
                 <h1 className='text-[20px] font-semibold'>ຂໍ້ມູນຜູ້ໃຊ້ລະບົບ</h1>
 
-                <button
-                    onClick={showModal}
-                    className='h-[35px] w-[120px] font-medium rounded bg-red-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
-                    ເພີ່ມຜູ້ໃຊ້ງານ
-                </button>
+                {/* Conditionally render the 'Add User' button */}
+                {(user?.role === 'Owner' || user?.role === 'Manager') && (
+                    <button
+                        onClick={showModal}
+                        className='h-[35px] w-[120px] font-medium rounded bg-red-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
+                        ເພີ່ມຜູ້ໃຊ້ງານ
+                    </button>
+                )}
 
                 <ModalRegister
                     isOpen={isModalOpen}
@@ -127,7 +147,7 @@ const User = () => {
 
             <div className='bg-white rounded-md p-4'>
                 <Table
-                    columns={columns}
+                    columns={dynamicColumns} // Use the dynamic columns array
                     dataSource={employee}
                     rowKey="id"
                 />

@@ -51,21 +51,16 @@ const safezoneStore = (set, get) => ({
     },
 
     // อัพเดทจำนวนสินค้าในตะกร้า (และเปลี่ยนหน่วยขายสำหรับเครื่องดื่ม)
-    actionUpdateCart: (itemId, type, name, qty, selectedUnitId = null, price = null, productUnits = []) => {
+    actionUpdateCart: (itemId, type, name, qty, selectedUnitId = null, price = null, productUnits = [], productName = null) => {
         set((state) => {
             let currentCarts = [...state.carts]; // สร้าง copy ของ carts เพื่อให้สามารถแก้ไขได้
             let updated = false;
 
             if (type === 'drink') {
                 if (selectedUnitId === null) {
-                    message.warning('ກະລຸນาເລືອກຫົວໜ່ວຍກ່ອນ');
+                    message.warning('ກະລຸນາເລືອກຫົວໜ່ວຍກ່ອນ');
                     return { carts: state.carts }; // ถ้าไม่มี selectedUnitId ให้คืนค่าเดิม
                 }
-
-                // หา item ที่เป็นเครื่องดื่ม ID เดียวกัน แต่อาจจะเป็นหน่วยเก่า
-                const existingItemIndexWithOldUnit = currentCarts.findIndex(
-                    cartItem => cartItem.id === itemId && cartItem.type === type && cartItem.selectedUnitId !== selectedUnitId
-                );
 
                 // หา item ที่เป็นเครื่องดื่ม ID เดียวกัน และเป็นหน่วยที่เลือก (selectedUnitId)
                 const existingItemIndexWithNewUnit = currentCarts.findIndex(
@@ -80,6 +75,9 @@ const safezoneStore = (set, get) => ({
                     // Scenario 2: ไม่มี item นี้ในตะกร้าด้วยหน่วยที่เลือก (selectedUnitId ใหม่) -> เปลี่ยนหน่วย
                     const newUnit = productUnits.find(u => u.id === selectedUnitId);
                     if (newUnit) {
+                        // ก่อนอื่น, ค้นหารายการเดิมที่มี productUnits และ productName
+                        const existingDrinkProductInCart = currentCarts.find(cartItem => cartItem.id === itemId && cartItem.type === type);
+
                         // ลบ item ที่เป็นเครื่องดื่ม ID เดียวกันทั้งหมดออกจากตะกร้าก่อน
                         currentCarts = currentCarts.filter(cartItem => !(cartItem.id === itemId && cartItem.type === type));
 
@@ -91,8 +89,9 @@ const safezoneStore = (set, get) => ({
                             price: newUnit.price,
                             qty: qty, // จำนวนที่ส่งมา (ปกติจะเป็น 1 เมื่อเปลี่ยนหน่วย)
                             selectedUnitId: newUnit.id,
-                            imageUrl: (existingItemIndexWithOldUnit !== -1 ? state.carts[existingItemIndexWithOldUnit]?.imageUrl : ''), // ใช้รูปภาพเดิมจาก item เก่าถ้ามี
-                            productUnits: productUnits // *** สำคัญ: เก็บ productUnits ไว้กับ item ใหม่ ***
+                            imageUrl: existingDrinkProductInCart?.imageUrl || '/placeholder.png', // ใช้รูปภาพจากรายการเดิมถ้ามี
+                            productUnits: productUnits, // *** สำคัญ: เก็บ productUnits ไว้กับ item ใหม่ ***
+                            productName: productName || existingDrinkProductInCart?.productName // *** เพิ่ม productName ที่นี่ ***
                         });
                         updated = true;
                     } else {

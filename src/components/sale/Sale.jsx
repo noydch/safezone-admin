@@ -189,7 +189,7 @@ const Sale = () => {
                                 {filteredProducts?.map((item) => (
                                     <li key={item?.id} className="border relative border-gray-200 w-[180px] h-[220px] rounded-xl shadow-md p-1 flex flex-col">
                                         <div className="h-[150px] w-full border border-gray-200 rounded-xl p-1 bg-white">
-                                            <img src={item?.imageUrl} alt={item?.name} className="object-contain w-full h-full rounded-xl" />
+                                            <img src={item?.imageUrl} alt={item?.name} className="object-cover w-full h-full rounded-xl" />
                                         </div>
                                         <p className="px-1.5 text-[15px] font-medium flex-grow break-words mt-1.5">
                                             {item?.name}

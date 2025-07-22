@@ -60,8 +60,9 @@ const ProductUnit = () => {
     const columns = [
         {
             title: 'ຊື່ຫົວໜ່ວຍ',
-            dataIndex: 'name',
-            key: 'name'
+            key: 'productAndUnitName', // Changed key for clarity
+            render: (_, record) => `${record.drink.name} (${record.name})`,
+            sorter: (a, b) => a.drink.name.localeCompare(b.drink.name), // Added sorter for alphabetical order
         },
         {
             title: 'ລາຄາ',

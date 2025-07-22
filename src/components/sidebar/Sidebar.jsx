@@ -20,6 +20,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { IoIosArrowDown } from "react-icons/io";
 import { FaTruck } from "react-icons/fa";
 import useSafezoneStore from '../../store/safezoneStore';
+import { useAuth } from './../../context/AuthContext';
 
 const Sidebar = ({ children }) => {
     const user = useSafezoneStore((state) => state.user);
@@ -164,6 +165,15 @@ const Sidebar = ({ children }) => {
         return submenu.some(item => item.path === pathname);
     };
 
+    const { user: authUser } = useAuth();
+
+    const filteredPath = path.filter(item => {
+        if (item.path === '/employee') {
+            return authUser?.role === 'Owner' || authUser?.role === 'Manager';
+        }
+        return true;
+    });
+
     return (
         <div className=' flex h-screen'>
             <section className=' sticky w-[220px] bg-white p-2 flex flex-col z-50'>
@@ -174,7 +184,7 @@ const Sidebar = ({ children }) => {
                 </div>
                 <div className=' w-full space-y-1 flex-1 mt-5'>
                     {
-                        path.map((item, index) => (
+                        filteredPath.map((item, index) => (
                             item.type === 'dropdown' ? (
                                 <div key={index}>
                                     <div
@@ -224,7 +234,7 @@ const Sidebar = ({ children }) => {
                             logoutAction();
                             navigate('/login');
                         }}
-                        className='w-full flex items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md bg-white border-2 border-transparent hover:bg-red-100 hover:border-red-500 hover:text-red-500 duration-200'
+                        className='w-full flex cursor-pointer items-center gap-x-2 p-1.5 text-[16px] font-semibold rounded-md bg-white border-2 border-transparent hover:bg-red-100 hover:border-red-500 hover:text-red-500 duration-200'
                     >
                         <MdLogout className=' text-[24px]' />
                         ອອກຈາກລະບົບ
@@ -247,7 +257,7 @@ const Sidebar = ({ children }) => {
                             {
                                 isAvatarMenuOpen && (
                                     <div
-                                        className=' flex absolute top-12 bg-white p-2 rounded -right-10'>
+                                        className=' flex absolute top-12 bg-white p-2 rounded -right-5 border border-gray-200'>
                                         {
                                             avatarData.map((avatarItem) => (
                                                 <div className=' cursor-pointer hover:border-2 hover:border-gray-700 duration-300 border-2 border-transparent w-[40px] h-[40px] rounded-full'

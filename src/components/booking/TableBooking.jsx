@@ -224,14 +224,14 @@ const TableBooking = ({ onChange }) => {
                 <Space>
                     {record.status === 'pending' ? (
                         <>
-                            <Button
+                            {/* <Button
                                 type="primary"
                                 size="small"
                                 loading={updatingStatus[`${record.id}_confirmed`]}
                                 onClick={() => handleStatusChange(record.id, 'confirmed')}
                             >
                                 ຢືນຢັນ
-                            </Button>
+                            </Button> */}
                             <Button
                                 danger
                                 size="small"

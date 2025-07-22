@@ -48,3 +48,33 @@ export const checkoutOrderApi = async (token, orderId, paymentMethod) => {
         }
     });
 };
+
+// ** NEW FUNCTION FOR MOVING TABLE **
+export const moveOrderTableApi = async (token, fromTableId, toTableId) => {
+    const data = { fromTableId: fromTableId, toTableId: toTableId };
+
+    return axios.post(ApiPath.moveTable, data, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};
+
+export const mergeTableApi = async (token, tableIds) => {
+    const data = { tableIds: tableIds };
+
+    return axios.post(ApiPath.mergeTable, data, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};
+
+// ** NEW FUNCTION FOR CANCELLING FOOD ITEM ORDER DETAIL **
+export const cancelFoodItemOrderDetailApi = async (token, orderDetailId) => {
+    return axios.post(`${ApiPath.cancelFoodItemOrderDetail}/${orderDetailId}`, {}, { // Send empty object as data if no body is needed
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};

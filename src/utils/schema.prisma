@@ -126,6 +126,8 @@ model Order {
   empId        Int
   orderDate    DateTime      @default(now())
   total_price  Float
+  billStatus   String        @default("OPEN")
+  mergedFromIds String?      // Added for merge table functionality
   createdAt    DateTime      @default(now())
   orderDetails OrderDetail[]
 }
