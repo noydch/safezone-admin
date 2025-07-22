@@ -103,7 +103,8 @@ const Cart = () => {
             orderDetails: carts.map(item => {
                 const detail = {
                     quantity: item.qty,
-                    price: item.price
+                    price: item.price,
+                    itemType: item.type === 'food' ? 'FOOD' : 'DRINK'
                 };
 
                 if (item.type === 'drink') {

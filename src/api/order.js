@@ -69,3 +69,12 @@ export const mergeTableApi = async (token, tableIds) => {
         }
     });
 };
+
+// ** NEW FUNCTION FOR CANCELLING FOOD ITEM ORDER DETAIL **
+export const cancelFoodItemOrderDetailApi = async (token, orderDetailId) => {
+    return axios.post(`${ApiPath.cancelFoodItemOrderDetail}/${orderDetailId}`, {}, { // Send empty object as data if no body is needed
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+};

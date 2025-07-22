@@ -2,53 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Table, Spin, Alert, Button, Tag, message, Modal, Select, Space } from 'antd'; // เพิ่ม Modal, Select
 import Sidebar from '../sidebar/Sidebar';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getOrderByIdApi, updateRoundStatusApi, checkoutOrderApi, moveOrderTableApi } from '../../api/order'; // เพิ่ม checkoutOrderApi
+import { getOrderByIdApi, updateRoundStatusApi, checkoutOrderApi, moveOrderTableApi, cancelFoodItemOrderDetailApi } from '../../api/order'; // เพิ่ม cancelFoodItemOrderDetailApi
 import { getTableApi } from '../../api/table'; // เพิ่ม import getTableApi
 import useSafezoneStore from '../../store/safezoneStore';
 import { IoIosArrowBack } from 'react-icons/io';
 import { FaMoneyBillWave } from "react-icons/fa"; // Icon สำหรับปุ่ม Checkout
 import { FaExchangeAlt } from "react-icons/fa"; // เพิ่ม Icon สำหรับปุ่มย้ายโต๊ะ
-
-// Columns สำหรับตารางแสดงรายการสินค้าในแต่ละรอบ
-const columns = [
-    {
-        title: 'ລາຍການ', // Item
-        dataIndex: 'item',
-        key: 'item',
-        render: (_, record) => {
-            // ตรวจสอบว่าเป็นอาหาร (food) หรือเครื่องดื่ม (drink/productUnit)
-            if (record.food) {
-                return record.food.name; // ถ้าเป็นอาหาร ให้แสดงชื่ออาหาร
-            } else if (record.productUnit) {
-                // ถ้าเป็นเครื่องดื่ม ให้แสดงชื่อเครื่องดื่มและชื่อหน่วยในวงเล็บ
-                return `${record.productUnit.drink?.name || 'Unknown Drink'} (${record.productUnit.name || 'Unknown Unit'})`;
-            }
-            return `ໄອດີ: ${record.id}`; // กรณีไม่พบข้อมูลที่คาดหวัง
-        },
-    },
-    {
-        title: 'ຈຳນວນ', // Quantity
-        dataIndex: 'quantity',
-        key: 'quantity',
-        align: 'center',
-    },
-    {
-        title: 'ລາຄາ', // Price
-        dataIndex: 'price',
-        key: 'price',
-        align: 'right',
-        render: (price) => `${price ? price.toLocaleString() : 0} ກີບ`, // Kip
-    },
-    {
-        title: 'ລາຄາລວມ', // Total Price
-        key: 'totalPrice',
-        align: 'right',
-        render: (_, record) => {
-            const totalPrice = (record.quantity || 0) * (record.price || 0);
-            return `${totalPrice.toLocaleString()} ກີບ`; // Kip
-        }
-    },
-];
+import { MdCancel } from "react-icons/md"; // เพิ่ม Icon สำหรับปุ่มยกเลิก
 
 // ข้อมูลสถานะต่างๆ และสีที่ใช้แสดง
 const ORDER_STATUSES = [
@@ -91,6 +51,96 @@ const OrderDetail = () => {
     const [selectedNewTable, setSelectedNewTable] = useState(null);
     const [availableTables, setAvailableTables] = useState([]);
     const [moveTableLoading, setMoveTableLoading] = useState(false); // สำหรับสถานะ loading ของการย้ายโต๊ะและดึงข้อมูลโต๊ะ
+
+    const [cancellingItem, setCancellingItem] = useState({}); // { orderDetailId: boolean }
+
+    // ฟังก์ชันสำหรับยกเลิกรายการอาหาร
+    const handleCancelFoodItem = async (orderDetailId) => {
+        setCancellingItem(prev => ({ ...prev, [orderDetailId]: true }));
+        try {
+            const response = await cancelFoodItemOrderDetailApi(token, orderDetailId);
+            if (response.status === 200) {
+                message.success("ຍົກເລີກລາຍການອາຫານສຳເລັດ!");
+                // Re-fetch order details to update the UI with the cancelled item status
+                await fetchOrderDetails();
+            } else {
+                message.error(response.data?.message || "ເກີດຂໍ້ຜິດພາດໃນການຍົກເລີກລາຍການອາຫານ.");
+            }
+        } catch (err) {
+            console.error("ຜິດພາດໃນການຍົກເລີກລາຍການອາຫານ:", err);
+            message.error(`ຜິດພາດ: ${err.response?.data?.message || 'ການຍົກເລີກລາຍການອາຫານລົ້ມເຫລວ'}`);
+        } finally {
+            setCancellingItem(prev => ({ ...prev, [orderDetailId]: false }));
+        }
+    };
+
+    // Columns สำหรับตารางแสดงรายการสินค้าในแต่ละรอบ (ย้ายมาที่นี่)
+    const columns = [
+        {
+            title: 'ລາຍການ', // Item
+            dataIndex: 'item',
+            key: 'item',
+            render: (_, record) => {
+                if (record.food) {
+                    return record.food.name;
+                } else if (record.productUnit) {
+                    return `${record.productUnit.drink?.name || 'Unknown Drink'} (${record.productUnit.name || 'Unknown Unit'})`;
+                }
+                return `ໄອດີ: ${record.id}`;
+            },
+        },
+        {
+            title: 'ຈຳນວນ', // Quantity
+            dataIndex: 'quantity',
+            key: 'quantity',
+            align: 'center',
+        },
+        {
+            title: 'ລາຄາ', // Price
+            dataIndex: 'price',
+            key: 'price',
+            align: 'right',
+            render: (price) => `${price ? price.toLocaleString() : 0} ກີບ`, // Kip
+        },
+        {
+            title: 'ລາຄາລວມ', // Total Price
+            key: 'totalPrice',
+            align: 'right',
+            render: (_, record) => {
+                const totalPrice = (record.quantity || 0) * (record.price || 0);
+                return `${totalPrice.toLocaleString()} ກີບ`; // Kip
+            }
+        },
+        {
+            title: 'Action', // หรือ 'ການຈັດການ'
+            key: 'action',
+            align: 'center',
+            render: (_, record) => {
+                // Show button only if it's a food item, order is OPEN, and item is not already CANCELLED
+                if (record.food && order?.billStatus === 'OPEN' && record.status !== 'CANCELLED') {
+                    // You might also want to restrict by kitchenStatus like 'PENDING' based on your backend logic
+                    // if (record.food && order?.billStatus === 'OPEN' && record.status !== 'CANCELLED' && record.kitchenStatus === 'PENDING') {
+                    return (
+                        <Button
+                            type="primary"
+                            danger // Make it red for cancellation
+                            icon={<MdCancel />}
+                            size="small"
+                            onClick={() => handleCancelFoodItem(record.id)}
+                            loading={cancellingItem[record.id]} // Use the loading state for this specific item
+                        >
+                            ຍົກເລີກ
+                        </Button>
+                    );
+                }
+                // If the item is already cancelled, display a tag
+                if (record.status === 'CANCELLED') {
+                    return <Tag color="red">ຍົກເລີກແລ້ວ</Tag>;
+                }
+                return null; // Don't render button for drinks or closed orders
+            },
+        },
+    ];
 
     // Fetch ข้อมูล Order เมื่อ Component โหลด หรือ orderId/token เปลี่ยน
     const fetchOrderDetails = async () => {
