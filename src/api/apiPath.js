@@ -1,7 +1,7 @@
 // const baseUrl = 'http://localhost:5050/api';
 const baseUrl = 'https://safezone-backend-hg65.onrender.com/api';
 
-
+{/* <div className=""></div> */ }
 export default class ApiPath {
     static login = `${baseUrl}/login`
     static register = `${baseUrl}/register`
