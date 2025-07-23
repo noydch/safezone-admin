@@ -265,6 +265,8 @@ const OrderDetail = () => {
             if (response && response.data) {
                 // กรองไม่ให้แสดงโต๊ะปัจจุบันของ order ในรายการเลือก
                 const filteredTables = response.data.filter(t => t.id !== order?.table?.id && t.status === 'ວ່າງ');
+                console.log("table", response.data);
+
                 setAvailableTables(filteredTables);
                 setSelectedNewTable(null); // รีเซ็ตค่าที่เลือกไว้
             } else {
@@ -330,7 +332,8 @@ const OrderDetail = () => {
                             <h3 className="text-xl font-semibold text-gray-800">ຂໍ້ມູນຄຳສັ່ງຊື້ #{order.id}</h3>
                             <p className="text-gray-600">ພະນັກງານ: {order.employee?.fname} {order.employee?.lname}</p>
                             <p className="text-gray-600">
-                                ໂຕະ: {order?.mergedFromIds
+                                ໂຕະ: {order?.mergedFromIds == null ? order?.table?.table_number :
+                                    order?.mergedFromIds
                                 }
                             </p>
                             <p className="text-gray-600">
