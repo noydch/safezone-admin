@@ -360,7 +360,8 @@ const OrderDetail = () => {
                                     ຊຳລະເງິນ (Checkout)
                                 </Button>
                             )}
-                            {order.billStatus === 'OPEN' && (user?.role === 'Cashier' || user?.role === 'Manager' || user?.role === 'Owner') && (
+                            {/* แก้ไขเงื่อนไขการแสดงปุ่มย้ายโต๊ะ: แสดงเมื่อ Order เป็น OPEN และ Role ไม่ใช่ Chef */}
+                            {order.billStatus === 'OPEN' && user?.role?.toLowerCase() !== 'chef' && (
                                 <Button
                                     type="default" // สามารถเปลี่ยนเป็น "primary" ได้ตามต้องการ
                                     icon={<FaExchangeAlt className="mr-2" />}

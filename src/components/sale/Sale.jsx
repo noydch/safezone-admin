@@ -78,7 +78,7 @@ const Sale = () => {
 
         const category = categories.find(cat => cat.id === item?.categoryId);
         const categoryName = category ? category.name : '';
-        const itemType = categoryName.includes('ເຄື່ອງດື່ມ') ? 'drink' : 'food';
+        const itemType = item.type; // Use the type directly from the item fetched from API/store
 
         if (itemType === 'drink') {
             try {
