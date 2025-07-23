@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { Table, Tag, Space, Button, message, Popconfirm, Skeleton } from 'antd';
+import { Table, Tag, Space, Button, message, Popconfirm, Skeleton, Result } from 'antd'; // Import Result
 import { BiSolidEdit } from 'react-icons/bi';
 import { FaTrashAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { getUnitApi, delUnitApi } from '../../api/unit';
 import useSafezoneStore from '../../store/safezoneStore';
 import ModalAddUnit from './ModalAddUnit';
-import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../sidebar/Sidebar';
 import FrmEditUnit from './FrmEditUnit';
 
 const Unit = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    // Change this line to get user from useSafezoneStore
+    const user = useSafezoneStore((state) => state.user);
     const [units, setUnits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -128,49 +128,62 @@ const Unit = () => {
 
     return (
         <Sidebar>
-            <div className='p-4'>
-                <ModalAddUnit onSuccess={fetchUnits} />
-                <div className='flex gap-x-5 bg-white w-full p-4'>
-                    <div className='bg-white rounded-md'>
-                        <div className='rounded-md drop-shadow w-[500px]'>
-                            <Table
-                                pagination={false}
-                                columns={columns}
-                                dataSource={data}
-                                className=''
-                                loading={loading}
-                            />
+            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+                <>
+                    <div className='p-4'>
+                        <ModalAddUnit onSuccess={fetchUnits} />
+                        <div className='flex gap-x-5 bg-white w-full p-4'>
+                            <div className='bg-white rounded-md'>
+                                <div className='rounded-md drop-shadow w-[500px]'>
+                                    <Table
+                                        pagination={false}
+                                        columns={columns}
+                                        dataSource={data}
+                                        className=''
+                                        loading={loading}
+                                    />
+                                </div>
+                            </div>
+                            <div className='flex-1'>
+                                <ul className='grid grid-cols-12 gap-4 flex-wrap'>
+                                    {loading ? (
+                                        Array(8).fill(0).map((_, index) => (
+                                            <li key={index} className='col-span-3 w-[170px] h-[45px]'>
+                                                <Skeleton.Button active style={{ width: '100%', height: '100%' }} />
+                                            </li>
+                                        ))
+                                    ) : (
+                                        units.map((unitItem, index) => (
+                                            <li
+                                                key={index}
+                                                className='cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 hover:shadow-[2px_2px_5px_0px_#f56565] w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'
+                                            >
+                                                {unitItem.name}
+                                            </li>
+                                        ))
+                                    )}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <div className='flex-1'>
-                        <ul className='grid grid-cols-12 gap-4 flex-wrap'>
-                            {loading ? (
-                                Array(8).fill(0).map((_, index) => (
-                                    <li key={index} className='col-span-3 w-[170px] h-[45px]'>
-                                        <Skeleton.Button active style={{ width: '100%', height: '100%' }} />
-                                    </li>
-                                ))
-                            ) : (
-                                units.map((unitItem, index) => (
-                                    <li
-                                        key={index}
-                                        className='cursor-pointer duration-300 hover:border-red-600 hover:text-red-600 hover:shadow-[2px_2px_5px_0px_#f56565] w-[170px] col-span-3 rounded-md drop-shadow bg-white h-[45px] flex items-center justify-center border border-gray-700 text-gray-700 font-medium'
-                                    >
-                                        {unitItem.name}
-                                    </li>
-                                ))
-                            )}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            {selectedUnit && ( // Only render the modal if a unit is selected
-                <FrmEditUnit
-                    isModalOpen={isEditModalOpen}
-                    handleCancel={handleEditModalClose}
-                    unit={selectedUnit}
-                    onSuccess={handleEditSuccess}
-                    fetchUnits={fetchUnits}
+                    {selectedUnit && ( // Only render the modal if a unit is selected
+                        <FrmEditUnit
+                            isModalOpen={isEditModalOpen}
+                            handleCancel={handleEditModalClose}
+                            unit={selectedUnit}
+                            onSuccess={handleEditSuccess}
+                            fetchUnits={fetchUnits}
+                        />
+                    )}
+                </>
+            ) : (
+                <Result
+                    status="403" // Use 403 status for Forbidden access
+                    title="403"
+                    subTitle="ທ່ານບໍ່ມີສິດໃນການເບິ່ງຂໍ້ມູນນີ້!" // Your desired message
+                    extra={
+                        <p className="text-gray-600">ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຖ້າທ່ານຄິດວ່ານີ້ແມ່ນຂໍ້ຜິດພາດ.</p>
+                    }
                 />
             )}
         </Sidebar>

@@ -10,7 +10,8 @@ const NotificationListener = () => {
         socket.on('orderItemCancelled', (data) => {
             console.log('📡 Real-time Event:', data);
             message.warning(
-                `ລາຍການໃນອໍເດີ #${data.orderDetailId} ຖືກຍົກເລີກ: ${data.reason || 'ไม่ระบุเหตุผล'}`
+                // เปลี่ยนข้อความให้แสดง Order ID หลักและชื่ออาหาร/เครื่องดื่ม
+                `ອໍເດີ #${data.orderId} (ລາຍການ #${data.orderDetailId} - ${data.itemName}) ຖືກຍົກເລີກ: ${data.reason || 'ไม่ระบุเหตุผล'}`
             );
         });
 

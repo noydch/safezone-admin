@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, message, Popconfirm } from 'antd';
+import { Table, message, Popconfirm, Result } from 'antd'; // Import Result
 import Sidebar from '../sidebar/Sidebar'
 import ModalAddProductUnit from './ModalAddProductUnit'
 import { getAllProductUnitApi, deleteProductUnitApi } from '../../api/productUnit';
-import { useAuth } from '../../context/AuthContext';
 import useSafezoneStore from '../../store/safezoneStore';
 import ModalEditProductUnit from './ModalEditProductUnit';
 
 const ProductUnit = () => {
     const [productUnits, setProductUnits] = useState([]);
-    const { user } = useAuth();
+    // Change this line to get user from useSafezoneStore
+    const user = useSafezoneStore((state) => state.user);
     const token = useSafezoneStore((state) => state.token)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
@@ -111,22 +111,35 @@ const ProductUnit = () => {
 
     return (
         <Sidebar>
-            <ModalAddProductUnit onSuccess={handleSuccess} />
+            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+                <>
+                    <ModalAddProductUnit onSuccess={handleSuccess} />
 
-            <ModalEditProductUnit
-                isModalOpen={isEditModalOpen}
-                setIsModalOpen={setIsEditModalOpen}
-                record={selectedRecord}
-                onSuccess={handleSuccess}
-            />
+                    <ModalEditProductUnit
+                        isModalOpen={isEditModalOpen}
+                        setIsModalOpen={setIsEditModalOpen}
+                        record={selectedRecord}
+                        onSuccess={handleSuccess}
+                    />
 
-            <div className='bg-white rounded-md p-4 mt-4'>
-                <Table
-                    columns={columns}
-                    dataSource={productUnits}
-                    rowKey="id"
+                    <div className='bg-white rounded-md p-4 mt-4'>
+                        <Table
+                            columns={columns}
+                            dataSource={productUnits}
+                            rowKey="id"
+                        />
+                    </div>
+                </>
+            ) : (
+                <Result
+                    status="403" // Use 403 status for Forbidden access
+                    title="403"
+                    subTitle="ທ່ານບໍ່ມີສິດໃນການເບິ່ງຂໍ້ມູນນີ້!" // Your desired message
+                    extra={
+                        <p className="text-gray-600">ກະລຸນນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຖ້າທ່ານຄິດວ່ານີ້ແມ່ນຂໍ້ຜິດພາດ.</p>
+                    }
                 />
-            </div>
+            )}
         </Sidebar>
     )
 }

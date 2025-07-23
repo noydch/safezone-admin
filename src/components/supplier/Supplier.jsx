@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Space, Spin, Alert } from 'antd';
+import { Table, Button, Space, Spin, Alert, Result } from 'antd'; // Import Result
 import axios from 'axios';
 import ApiPath from '../../api/apiPath'; // Adjust path if necessary
 import EditSupplier from './EditSupplier'; // Import EditSupplier
 import DeleteSupplier from './DeleteSupplier'; // Import DeleteSupplier
 import CreateSupplier from './CreateSupplier'; // Import CreateSupplier
+import useSafezoneStore from '../../store/safezoneStore'; // Import useSafezoneStore
 
 const Supplier = () => {
     const [suppliers, setSuppliers] = useState([]);
@@ -13,6 +14,7 @@ const Supplier = () => {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [editingSupplierId, setEditingSupplierId] = useState(null);
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false); // State for create modal
+    const user = useSafezoneStore((state) => state.user); // Get user from store
 
     // Fetch suppliers
     const fetchSuppliers = useCallback(async () => {
@@ -29,7 +31,7 @@ const Supplier = () => {
             setError('Failed to load suppliers. Please try again later.');
         } finally {
             // Ensure loading is set to false after fetch completes
-            setLoading(false); 
+            setLoading(false);
         }
     }, []);
 
@@ -126,6 +128,20 @@ const Supplier = () => {
         return <Alert message="Error" description={error} type="error" showIcon />;
     }
 
+    // New: Check if the user's role is Admin or Manager
+    if (!user || (user.role !== 'Admin' && user.role !== 'Manager')) {
+        return (
+            <Result
+                status="403"
+                title="403"
+                subTitle="ທ່ານບໍ່ມີສິດໃນການເບິ່ງຂໍ້ມູນນີ້!"
+                extra={
+                    <p className="text-gray-600">ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຖ້າທ່ານຄິດວ່ານີ້ແມ່ນຂໍ້ຜິດພາດ.</p>
+                }
+            />
+        );
+    }
+
     return (
         <div>
             <h1 className='text-[20px] font-semibold mb-2'>ຂໍ້ມູນຜູ້ສະໜອງ</h1>
@@ -153,9 +169,9 @@ const Supplier = () => {
                 onClose={handleCloseEditModal}
                 onSupplierUpdated={handleSupplierUpdated}
             />
-            
+
             {/* Create Supplier Modal */}
-            <CreateSupplier 
+            <CreateSupplier
                 visible={isCreateModalVisible}
                 onClose={handleCloseCreateModal}
                 onSupplierCreated={handleSupplierCreated}

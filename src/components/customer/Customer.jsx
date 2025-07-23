@@ -4,6 +4,8 @@ import axios from 'axios';
 import ApiPath from '../../api/apiPath';
 import EditCustomer from './EditCustomer';
 import DeleteCustomer from './DeleteCustomer';
+import useSafezoneStore from '../../store/safezoneStore'; // Import useSafezoneStore
+import { Result } from 'antd'; // Import Result component
 
 const Customer = () => {
     const [customers, setCustomers] = useState([]);
@@ -11,6 +13,7 @@ const Customer = () => {
     const [error, setError] = useState(null);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [editingCustomerId, setEditingCustomerId] = useState(null);
+    const user = useSafezoneStore((state) => state.user); // Get user from store
 
     const fetchCustomers = useCallback(async () => {
         setLoading(true);
@@ -60,8 +63,8 @@ const Customer = () => {
                     <Button type="primary" onClick={() => handleEdit(record.id)}>
                         ແກ້ໄຂ
                     </Button>
-                    <DeleteCustomer 
-                        customerId={record.id} 
+                    <DeleteCustomer
+                        customerId={record.id}
                         customerName={`${record.fname} ${record.lname}`}
                         onCustomerDeleted={fetchCustomers}
                     />
@@ -92,23 +95,37 @@ const Customer = () => {
         return <Alert message="Error" description={error} type="error" showIcon />;
     }
 
+    // Add role check here
+    if (user && user.role === 'Chef') {
+        return (
+            <Result
+                status="403"
+                title="403"
+                subTitle="ທ່ານບໍ່ມີສິດໃນການເບິ່ງຂໍ້ມູນນີ້!"
+                extra={
+                    <p className="text-gray-600">ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຖ້າທ່ານຄິດວ່ານີ້ແມ່ນຂໍ້ຜິດພາດ.</p>
+                }
+            />
+        );
+    }
+
     return (
         <div>
             <h1 className='text-[20px] font-semibold mb-2'>ຂໍ້ມູນລູກຄ້າ</h1>
             <div className=' bg-white p-4 rounded-md '>
                 <div className="mb-4 text-right">
-                    
+
                 </div>
                 <div className="max-w-[1000px]">
-                    <Table 
-                        dataSource={customers} 
-                        columns={columns} 
+                    <Table
+                        dataSource={customers}
+                        columns={columns}
                         loading={loading && !isEditModalVisible}
                     />
                 </div>
             </div>
 
-            <EditCustomer 
+            <EditCustomer
                 visible={isEditModalVisible}
                 customerId={editingCustomerId}
                 onClose={handleCloseEditModal}

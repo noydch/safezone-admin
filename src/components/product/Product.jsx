@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Image, Button, Popconfirm, message, Skeleton, Empty, Tag } from 'antd';
+import { Table, Image, Button, Popconfirm, message, Skeleton, Empty, Tag, Result } from 'antd'; // Import Result
 import { FaSpinner } from 'react-icons/fa';
 import dayjs from 'dayjs';
 import useSafezoneStore from '../../store/safezoneStore';
-import { useAuth } from '../../context/AuthContext';
 import { deleteFoodApi, deleteDrinkApi } from '../../api/product';
 import ModalFoodAdd from './ModalFoodAdd';
 import ModalDrinkAdd from './ModalDrinkAdd';
@@ -11,7 +10,8 @@ import ModalFoodEdit from './ModalFoodEdit';
 import ModalDrinkEdit from './ModalDrinkEdit';
 
 const Product = () => {
-    const { user } = useAuth();
+    // Change this line to get user from useSafezoneStore
+    const user = useSafezoneStore((state) => state.user); // Get user object from store
     const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
     const [isSelected, setIsSelected] = useState('ທັງໝົດ');
     const [isLoading, setIsLoading] = useState(true);
@@ -186,97 +186,110 @@ const Product = () => {
 
     return (
         <div className='min-h-screen p-4 bg-white rounded-md'>
-            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4'>
-                <ul className='flex items-center gap-2 overflow-x-auto pb-2'>
-                    {isLoading ? (
-                        Array.from({ length: 4 }).map((_, index) => (
-                            <li key={index} className='w-[120px]'>
-                                <Skeleton.Button active={true} size="small" shape="round" block={true} />
-                            </li>
-                        ))
-                    ) : (
-                        <>
-                            <li
-                                onClick={() => setIsSelected('ທັງໝົດ')}
-                                className={`px-4 py-1.5 rounded-full cursor-pointer font-medium duration-200 border ${isSelected === 'ທັງໝົດ' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-700 border-gray-300 hover:border-red-500 hover:text-red-500'}`}
-                            >
-                                ທັງໝົດ
-                            </li>
-                            {categories.map(categoryItem => (
-                                <li
-                                    key={categoryItem.id}
-                                    onClick={() => setIsSelected(categoryItem.id)}
-                                    className={`px-4 py-1.5 rounded-full cursor-pointer font-medium duration-200 border text-nowrap ${isSelected === categoryItem.id ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-700 border-gray-300 hover:border-red-500 hover:text-red-500'}`}
-                                >
-                                    {categoryItem.name}
-                                </li>
-                            ))}
-                        </>
-                    )}
-                </ul>
+            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+                <>
+                    <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4'>
+                        <ul className='flex items-center gap-2 overflow-x-auto pb-2'>
+                            {isLoading ? (
+                                Array.from({ length: 4 }).map((_, index) => (
+                                    <li key={index} className='w-[120px]'>
+                                        <Skeleton.Button active={true} size="small" shape="round" block={true} />
+                                    </li>
+                                ))
+                            ) : (
+                                <>
+                                    <li
+                                        onClick={() => setIsSelected('ທັງໝົດ')}
+                                        className={`px-4 py-1.5 rounded-full cursor-pointer font-medium duration-200 border ${isSelected === 'ທັງໝົດ' ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-700 border-gray-300 hover:border-red-500 hover:text-red-500'}`}
+                                    >
+                                        ທັງໝົດ
+                                    </li>
+                                    {categories.map(categoryItem => (
+                                        <li
+                                            key={categoryItem.id}
+                                            onClick={() => setIsSelected(categoryItem.id)}
+                                            className={`px-4 py-1.5 rounded-full cursor-pointer font-medium duration-200 border text-nowrap ${isSelected === categoryItem.id ? 'bg-red-500 text-white border-red-500' : 'bg-white text-gray-700 border-gray-300 hover:border-red-500 hover:text-red-500'}`}
+                                        >
+                                            {categoryItem.name}
+                                        </li>
+                                    ))}
+                                </>
+                            )}
+                        </ul>
 
-            </div>
-            <div className='flex items-center justify-end gap-2 mb-5'>
-                <div className='flex gap-x-2'>
-                    <button onClick={showFoodModal}
-                        className='h-[35px] w-[120px] rounded bg-green-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'>
-                        ເພີ່ມເພີ່ມອາຫານ
-                    </button>
-                    {/* Note: Assuming ModalDrinkAdd is opened via another button or logic */}
-                    {/* <Button type="primary">ເພີ່ມເຄື່ອງດື່ມ</Button> */}
-                </div>
-                <ModalDrinkAdd
-                    form={form}
-                    setForm={setForm}
-                    categories={categories}
-                    listDrink={listDrink}
-                    user={user}
-                />
-            </div>
-            <Table
-                columns={columns}
-                dataSource={dataSource}
-                loading={isLoading}
-                rowKey="key"
-                locale={{ emptyText: <Empty description="ບໍ່ມີຂໍ້ມູນ" /> }}
-                scroll={{ x: 'max-content' }}
-            />
-
-            {/* Modals */}
-            <ModalFoodAdd
-                isModalOpen={isFoodModalOpen}
-                handleOk={() => setIsFoodModalOpen(false)}
-                handleCancel={() => setIsFoodModalOpen(false)}
-                form={form}
-                setForm={setForm}
-                categories={categories}
-                listFood={listFood}
-                user={user}
-            />
-
-
-            {selectedProduct && (
-                selectedProduct.type === 'drink' ? (
-                    <ModalDrinkEdit
-                        product={selectedProduct}
-                        isModalOpen={!!selectedProduct}
-                        handleOk={() => setSelectedProduct(null)}
-                        handleCancel={() => setSelectedProduct(null)}
-                        categories={categories}
-                        listDrink={listDrink}
-                        setSelectedProduct={setSelectedProduct}
+                    </div>
+                    <div className='flex items-center justify-end gap-2 mb-5'>
+                        <div className='flex gap-x-2'>
+                            <button onClick={showFoodModal}
+                                className='h-[35px] w-[120px] rounded bg-green-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-blue-500 hover:text-blue-500 duration-300 cursor-pointer'>
+                                ເພີ່ມເພີ່ມອາຫານ
+                            </button>
+                            {/* Note: Assuming ModalDrinkAdd is opened via another button or logic */}
+                            {/* <Button type="primary">ເພີ່ມເຄື່ອງດື່ມ</Button> */}
+                        </div>
+                        <ModalDrinkAdd
+                            form={form}
+                            setForm={setForm}
+                            categories={categories}
+                            listDrink={listDrink}
+                            user={user}
+                        />
+                    </div>
+                    <Table
+                        columns={columns}
+                        dataSource={dataSource}
+                        loading={isLoading}
+                        rowKey="key"
+                        locale={{ emptyText: <Empty description="ບໍ່ມີຂໍ້ມູນ" /> }}
+                        scroll={{ x: 'max-content' }}
                     />
-                ) : (
-                    <ModalFoodEdit
-                        product={selectedProduct}
-                        isModalOpen={!!selectedProduct}
-                        handleOk={() => setSelectedProduct(null)}
-                        handleCancel={() => setSelectedProduct(null)}
+
+                    {/* Modals */}
+                    <ModalFoodAdd
+                        isModalOpen={isFoodModalOpen}
+                        handleOk={() => setIsFoodModalOpen(false)}
+                        handleCancel={() => setIsFoodModalOpen(false)}
+                        form={form}
+                        setForm={setForm}
                         categories={categories}
                         listFood={listFood}
-                        setSelectedProduct={setSelectedProduct}
+                        user={user}
                     />
-                )
+
+
+                    {selectedProduct && (
+                        selectedProduct.type === 'drink' ? (
+                            <ModalDrinkEdit
+                                product={selectedProduct}
+                                isModalOpen={!!selectedProduct}
+                                handleOk={() => setSelectedProduct(null)}
+                                handleCancel={() => setSelectedProduct(null)}
+                                categories={categories}
+                                listDrink={listDrink}
+                                setSelectedProduct={setSelectedProduct}
+                            />
+                        ) : (
+                            <ModalFoodEdit
+                                product={selectedProduct}
+                                isModalOpen={!!selectedProduct}
+                                handleOk={() => setSelectedProduct(null)}
+                                handleCancel={() => setSelectedProduct(null)}
+                                categories={categories}
+                                listFood={listFood}
+                                setSelectedProduct={setSelectedProduct}
+                            />
+                        )
+                    )}
+                </>
+            ) : (
+                <Result
+                    status="403" // Use 403 status for Forbidden access
+                    title="403"
+                    subTitle="ທ່ານບໍ່ມີສິດໃນການເບິ່ງຂໍ້ມູນນີ້!" // Your desired message
+                    extra={
+                        <p className="text-gray-600">ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຖ້າທ່ານຄິດວ່ານີ້ແມ່ນຂໍ້ຜິດພາດ.</p>
+                    }
+                />
             )}
         </div>
     );

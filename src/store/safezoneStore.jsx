@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware"
 import { create } from "zustand"
 import { getCategoryApi } from "../api/category"
 import { getDrinkApi, getFoodApi } from "../api/product"
-import { getTableApi } from "../api/table"
+import { getTableApi, getTableGroupsApi } from "../api/table"
 import { getProductUnitsByDrinkIdApi } from "../api/productUnit"
 // import { addCartApi, getCartApi } from "../api/cart"
 import axios from "axios"
@@ -18,6 +18,7 @@ const safezoneStore = (set, get) => ({
     drink: [],
     carts: [],
     tables: [],
+    tableGroups: [], // Add this new state property
     // productUnits: {}, // ไม่จำเป็นต้องมี state นี้ใน store อีกต่อไป ถ้าจะเก็บ productUnits ในแต่ละ item ของ carts
 
     // เพิ่มสินค้าในตะกร้า (แบบ Local)
@@ -209,6 +210,18 @@ const safezoneStore = (set, get) => ({
             }
         } catch (error) {
             console.log("Error fetching tables:", error);
+        }
+    },
+
+    // Add this new function to fetch table groups
+    listTableGroups: async () => {
+        try {
+            const response = await getTableGroupsApi();
+            if (response?.data) {
+                set({ tableGroups: response.data });
+            }
+        } catch (error) {
+            console.log("Error fetching table groups:", error);
         }
     }
 });

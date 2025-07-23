@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useSafezoneStore from "../../store/safezoneStore";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import { message, Skeleton } from "antd";
+import { message, Skeleton, Result } from "antd"; // Import Result component
 import Cart from "./Cart";
 import { getProductUnitsByDrinkIdApi } from '../../api/productUnit';
 import { getCategoryByIdApi } from '../../api/category.js'
@@ -21,6 +21,7 @@ const Sale = () => {
     const actionAddToCart = useSafezoneStore((state) => state.actionAddToCart);
     const actionUpdateCart = useSafezoneStore((state) => state.actionUpdateCart);
     const token = useSafezoneStore((state) => state.token);
+    const user = useSafezoneStore((state) => state.user); // Assuming user.role is available in store
 
 
     useEffect(() => {
@@ -154,65 +155,78 @@ const Sale = () => {
 
     return (
         <div className="h-screen">
-            <h1 className="text-[20px] font-semibold">ໜ້າການຂາຍ</h1>
-            <div className="flex gap-x-5 mt-2 h-[calc(100%-40px)]">
-                <div className="bg-white flex-5 p-5 rounded h-full overflow-y-auto">
-                    <div className="w-full">
-                        {/* Filter by category */}
-                        <ul className="grid grid-cols-4 gap-2 mb-4">
-                            <li
-                                onClick={() => handleCategoryClick(null)}
-                                className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
-                                    ${activeCategory === null ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
-                            >
-                                <p>ທັງໝົດ</p>
-                            </li>
-                            {categories?.map((item) => (
-                                <li
-                                    key={item?.id}
-                                    onClick={() => handleCategoryClick(item.id)}
-                                    className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
-                                        ${activeCategory === item?.id ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
-                                >
-                                    <p>{item?.name}</p>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Products list */}
-                    <div className="mt-5">
-                        {isLoading ? (
-                            <ul className="grid grid-cols-4 gap-2">{renderSkeleton()}</ul>
-                        ) : (
-                            <ul className="grid grid-cols-4 gap-2">
-                                {filteredProducts?.map((item) => (
-                                    <li key={item?.id} className="border relative border-gray-200 w-[180px] h-[220px] rounded-xl shadow-md p-1 flex flex-col">
-                                        <div className="h-[150px] w-full border border-gray-200 rounded-xl p-1 bg-white">
-                                            <img src={item?.imageUrl} alt={item?.name} className="object-cover w-full h-full rounded-xl" />
-                                        </div>
-                                        <p className="px-1.5 text-[15px] font-medium flex-grow break-words mt-1.5">
-                                            {item?.name}
-                                        </p>
-                                        <div
-                                            onClick={() => handleAddToCart(item)}
-                                            className="bg-yellow-100 absolute bottom-2 right-2 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"
-                                        >
-                                            <MdOutlineShoppingCart className="text-yellow-500 text-[20px]" />
-                                        </div>
+            {user.role === 'Chef' ? (
+                <Result
+                    status="403" // Use 403 status for Forbidden access
+                    title="403"
+                    subTitle="ທ່ານບໍ່ມີສິດໃນການເບິ່ງຂໍ້ມູນນີ້!" // Your desired message
+                    extra={
+                        <p className="text-gray-600">ກະລຸນາຕິດຕໍ່ຜູ້ເບິ່ງແຍງລະບົບຖ້າທ່ານຄິດວ່ານີ້ແມ່ນຂໍ້ຜິດພາດ.</p>
+                    }
+                />
+            ) : (
+                <>
+                    <h1 className="text-[20px] font-semibold">ໜ້າການຂາຍ</h1>
+                    <div className="flex gap-x-5 mt-2 h-[calc(100%-40px)]">
+                        <div className="bg-white flex-5 p-5 rounded h-full overflow-y-auto">
+                            <div className="w-full">
+                                {/* Filter by category */}
+                                <ul className="grid grid-cols-4 gap-2 mb-4">
+                                    <li
+                                        onClick={() => handleCategoryClick(null)}
+                                        className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
+                                            ${activeCategory === null ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
+                                    >
+                                        <p>ທັງໝົດ</p>
                                     </li>
-                                ))}
-                                {!isLoading && filteredProducts.length === 0 && (
-                                    <p className="col-span-5 text-center text-gray-500 mt-4">ບໍ່ພົບລາຍການສິນຄ້າ.</p>
-                                )}
-                            </ul>
-                        )}
-                    </div>
-                </div>
+                                    {categories?.map((item) => (
+                                        <li
+                                            key={item?.id}
+                                            onClick={() => handleCategoryClick(item.id)}
+                                            className={`cursor-pointer text-center duration-300 hover:border-red-600 hover:text-red-600 min-h-[45px] rounded-md bg-white flex items-center justify-center border-2 border-gray-700 text-gray-700 font-medium p-2
+                                                ${activeCategory === item?.id ? "text-red-500 border-2 border-red-500 shadow-[2px_2px_5px_0px_#f56565]" : ""}`}
+                                        >
+                                            <p>{item?.name}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
 
-                {/* Cart */}
-                <Cart onUpdateCart={handleUpdateCart} />
-            </div>
+                            {/* Products list */}
+                            <div className="mt-5">
+                                {isLoading ? (
+                                    <ul className="grid grid-cols-4 gap-2">{renderSkeleton()}</ul>
+                                ) : (
+                                    <ul className="grid grid-cols-4 gap-2">
+                                        {filteredProducts?.map((item) => (
+                                            <li key={item?.id} className="border relative border-gray-200 w-[180px] h-[220px] rounded-xl shadow-md p-1 flex flex-col">
+                                                <div className="h-[150px] w-full border border-gray-200 rounded-xl p-1 bg-white">
+                                                    <img src={item?.imageUrl} alt={item?.name} className="object-cover w-full h-full rounded-xl" />
+                                                </div>
+                                                <p className="px-1.5 text-[15px] font-medium flex-grow break-words mt-1.5">
+                                                    {item?.name}
+                                                </p>
+                                                <div
+                                                    onClick={() => handleAddToCart(item)}
+                                                    className="bg-yellow-100 absolute bottom-2 right-2 w-[30px] h-[30px] rounded flex justify-center items-center hover:bg-yellow-200 active:scale-95 transition-all cursor-pointer"
+                                                >
+                                                    <MdOutlineShoppingCart className="text-yellow-500 text-[20px]" />
+                                                </div>
+                                            </li>
+                                        ))}
+                                        {!isLoading && filteredProducts.length === 0 && (
+                                            <p className="col-span-5 text-center text-gray-500 mt-4">ບໍ່ພົບລາຍການສິນຄ້າ.</p>
+                                        )}
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Cart */}
+                        <Cart onUpdateCart={handleUpdateCart} />
+                    </div>
+                </>
+            )}
         </div>
     );
 };

@@ -238,12 +238,14 @@ const OrderDetail = () => {
         setCheckoutLoading(true);
         try {
             const response = await checkoutOrderApi(token, order.id, selectedPayment);
-            if (response && response.data && response.data.order) {
-                setOrder(response.data.order);
+            // ตรวจสอบว่ามี response และ message จาก backend หรือไม่
+            if (response && response.data && response.data.message) {
                 setIsCheckoutModalVisible(false);
-                message.success("ຊຳລະເງິນສຳເລັດ!");
+                message.success(response.data.message); // แสดงข้อความสำเร็จจาก backend
+                await fetchOrderDetails(); // เรียก fetchOrderDetails อีกครั้งเพื่อดึงข้อมูล Order ล่าสุด
             } else {
-                message.error("ການຕອບກັບຈາກ Server ບໍ່ถูกต้องຫຼັງຈາກຊຳລະເງິນ.");
+                // แก้ไขข้อความผิดพลาดให้เป็น "ไม่ถูกต้อง" แทน "ไม่ไม่ถูกต้อง"
+                message.error("การตอบกลับจาก Server ไม่ถูกต้องหลังจากชำระเงิน.");
             }
         } catch (err) {
             console.error("ຜິດພາດໃນການຊຳລະເງິນ:", err);
@@ -327,7 +329,10 @@ const OrderDetail = () => {
                         <div>
                             <h3 className="text-xl font-semibold text-gray-800">ຂໍ້ມູນຄຳສັ່ງຊື້ #{order.id}</h3>
                             <p className="text-gray-600">ພະນັກງານ: {order.employee?.fname} {order.employee?.lname}</p>
-                            <p className="text-gray-600">ໂຕະ: {order.table?.mergedName == null ? order.table?.table_number : order.table?.mergedName}</p>
+                            <p className="text-gray-600">
+                                ໂຕະ: {order?.mergedFromIds
+                                }
+                            </p>
                             <p className="text-gray-600">
                                 ສະຖານະບິນ: <Tag color={getStatusColor(order.billStatus)}>{getStatusLabel(order.billStatus)}</Tag>
                             </p>

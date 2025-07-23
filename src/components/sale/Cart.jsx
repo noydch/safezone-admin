@@ -7,7 +7,7 @@ import useSafezoneStore from '../../store/safezoneStore';
 import { createOrderApi } from '../../api/order';
 
 const Cart = () => {
-    const [selectedTable, setSelectedTable] = useState(null);
+    const [selectedTable, setSelectedTable] = useState(null); // Can be single ID or 'group-X'
     const [isLoading, setIsLoading] = useState(false);
 
     // ดึงข้อมูลและ actions จาก Zustand store
@@ -15,15 +15,18 @@ const Cart = () => {
     const token = useSafezoneStore((state) => state.token);
     const user = useSafezoneStore((state) => state.user);
     const tables = useSafezoneStore((state) => state.tables);
+    const tableGroups = useSafezoneStore((state) => state.tableGroups); // Get table groups
     const listTable = useSafezoneStore((state) => state.listTable);
+    const listTableGroups = useSafezoneStore((state) => state.listTableGroups); // Get action to fetch groups
     const actionUpdateCart = useSafezoneStore((state) => state.actionUpdateCart);
     const actionRemoveFromCart = useSafezoneStore((state) => state.actionRemoveFromCart);
     const actionClearCart = useSafezoneStore((state) => state.actionClearCart);
 
-    // โหลดรายการโต๊ะเมื่อ component โหลด
+    // โหลดรายการโต๊ะและกลุ่มโต๊ะเมื่อ component โหลด
     useEffect(() => {
         listTable();
-    }, [listTable]);
+        listTableGroups(); // Fetch table groups
+    }, [listTable, listTableGroups]);
 
     // จัดการการเลือกโต๊ะ
     const handleChange = (value) => {
@@ -97,8 +100,30 @@ const Cart = () => {
 
         setIsLoading(true);
 
+        let tableIdsToSend = [];
+
+        if (selectedTable.startsWith('group-')) {
+            const groupId = parseInt(selectedTable.replace('group-', ''));
+            const selectedGroup = tableGroups.find(group => group.id === groupId);
+            if (selectedGroup) {
+                tableIdsToSend = selectedGroup.tables.map(table => table.id);
+            } else {
+                message.error('ບໍ່ພົບກຸ່ມໂຕະທີ່ເລືອກ.');
+                setIsLoading(false);
+                return;
+            }
+        } else {
+            tableIdsToSend = [parseInt(selectedTable)]; // Single table, put it in an array
+        }
+
+        if (tableIdsToSend.length === 0) {
+            message.error('ບໍ່ພົບໂຕະທີ່ຈະເພີ່ມລາຍການ.');
+            setIsLoading(false);
+            return;
+        }
+
         const orderData = {
-            tableId: parseInt(selectedTable),
+            tableIds: tableIdsToSend, // Changed to tableIds (array)
             empId: parseInt(user.id),
             orderDetails: carts.map(item => {
                 const detail = {
@@ -142,20 +167,31 @@ const Cart = () => {
     // ตัวเลือกสำหรับ Dropdown โต๊ะ (แสดง mergedName ถ้ามี และกรองโต๊ะที่ถูกรวม)
     const tableOptions = [
         { value: '0', label: 'ກະລຸນາເລືອກໂຕະ' },
-        ...(tables?.filter(table => table.mergedName !== 'ຖືກລວມຢູ່')
+        ...(tables?.filter(table => table.mergedName !== 'ຖືກລວມຢູ່') // Filter out tables that are part of a merged group if you want to only show the group
             .map(table => ({
                 value: table.id.toString(),
-                label: table.mergedName ? table.mergedName : `ໂຕະ ${table.table_number}`,
+                label: `ໂຕະ ${table.table_number}`, // Only show individual table number
             })) || []),
+        // Add merged table groups as options
+        ...(tableGroups?.map(group => ({
+            value: `group-${group.id}`, // Prefix with 'group-' to distinguish
+            label: `ໂຕະລວມ: ${group.tables.map(t => `ໂຕະ ${t.table_number}`).join(' + ')})`,
+        })) || [])
     ];
 
 
     // แสดงชื่อโต๊ะที่เลือก (mergedName หรือ ปกติ)
     const selectedTableName = (() => {
         if (!selectedTable || selectedTable === '0') return '-';
-        const tableObj = tables.find(t => t.id === parseInt(selectedTable));
-        if (!tableObj) return '-';
-        return tableObj.mergedName ? tableObj.mergedName : `ໂຕະ ${tableObj.table_number}`;
+
+        if (selectedTable.startsWith('group-')) {
+            const groupId = parseInt(selectedTable.replace('group-', ''));
+            const groupObj = tableGroups.find(g => g.id === groupId);
+            return `${groupObj.tables.map(t => `ໂຕະ ${t.table_number}`).join(' + ')}`
+        } else {
+            const tableObj = tables.find(t => t.id === parseInt(selectedTable));
+            return tableObj ? `ໂຕະ ${tableObj.table_number}` : '-';
+        }
     })();
 
     return (
@@ -167,15 +203,15 @@ const Cart = () => {
                     <p>ເລືອກໂຕະ: </p>
                     <Select
                         value={selectedTable || '0'}
-                        style={{ width: 140 }}
+                        style={{ width: 240 }}
                         className=' text-center'
                         onChange={handleChange}
                         options={tableOptions}
-                        loading={!tables}
+                        loading={!tables || !tableGroups}
                     />
                 </div>
 
-                {/* แสดงชื่อโต๊ะที่เลือก */}
+                {/* แสดงชื่อโต๊ะแทน */}
                 <p className="text-center mb-4 font-semibold text-gray-600">
                     ໂຕະທີ່ເລືອກ: {selectedTableName}
                 </p>

@@ -39,8 +39,8 @@ export const getOrderByIdApi = async (token, id) => {
 }
 
 
-export const checkoutOrderApi = async (token, orderId, paymentMethod) => {
-    const data = { paymentMethod: paymentMethod };
+export const checkoutOrderApi = async (token, orderId, payment_method) => {
+    const data = { payment_method: payment_method };
 
     return axios.post(`${ApiPath.checkOutOrder}/${orderId}`, data, { // ใช้ POST ตาม Route ที่เราตั้ง
         headers: {
@@ -61,8 +61,7 @@ export const moveOrderTableApi = async (token, fromTableId, toTableId) => {
 };
 
 export const mergeTableApi = async (token, tableIds) => {
-    const data = { tableIds: tableIds };
-
+    const data = { tableIds: tableIds }; // This creates { tableIds: [array_of_ids] }
     return axios.post(ApiPath.mergeTable, data, {
         headers: {
             Authorization: `Bearer ${token}`
