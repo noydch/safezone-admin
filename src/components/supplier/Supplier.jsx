@@ -128,8 +128,8 @@ const Supplier = () => {
         return <Alert message="Error" description={error} type="error" showIcon />;
     }
 
-    // New: Check if the user's role is Admin or Manager
-    if (!user || (user.role !== 'Admin' && user.role !== 'Manager')) {
+    // New: Check if the user's role is Owner or Manager
+    if (!user || (user.role !== 'Owner' && user.role !== 'Manager')) {
         return (
             <Result
                 status="403"

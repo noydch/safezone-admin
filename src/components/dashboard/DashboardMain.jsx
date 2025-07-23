@@ -108,7 +108,7 @@ const DashboardMain = () => {
 
     return (
         <div className='overflow-x-auto'>
-            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
                 <>
                     <ul className='flex items-center gap-x-10 min-w-[1200px]'>
                         <li className=' w-[220px] h-[120px] bg-white rounded-md px-3.5 flex items-center justify-between drop-shadow'>

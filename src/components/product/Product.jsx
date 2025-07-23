@@ -186,7 +186,7 @@ const Product = () => {
 
     return (
         <div className='min-h-screen p-4 bg-white rounded-md'>
-            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
                 <>
                     <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4'>
                         <ul className='flex items-center gap-2 overflow-x-auto pb-2'>

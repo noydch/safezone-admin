@@ -124,7 +124,7 @@ const Category = ({ form }) => {
 
     return (
         <div className=''>
-            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
                 <>
                     <ModalAdd token={token} />
                     <div className='flex gap-x-5 bg-white w-full p-4 h-screen'>

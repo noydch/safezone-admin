@@ -111,7 +111,7 @@ const ProductUnit = () => {
 
     return (
         <Sidebar>
-            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
+            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
                 <>
                     <ModalAddProductUnit onSuccess={handleSuccess} />
 
