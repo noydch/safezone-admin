@@ -5,7 +5,7 @@ import { updateEmployee } from '../../api/user';
 
 const { Option } = Select;
 
-const EditUserModal = ({ isOpen, onClose, initialValues }) => {
+const EditUserModal = ({ isOpen, onClose, initialValues, fetchEmployees }) => {
     const [form] = Form.useForm();
     const loggedInUser = useSafezoneStore((state) => state.user);
     const token = useSafezoneStore((state) => state.token);
@@ -38,7 +38,7 @@ const EditUserModal = ({ isOpen, onClose, initialValues }) => {
             };
 
             await updateEmployee(token, initialValues.id, dataToSubmit);
-
+            fetchEmployees()
             message.success('ອັບເດດຂໍ້ມູນຜູ້ໃຊ້ສຳເລັດແລ້ວ!');
             onClose();
         } catch (error) {

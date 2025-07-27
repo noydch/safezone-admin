@@ -21,7 +21,7 @@ const ModalEditProductUnit = ({ isModalOpen, setIsModalOpen, record, onSuccess }
     }, [record, form]);
 
     const handleOk = async () => {
-        if (user?.role !== 'Owner' && user?.role !== 'Manager') {
+        if (user?.role !== 'Admin' && user?.role !== 'Manager') {
             message.error('ທ່ານບໍ່ມີສິດແກ້ໄຂຫົວໜ່ວຍສິນຄ້າ!');
             setIsModalOpen(false);
             return;

@@ -51,7 +51,7 @@ const Booking = () => {
     return (
         <div>
             {/* Updated role check to include 'Cashier' and 'Waiter' */}
-            {user && (user.role === 'Owner' || user.role === 'Manager' || user.role === 'Cashier' || user.role === 'Waiter') ? (
+            {user && (user.role === 'Admin' || user.role === 'Manager' || user.role === 'Cashier' || user.role === 'Waiter') ? (
                 <>
                     <h1 className='text-[20px] font-semibold mb-2'>ຈັດການການຈອງ</h1>
                     <div className='bg-white rounded-md p-4'>

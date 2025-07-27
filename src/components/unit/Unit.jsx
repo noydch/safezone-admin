@@ -128,7 +128,7 @@ const Unit = () => {
 
     return (
         <Sidebar>
-            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
+            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
                 <>
                     <div className='p-4'>
                         <ModalAddUnit onSuccess={fetchUnits} />

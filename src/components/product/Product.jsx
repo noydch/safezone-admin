@@ -52,7 +52,7 @@ const Product = () => {
 
     // Handlers
     const showFoodModal = () => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setIsFoodModalOpen(true);
         } else {
             message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມອາຫານ');
@@ -60,7 +60,7 @@ const Product = () => {
     };
 
     const handleDelete = async (product) => {
-        if (user?.role !== 'Owner' && user?.role !== 'Manager') {
+        if (user?.role !== 'Admin' && user?.role !== 'Manager') {
             message.error('ທ່ານບໍ່ມີສິດລົບລາຍການນີ້');
             return;
         }
@@ -83,7 +83,7 @@ const Product = () => {
     };
 
     const handleEditProduct = (product) => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setSelectedProduct(product);
         } else {
             message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂ');
@@ -167,9 +167,9 @@ const Product = () => {
                         onConfirm={() => handleDelete(record)}
                         okText="ຢືນຢັນ"
                         cancelText="ຍົກເລີກ"
-                        disabled={deletingId === record.id || (user?.role !== 'Owner' && user?.role !== 'Manager')}
+                        disabled={deletingId === record.id || (user?.role !== 'Admin' && user?.role !== 'Manager')}
                     >
-                        <Button type="primary" danger loading={deletingId === record.id} disabled={deletingId === record.id || (user?.role !== 'Owner' && user?.role !== 'Manager')}>
+                        <Button type="primary" danger loading={deletingId === record.id} disabled={deletingId === record.id || (user?.role !== 'Admin' && user?.role !== 'Manager')}>
                             {deletingId === record.id ? <FaSpinner className='animate-spin' /> : 'ລົບ'}
                         </Button>
                     </Popconfirm>
@@ -186,7 +186,7 @@ const Product = () => {
 
     return (
         <div className='min-h-screen p-4 bg-white rounded-md'>
-            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
+            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
                 <>
                     <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4'>
                         <ul className='flex items-center gap-2 overflow-x-auto pb-2'>

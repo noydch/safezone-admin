@@ -347,7 +347,7 @@ const OrderDetail = () => {
                             <p className='text-2xl font-bold text-green-600 mt-2'>ລາຄາລວມ: {order.total_price?.toLocaleString()} ກີບ</p>
                         </div>
                         <div className="flex space-x-2"> {/* ใช้ flexbox จัดเรียงปุ่ม */}
-                            {order.billStatus === 'OPEN' && (user?.role === 'Cashier' || user?.role === 'Manager' || user?.role === 'Owner') && (
+                            {order.billStatus === 'OPEN' && (user?.role === 'Cashier' || user?.role === 'Manager' || user?.role === 'Admin') && (
                                 <Button
                                     type="primary"
                                     icon={<FaMoneyBillWave className="mr-2" />}

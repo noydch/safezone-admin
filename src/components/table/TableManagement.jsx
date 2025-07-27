@@ -50,7 +50,7 @@ const TableManagement = () => {
                     <h1 className=' text-[18px] font-medium'>ລາຍການໂຕະ</h1>
                     <div className=' flex items-center gap-x-2'>
                         <ModalMergeTable listTable={listTable} tables={tables} />
-                        {user && (user.role === 'Owner' || user.role === 'Manager') && ( // Conditionally render Add Table button
+                        {user && (user.role === 'Admin' || user.role === 'Manager') && ( // Conditionally render Add Table button
                             <ModalAddTable listTable={listTable} />
                         )}
                     </div>
@@ -98,7 +98,7 @@ const TableManagement = () => {
                                             </div>
                                             <div className=' flex justify-between items-end'>
                                                 <span className=' text-[10px] text-gray-500'>{new Date(table.createdAt).toLocaleDateString()}</span>
-                                                {user && (user.role === 'Owner' || user.role === 'Manager') && ( // Conditionally render Edit and Delete buttons
+                                                {user && (user.role === 'Admin' || user.role === 'Manager') && ( // Conditionally render Edit and Delete buttons
                                                     <div className=' flex items-center gap-x-2'>
                                                         <ModalEditTable listTable={listTable} tableId={table.id} />
                                                         <Popconfirm

@@ -4,8 +4,6 @@ import moment from 'moment';
 import axios from 'axios';
 import ApiPath from '../../api/apiPath'; // Make sure path is correct
 
-// Removed TypeScript interfaces
-
 // Add these constants at the top with other constants
 const RESERVATION_STATUSES = [
     { value: 'pending', label: 'ລໍຖ້າ', color: 'warning' },
@@ -71,7 +69,10 @@ const TableBooking = ({ onChange }) => {
                         key: res.id,
                         id: res.id,
                         datetime: moment(res.reservationTime).local().format('DD/MM/YYYY HH:mm'),
-                        tableNo: res.table ? `No.${res.table.table_number}` : 'N/A',
+                        // Updated to correctly access table_number from reservationTables
+                        tableNo: res.reservationTables && res.reservationTables.length > 0 && res.reservationTables[0].table
+                            ? `No.${res.reservationTables[0].table.table_number}`
+                            : 'N/A',
                         status: res.status,
                         customer: res.customer ? `${res.customer.fname} ${res.customer.lname}` : 'N/A',
                         phone: res.customer ? res.customer.phone : 'N/A',
@@ -224,14 +225,14 @@ const TableBooking = ({ onChange }) => {
                 <Space>
                     {record.status === 'pending' ? (
                         <>
-                            {/* <Button
+                            <Button
                                 type="primary"
                                 size="small"
                                 loading={updatingStatus[`${record.id}_confirmed`]}
                                 onClick={() => handleStatusChange(record.id, 'confirmed')}
                             >
                                 ຢືນຢັນ
-                            </Button> */}
+                            </Button>
                             <Button
                                 danger
                                 size="small"

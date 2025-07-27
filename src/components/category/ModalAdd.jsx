@@ -17,7 +17,7 @@ const ModalAdd = ({ token }) => {
     const [form] = Form.useForm();
 
     const handleOk = async () => {
-        if (user?.role !== 'Owner' && user?.role !== 'Manager') {
+        if (user?.role !== 'Admin' && user?.role !== 'Manager') {
             message.error('ທ່ານບໍ່ມີສິດເພີ່ມປະເພດ!');
             setIsModalOpen(false);
             return;

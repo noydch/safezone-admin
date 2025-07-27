@@ -30,8 +30,8 @@ const User = () => {
     }, []);
 
     const showModal = () => {
-        // Allow 'Owner' or 'Manager' to add users
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        // Allow 'Admin' or 'Manager' to add users
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setIsModalOpen(true);
         } else {
             message.error('ທ່ານບໍ່ມີສິດໃນການເພີ່ມຜູ້ໃຊ້ງານໄດ້');
@@ -48,8 +48,8 @@ const User = () => {
     };
 
     const handleEdit = (record) => {
-        // Allow 'Owner' or 'Manager' to edit users
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        // Allow 'Admin' or 'Manager' to edit users
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setEditingUser(record);
             setIsEditModalOpen(true);
         } else {
@@ -69,8 +69,8 @@ const User = () => {
     };
 
     const handleDelete = (record) => {
-        // Allow 'Owner' or 'Manager' to delete users
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        // Allow 'Admin' or 'Manager' to delete users
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             console.log('Delete:', record);
             // TODO: Implement actual delete API call here
             message.success('ລົບລາຍການສຳເລັດ'); // Placeholder message
@@ -92,7 +92,7 @@ const User = () => {
 
     // Conditionally add the 'ຈັດການ' (Action) column
     let dynamicColumns = [...baseColumns];
-    if (user?.role === 'Owner' || user?.role === 'Manager') {
+    if (user?.role === 'Admin' || user?.role === 'Manager') {
         dynamicColumns.push({
             title: 'ຈັດການ',
             key: 'action',
@@ -100,13 +100,13 @@ const User = () => {
                 <div className="flex gap-2">
                     <button
                         onClick={() => handleEdit(record)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+                        className="bg-blue-500 cursor-pointer text-white px-2 py-1 rounded hover:bg-blue-600"
                     >
                         ແກ້ໄຂ
                     </button>
                     <button
                         onClick={() => handleDelete(record)}
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                        className="bg-red-500 cursor-pointer text-white px-2 py-1 rounded hover:bg-red-600"
                     >
                         ລົບ
                     </button>
@@ -121,7 +121,7 @@ const User = () => {
                 <h1 className='text-[20px] font-semibold'>ຂໍ້ມູນຜູ້ໃຊ້ລະບົບ</h1>
 
                 {/* Conditionally render the 'Add User' button */}
-                {(user?.role === 'Owner' || user?.role === 'Manager') && (
+                {(user?.role === 'Admin' || user?.role === 'Manager') && (
                     <button
                         onClick={showModal}
                         className='h-[35px] w-[120px] font-medium rounded bg-red-500 text-center text-white border-2 border-transparent hover:border-2 hover:bg-transparent hover:border-red-500 hover:text-red-500 duration-300 cursor-pointer'>
@@ -142,6 +142,7 @@ const User = () => {
                     onClose={handleEditClose}
                     onSubmit={handleEditSubmit}
                     initialValues={editingUser}
+                    fetchEmployees={fetchEmployees}
                 />
             )}
 

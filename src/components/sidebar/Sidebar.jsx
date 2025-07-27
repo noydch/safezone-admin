@@ -169,7 +169,7 @@ const Sidebar = ({ children }) => {
 
     const filteredPath = path.filter(item => {
         if (item.path === '/employee') {
-            return authUser?.role === 'Owner' || authUser?.role === 'Manager';
+            return authUser?.role === 'Admin' || authUser?.role === 'Manager';
         }
         return true;
     });

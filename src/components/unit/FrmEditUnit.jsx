@@ -18,7 +18,7 @@ const FrmEditUnit = ({ isModalOpen, handleCancel, unit, onSuccess, fetchUnits })
     }, [unit, form]);
 
     const handleOk = async () => {
-        if (user?.role !== 'Owner' && user?.role !== 'Manager') {
+        if (user?.role !== 'Admin' && user?.role !== 'Manager') {
             message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂຫົວໜ່ວຍ!');
             handleCancel();
             return;

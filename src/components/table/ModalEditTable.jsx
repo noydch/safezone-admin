@@ -47,7 +47,7 @@ const ModalEditTable = ({ listTable, tableId }) => {
                     form={form}
                     layout='vertical'
                     initialValues={{
-                        role: 'Owner'
+                        role: 'Admin'
                     }}
                     onFinish={onFinish}
                 >

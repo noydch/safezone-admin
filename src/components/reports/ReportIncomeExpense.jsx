@@ -237,10 +237,13 @@ const ReportIncomeExpense = () => {
                         if (round.orderDetails && Array.isArray(round.orderDetails)) {
                             round.orderDetails.forEach(detail => {
                                 // ตรวจสอบว่าเป็นรายการเครื่องดื่มหรือไม่ โดยดูจาก productUnit และ categoryId
-                                // สมมติว่า categoryId 4 คือเครื่องดื่ม (ตามข้อมูลที่คุณให้มา)
-                                if (detail.productUnit && detail.productUnit.drink && detail.productUnit.drink.categoryId === 4) {
+                                console.log('Checking detail:', detail);
+                                if (detail.productUnit && detail.productUnit.drink && detail.productUnit.drink.categoryId === 2) { // แก้ไขตรงนี้จาก 4 เป็น 2
+                                    console.log('Found drink item:', detail.productUnit.name, 'Price:', detail.price, 'Quantity:', detail.quantity);
                                     drinkTotalPriceForOrder += (detail.price * detail.quantity);
                                     hasDrinkItemsInOrder = true;
+                                } else {
+                                    console.log('Not a drink or missing properties:', detail.productUnit?.drink?.categoryId);
                                 }
                             });
                         }
@@ -257,8 +260,11 @@ const ReportIncomeExpense = () => {
                         tableNumber: order.table?.table_number ?? '',
                         employee: `${order.employee?.fname ?? ''} ${order.employee?.lname ?? ''}`.trim()
                     });
+                    console.log('Order with drinks processed:', order.id, 'Total drink price:', drinkTotalPriceForOrder);
                 }
             });
+
+            console.log('Final incomeDetailsFromDrinks:', incomeDetailsFromDrinks); // ดูว่ามีข้อมูลหรือไม่
 
             // ดึงข้อมูลรายจ่าย (imports) - ส่วนนี้ไม่มีการเปลี่ยนแปลง
             const importsResponse = await axios.get(ApiPath.getImport, {

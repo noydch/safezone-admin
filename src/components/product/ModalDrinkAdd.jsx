@@ -34,7 +34,7 @@ const ModalDrinkAdd = ({ form, setForm, categories, listDrink, user }) => {
     }
 
     const showModal = () => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setIsModalOpen(true);
             setForm({
                 name: '',

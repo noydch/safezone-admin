@@ -120,7 +120,7 @@ const ModalRegister = ({ isOpen, onClose, onSubmit }) => {
                             rules={[{ required: true, message: 'Please select role!' }]}
                         >
                             <Select>
-                                <Select.Option value="Owner">Owner</Select.Option>
+                                <Select.Option value="Admin">Admin</Select.Option>
                                 <Select.Option value="Manager">Manager</Select.Option>
                                 <Select.Option value="Cashier">Cashier</Select.Option>
                                 <Select.Option value="Chef">Chef</Select.Option>

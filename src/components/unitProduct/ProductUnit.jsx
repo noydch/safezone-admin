@@ -34,7 +34,7 @@ const ProductUnit = () => {
     };
 
     const handleEdit = (record) => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setSelectedRecord(record);
             setIsEditModalOpen(true);
         } else {
@@ -43,7 +43,7 @@ const ProductUnit = () => {
     };
 
     const handleDelete = async (record) => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             try {
                 await deleteProductUnitApi(token, record.id);
                 message.success('ລົບຫົວໜ່ວຍສຳເລັດ');
@@ -111,7 +111,7 @@ const ProductUnit = () => {
 
     return (
         <Sidebar>
-            {user && (user.role === 'Owner' || user.role === 'Manager') ? ( // Check if the user's role is Owner or Manager
+            {user && (user.role === 'Admin' || user.role === 'Manager') ? ( // Check if the user's role is Admin or Manager
                 <>
                     <ModalAddProductUnit onSuccess={handleSuccess} />
 

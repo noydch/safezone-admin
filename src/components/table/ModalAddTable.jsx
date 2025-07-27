@@ -59,7 +59,7 @@ const ModalAddTable = ({ listTable }) => {
                     form={form}
                     layout='vertical'
                     initialValues={{
-                        role: 'Owner'
+                        role: 'Admin'
                     }}
                     onFinish={onFinish}
                 >

@@ -25,10 +25,10 @@ const ModalDrinkEdit = ({ product, isModalOpen, handleOk, handleCancel, categori
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.name || form.categoryId === 'ເລືອກປະເພດ' || !form.price || !form.image) {
-            message.error('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ');
-            return;
-        }
+        // if (!form.name || form.categoryId === 'ເລືອກປະເພດ' || !form.price || !form.image) {
+        //     message.error('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ');
+        //     return;
+        // }
         setLoading(true)
         try {
             const formData = {
@@ -51,7 +51,7 @@ const ModalDrinkEdit = ({ product, isModalOpen, handleOk, handleCancel, categori
     }
 
     const handleEdit = () => {
-        if (user?.role === 'Owner' || user?.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             setSelectedProduct(product);
         } else {
             message.error('ທ່ານບໍ່ມີສິດໃນການແກ້ໄຂ');
@@ -62,8 +62,8 @@ const ModalDrinkEdit = ({ product, isModalOpen, handleOk, handleCancel, categori
         <>
             <button
                 onClick={handleEdit}
-                disabled={!(user?.role === 'Owner' || user?.role === 'Manager')}
-                className={`text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent duration-300 cursor-pointer ${(user?.role === 'Owner' || user?.role === 'Manager')
+                disabled={!(user?.role === 'Admin' || user?.role === 'Manager')}
+                className={`text-[12px] text-white w-[50px] py-0.5 rounded border-1 border-transparent duration-300 cursor-pointer ${(user?.role === 'Admin' || user?.role === 'Manager')
                     ? 'bg-blue-500 hover:border-1 hover:bg-transparent hover:border-blue-500 hover:text-blue-500'
                     : 'bg-gray-400 cursor-not-allowed'
                     }`}
@@ -103,7 +103,7 @@ const ModalDrinkEdit = ({ product, isModalOpen, handleOk, handleCancel, categori
                                 onChange={(value) => {
                                     setForm({
                                         ...form,
-                                        categoryId: value.value
+                                        categoryId: value ? value.value : null
                                     });
                                 }}
                                 options={

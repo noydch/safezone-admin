@@ -59,16 +59,21 @@ const Customer = () => {
             key: 'action',
             width: '20%',
             render: (_, record) => (
-                <Space size="middle">
-                    <Button type="primary" onClick={() => handleEdit(record.id)}>
-                        ແກ້ໄຂ
-                    </Button>
-                    <DeleteCustomer
-                        customerId={record.id}
-                        customerName={`${record.fname} ${record.lname}`}
-                        onCustomerDeleted={fetchCustomers}
-                    />
-                </Space>
+                // Only render if user role is Adminor Manager
+                (user.role === 'Admin' || user.role === 'Manager') ? (
+                    <Space size="middle">
+                        <Button type="primary" onClick={() => handleEdit(record.id)}>
+                            ແກ້ໄຂ
+                        </Button>
+                        <DeleteCustomer
+                            customerId={record.id}
+                            customerName={`${record.fname} ${record.lname}`}
+                            onCustomerDeleted={fetchCustomers}
+                        />
+                    </Space>
+                ) : (
+                    <p>ບໍ່ມີສິດ</p> // Or null, or a disabled message
+                )
             ),
         },
     ];

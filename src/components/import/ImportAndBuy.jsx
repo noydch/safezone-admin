@@ -27,7 +27,7 @@ const ImportAndBuy = () => {
     return (
         <div className=' w-full'>
             {/* Add role check here */}
-            {user && user.role === 'Chef' ? (
+            {user.role !== 'Admin' && user.role !== 'Manager' ? (
                 <Result
                     status="403"
                     title="403"
