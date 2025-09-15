@@ -62,9 +62,6 @@ const Login = () => {
                     navigate('/table')
                     message.success("Login Success!!!")
                 }, 3000)
-            } else {
-                message.warning("ອີເມລ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ!!!")
-                setLoading(false)
             }
         } catch (error) {
             console.log(error);
