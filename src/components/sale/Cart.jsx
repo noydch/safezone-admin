@@ -40,7 +40,7 @@ const Cart = () => {
         if (itemInCart && itemInCart.productUnits) {
             const newUnit = itemInCart.productUnits.find(u => u.id === unitId);
             if (newUnit) {
-                actionUpdateCart(itemId, 'drink', newUnit.name, 1, unitId, newUnit.price, itemInCart.productUnits);
+                actionUpdateCart(itemId, 'drink', newUnit.name, 1, unitId, itemInCart.productUnits);
             } else {
                 message.error("ບໍ່ພົບຫົວໜ່ວຍທີ່ເລືອກ.");
             }
@@ -65,7 +65,7 @@ const Cart = () => {
                 message.warning('ກະລຸນາເລືອກຫົວໜ່ວຍກ່ອນ');
                 return;
             }
-            actionUpdateCart(itemId, type, itemInCart.name, qty, itemInCart.selectedUnitId, itemInCart.price, itemInCart.productUnits);
+            actionUpdateCart(itemId, type, itemInCart.name, qty, itemInCart.selectedUnitId, itemInCart.productUnits);
         } else {
             actionUpdateCart(itemId, type, name, qty);
         }

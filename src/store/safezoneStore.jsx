@@ -5,12 +5,12 @@ import { create } from "zustand"
 import { getCategoryApi } from "../api/category"
 import { getDrinkApi, getFoodApi } from "../api/product"
 import { getTableApi, getTableGroupsApi } from "../api/table"
-import { getProductUnitsByDrinkIdApi } from "../api/productUnit"
+// import { getProductUnitsByDrinkIdApi } from "../api/productUnit"
 // import { addCartApi, getCartApi } from "../api/cart"
-import axios from "axios"
-import ApiPath from "../api/apiPath"
+// import axios from "axios"
+// import ApiPath from "../api/apiPath"
 
-const safezoneStore = (set, get) => ({
+const safezoneStore = (set /*, get */) => ({
     user: null,
     token: null,
     categories: [],
@@ -52,7 +52,7 @@ const safezoneStore = (set, get) => ({
     },
 
     // อัพเดทจำนวนสินค้าในตะกร้า (และเปลี่ยนหน่วยขายสำหรับเครื่องดื่ม)
-    actionUpdateCart: (itemId, type, name, qty, selectedUnitId = null, price = null, productUnits = [], productName = null) => {
+    actionUpdateCart: (itemId, type, name, qty, selectedUnitId = null, productUnits = [], productName = null) => {
         set((state) => {
             let currentCarts = [...state.carts]; // สร้าง copy ของ carts เพื่อให้สามารถแก้ไขได้
             let updated = false;
@@ -143,18 +143,14 @@ const safezoneStore = (set, get) => ({
 
     // เข้าสู่ระบบ
     actionLogin: async (formData) => {
-        try {
-            const response = await LoginApi(formData.email, formData.password);
-            if (response?.data) {
-                set({
-                    user: response.data.payload,
-                    token: response.data.token
-                });
-            }
-            return response;
-        } catch (error) {
-            console.log("Error logging in:", error);
+        const response = await LoginApi(formData.email, formData.password);
+        if (response?.status === 200 && response?.data) {
+            set({
+                user: response.data.payload,
+                token: response.data.token
+            });
         }
+        return response;
     },
     // ออกจากระบบ
     actionLogout: () => {
