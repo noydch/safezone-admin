@@ -7,9 +7,8 @@ export const LoginApi = async (email, password) => {
     try {
       return await axios.post(ApiPath.login, data, config);
     } catch (error) {
-      // ถ้ามี response กลับจากเซิร์ฟเวอร์ ส่งกลับไปให้ caller ใช้ตัดสินใจได้
-      if (error.response) return error.response;
-      throw error; // network/CORS จะมาทางนี้
+      console.log(error);
+      
     }
   };
 

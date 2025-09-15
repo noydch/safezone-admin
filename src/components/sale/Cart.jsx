@@ -1,5 +1,5 @@
 import { message, Select } from 'antd';
-import { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { FaRegTrashAlt } from 'react-icons/fa';
 import { HiMinus, HiPlus } from 'react-icons/hi';
 import useSafezoneStore from '../../store/safezoneStore';
@@ -40,7 +40,7 @@ const Cart = () => {
         if (itemInCart && itemInCart.productUnits) {
             const newUnit = itemInCart.productUnits.find(u => u.id === unitId);
             if (newUnit) {
-                actionUpdateCart(itemId, 'drink', newUnit.name, 1, unitId, itemInCart.productUnits);
+                actionUpdateCart(itemId, 'drink', newUnit.name, 1, unitId, newUnit.price, itemInCart.productUnits);
             } else {
                 message.error("ບໍ່ພົບຫົວໜ່ວຍທີ່ເລືອກ.");
             }
@@ -65,7 +65,7 @@ const Cart = () => {
                 message.warning('ກະລຸນາເລືອກຫົວໜ່ວຍກ່ອນ');
                 return;
             }
-            actionUpdateCart(itemId, type, itemInCart.name, qty, itemInCart.selectedUnitId, itemInCart.productUnits);
+            actionUpdateCart(itemId, type, itemInCart.name, qty, itemInCart.selectedUnitId, itemInCart.price, itemInCart.productUnits);
         } else {
             actionUpdateCart(itemId, type, name, qty);
         }
@@ -164,23 +164,18 @@ const Cart = () => {
         }
     };
 
-    // ตัวเลือกสำหรับ Dropdown โต๊ะ (ซ่อนโต๊ะที่ถูกรวม แสดงเฉพาะกลุ่มเป็น A + B)
-    const mergedTableIds = new Set(
-        (tableGroups || []).flatMap(group => (group?.tables || []).map(t => t.id))
-    );
-
+    // ตัวเลือกสำหรับ Dropdown โต๊ะ (แสดง mergedName ถ้ามี และกรองโต๊ะที่ถูกรวม)
     const tableOptions = [
         { value: '0', label: 'ກະລຸນາເລືອກໂຕະ' },
-        // แสดงเฉพาะโต๊ะแยกที่ยังไม่ถูกรวม (กรองด้วย mergedTableIds จะชัวร์กว่า field ข้อความ)
-        ...(tables?.filter(table => !mergedTableIds.has(table.id))
+        ...(tables?.filter(table => table.mergedName !== 'ຖືກລວມຢູ່') // Filter out tables that are part of a merged group if you want to only show the group
             .map(table => ({
                 value: table.id.toString(),
                 label: `ໂຕະ ${table.table_number}`, // Only show individual table number
             })) || []),
-        // เพิ่มตัวเลือกกลุ่มโต๊ะที่ถูกรวมเป็นรายการเดียว แสดงชื่อแบบ A + B
+        // Add merged table groups as options
         ...(tableGroups?.map(group => ({
             value: `group-${group.id}`, // Prefix with 'group-' to distinguish
-            label: `${group.tables.map(t => `ໂຕະ ${t.table_number}`).join(' + ')}`,
+            label: `ໂຕະລວມ: ${group.tables.map(t => `ໂຕະ ${t.table_number}`).join(' + ')})`,
         })) || [])
     ];
 

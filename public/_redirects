@@ -1,1 +1,4 @@
 /*    /index.html   200
+
+# Proxy API to backend (avoids CORS on Netlify)
+/api/*  https://safezone-backend-t4w1.onrender.com/:splat  200!
