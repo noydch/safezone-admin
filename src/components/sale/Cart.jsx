@@ -1,5 +1,5 @@
 import { message, Select } from 'antd';
-import  { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaRegTrashAlt } from 'react-icons/fa';
 import { HiMinus, HiPlus } from 'react-icons/hi';
 import useSafezoneStore from '../../store/safezoneStore';

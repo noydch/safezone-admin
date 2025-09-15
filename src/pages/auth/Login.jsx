@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { message } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, Checkbox, Form, Input, message } from 'antd';
 
 import bg from '../../assets/bg.jpg'
+import { LoginApi } from '../../api/auth';
 import { useNavigate } from 'react-router-dom';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import { LiaSpinnerSolid } from "react-icons/lia";
@@ -53,23 +54,20 @@ const Login = () => {
                 email: form.email,
                 password: form.password
             })
-            if (response?.status === 200) {
+            if (response) {
                 setTimeout(() => {
                     localStorage.setItem("token", response?.data?.token)
+                    // localStorage.setItem("user", response?.data?.payload)
                     setLoading(false)
                     navigate('/table')
                     message.success("Login Success!!!")
-                }, 300)
-            } else if (response) {
-                // แสดงข้อความจาก backend ถ้ามี มิฉะนั้นใช้ข้อความเริ่มต้น
-                const backendMessage = response?.data?.message || "ອີເມລ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ!!!";
-                message.warning(backendMessage)
+                }, 3000)
+            } else {
+                message.warning("ອີເມລ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ!!!")
                 setLoading(false)
             }
         } catch (error) {
-            // มักเป็นกรณี Network/CORS/timeout
-            const errMsg = error?.message === 'Network Error' ? 'ບໍ່ສາມາດເຊື່ອມຕໍ່ໄປຫາ server (Network/CORS)' : error?.message;
-            message.error(errMsg || 'ມີບັນຫາໃນການເຊື່ອມຕໍ່');
+            console.log(error);
             setLoading(false)
         }
         if (rememberMe) {
