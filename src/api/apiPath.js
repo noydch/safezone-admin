@@ -1,6 +1,8 @@
 // const baseUrl = "http://localhost:5050/api";
-const baseUrl = "https://safezone-backend-t4w1.onrender.com/api";
-// const baseUrl = 'https://safezone-backend-a48u.onrender.com/api';
+// const baseUrl = "https://safezone-backend-1abh.onrender.com/api";
+// const baseUrl = "https://safezone-backend-zghs.onrender.com/api";
+// Prefer env-configured base URL; fallback to Netlify proxy path
+const baseUrl = import.meta.env.VITE_API_BASE || "/api";
 
 export default class ApiPath {
   static login = `${baseUrl}/login`;
